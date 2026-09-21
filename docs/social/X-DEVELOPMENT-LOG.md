@@ -1,4 +1,4 @@
-# Fractal Legend G1–G11 — X Development Log Drafts
+# Fractal Legend G1–G12 — X Development Log Drafts
 
 Status: milestone posts below are drafts only and have not been published by Codex.
 
@@ -98,6 +98,26 @@ Screenshot suggestion: use the sanitized G11 verification card showing 44/44 G11
 
 截图建议：使用经过脱敏的 G11 Verification Card，展示 44/44 G11 检查、334/334 Go Regression、完整 Race、11/11 真实 PostgreSQL Ledger Integration、1,000 Operation Invariant Sequence、High-concurrency Protection 和三平台 Build。不得显示 Terminal Prompt、账号、Token、DSN、本地路径、Wallet Data 或受保护 Legacy Content。
 
+## G12 — FB-backed player trade settlement
+
+Status: **Draft only · Not published · G12 technical acceptance PASS**
+
+### A. English Primary Post
+
+> Fractal Legend now has its first atomic settlement path connecting secure item trade with the server-authoritative FB Ledger. G12 settles item-only, FB-only, and mixed item + FB offers in one PostgreSQL transaction with 0% player-trade fee, revision-bound confirmation, deterministic locking, double-spend protection, idempotent restart replay, and full rollback on partial failure. Technical acceptance passed: targeted checks 45/45, full Go 379/379 with no skips, final Race, 100 simultaneous settlements with FB conservation, and Windows/Linux/macOS builds. This is not a release. Marketplace, Trade UI, wallets, deposits, withdrawals, and blockchain settlement are not implemented. #gamedev #golang #postgresql
+
+### B. 中文完整对照稿
+
+> Fractal Legend 现在拥有第一条连接安全 Item Trade 与 Server-authoritative FB Ledger 的原子结算路径。G12 在一个 PostgreSQL Transaction 中结算 Item-only、FB-only 和混合 Item + FB Offer，玩家交易手续费为 0%；同时提供 Revision-bound Confirmation、确定性 Lock、Double-spend Protection、幂等 Restart Replay，以及部分失败时的完整 Rollback。技术验收通过：专项检查 45/45、Go 完整回归 379/379 且 0 Skip、最终 Race、100 个同时 Settlement 的 FB 守恒，以及 Windows/Linux/macOS Build。本阶段不是 Release。Marketplace、Trade UI、Wallet、Deposit、Withdrawal 和 Blockchain Settlement 均未实现。#gamedev #golang #postgresql
+
+Screenshot suggestion: use the sanitized G12 verification card showing 45/45 targeted checks, 12/12 real PostgreSQL checks, 379/379 full Go regression, final Race, 200 property iterations, 100 simultaneous settlements, FB conservation, 0% fee, and three-platform builds. Do not show a terminal prompt, account, credential, DSN, local path, wallet data, database rows, or protected Legacy content.
+
+The card was captured before manual acceptance and therefore still says `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING`. If used after Stage Close, label that line as the historical capture state and state G12 technical acceptance PASS in the accompanying caption; the original image is intentionally unchanged.
+
+截图建议：使用经过脱敏的 G12 Verification Card，展示 45/45 专项检查、12/12 真实 PostgreSQL 检查、379/379 Go 完整回归、最终 Race、200 轮 Property Iteration、100 个同时 Settlement、FB 守恒、0% Fee 和三平台 Build。不得显示 Terminal Prompt、账号、Credential、DSN、本地路径、Wallet Data、Database Row 或受限制 Legacy Content。
+
+此卡片摄于人工验收前，因此仍显示 `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING`。若在 Stage Close 后使用，配文须说明该行是历史截图状态，并明确 G12 技术验收已 PASS；原图有意保持不变。
+
 ## Public screenshot checklist
 
 Before publishing any frame:
@@ -116,5 +136,6 @@ Before publishing any frame:
 | `screenshots/g9-persistence-foundation.png` | G9 sanitized PostgreSQL restart and test report / G9 脱敏 PostgreSQL 重启与测试报告 | Approved after visual inspection; no account, credential, DSN, token, terminal prompt, local path, raw database row, or restricted resource content visible. / 已通过目视检查；未显示账号、凭据、DSN、Token、Terminal Prompt、本地路径、原始数据库行或受限制资源内容。 |
 | `screenshots/g10-trade-foundation.png` | G10 sanitized Windows closure verification / G10 脱敏 Windows Closure 验证结果 | Approved after visual inspection; shows Historical Node 224/224, G10 Trade 29/29, Go 290/290 with 0 skips, process fixtures, Windows amd64 build, preserved failure history, and manual-acceptance status. No account, credential, DSN, token, terminal prompt, local path, raw database row, or restricted resource content is visible. New SHA-256: `c0672d3cd1c998e9a5ce07c8542a118ae93fdfd0b9ffdff7a1a84496624d95b2`; replaced SHA-256: `e2dbe70f41236eba07836c5d91fd91d25c14d0b64ab84a2c517710f13896582c`. / 已通过目视检查；展示 Historical Node 224/224、G10 Trade 29/29、Go 290/290（0 Skip）、Process Fixture、Windows amd64 Build、保留的失败历史和人工验收状态，未显示账号、凭据、DSN、Token、Terminal Prompt、本地路径、原始数据库行或受限制资源内容。新 SHA-256：`c0672d3cd1c998e9a5ce07c8542a118ae93fdfd0b9ffdff7a1a84496624d95b2`；被替换的 SHA-256：`e2dbe70f41236eba07836c5d91fd91d25c14d0b64ab84a2c517710f13896582c`。 |
 | `screenshots/g11-fb-ledger-foundation.png` | G11 sanitized Ledger verification / G11 脱敏 Ledger 验证结果 | Approved after visual inspection; shows 44/44 G11 tests, 334/334 Go regression, 11/11 real PostgreSQL Ledger integration, Race, invariants, concurrency, cross-platform builds, the honest G2 environment note, and review state. No account, credential, DSN, token, terminal prompt, local path, raw database row, wallet data, or restricted resource content is visible. SHA-256: `634ccb1a252e36379adeb051b242f478bfb71c2f5864b1ccaa2222f932b21ec0`. / 已通过目视检查；展示 44/44 G11 Test、334/334 Go Regression、11/11 真实 PostgreSQL Ledger Integration、Race、Invariant、Concurrency、Cross-platform Build、如实记录的 G2 环境说明和 Review 状态；未显示账号、凭据、DSN、Token、Terminal Prompt、本地路径、原始数据库行、Wallet Data 或受限制资源内容。SHA-256：`634ccb1a252e36379adeb051b242f478bfb71c2f5864b1ccaa2222f932b21ec0`。 |
+| `screenshots/g12-fb-trade-settlement.png` | G12 sanitized atomic-settlement verification / G12 脱敏原子结算验证结果 | Review candidate generated from the actual final test results. It shows 45/45 targeted checks, 12/12 PostgreSQL checks, 379/379 full Go, final Race, 200 property iterations, 100 simultaneous settlements, zero fee, conservation, three-platform builds, and READY_FOR_REVIEW. It contains no terminal prompt, account, credential, DSN, token, local path, database row, wallet data, or restricted Legacy content. SHA-256: `161e2493863bb1c2cc93de35508529f713dc3ea35af76d3bbed8749b28d94517`. / 根据最终实际测试结果生成的 Review Candidate，展示 45/45 专项检查、12/12 PostgreSQL 检查、379/379 Go 完整回归、最终 Race、200 轮 Property Iteration、100 个同时 Settlement、零手续费、守恒、三平台 Build 和 READY_FOR_REVIEW；不包含 Terminal Prompt、账号、Credential、DSN、Token、本地路径、Database Row、Wallet Data 或受限制 Legacy Content。SHA-256：`161e2493863bb1c2cc93de35508529f713dc3ea35af76d3bbed8749b28d94517`。 |
 
 Earlier-stage screenshot suggestions above are a capture plan. They are not evidence that those screenshots have already been produced or published.

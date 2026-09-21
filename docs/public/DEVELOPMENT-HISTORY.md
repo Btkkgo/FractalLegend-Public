@@ -28,7 +28,7 @@ Private canonical archive references retained for internal verification:
 
 These are plain references to the private canonical archive. They are not public links and are not commits in this mirror.
 
-G11 is **NEXT** in the public mirror. No G11 implementation is included or claimed here.
+After mirror creation, G11 FB Ledger and G12 atomic item + FB Trade settlement were accepted and exported as separate sanitized public commits. G11 recorded 44/44 targeted checks, 11/11 real PostgreSQL checks, and 334/334 full Go regression. G12 recorded 45/45 targeted checks, 12/12 real PostgreSQL checks, 379/379 full Go regression, Race, and three-platform builds. See their bilingual [Devlogs](../devlog/) and ADRs for scope and limits. These public commits are sanitized export events, not the original private development chronology.
 
 ---
 
@@ -60,4 +60,4 @@ Sanitized Public Mirror 在 **G10 之后**以全新 Git History 建立。G1–G1
 
 这些只是 Private Canonical Archive 的纯文本 Reference，不是 Public Link，也不是本镜像中的 Commit。
 
-G11 在 Public Mirror 中的状态是 **NEXT**。本仓库不包含或声称任何 G11 Implementation。
+镜像建立后，G11 FB Ledger 与 G12 原子 Item + FB Trade Settlement 分别通过验收，并以独立的脱敏公开 Commit 导出。G11 记录专项检查 44/44、真实 PostgreSQL 检查 11/11、Go 完整回归 334/334。G12 记录专项检查 45/45、真实 PostgreSQL 检查 12/12、Go 完整回归 379/379、Race 与三平台 Build。具体范围与限制详见双语 [Devlog](../devlog/) 和 ADR。这些 Public Commit 是脱敏导出事件，不是原始 Private Development Chronology。

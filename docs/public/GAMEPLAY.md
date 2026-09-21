@@ -15,7 +15,7 @@ This page separates accepted runtime behavior from product direction.
 | Loot | Server-owned drops, pickup and stable item identity | **FOUNDATION COMPLETE** |
 | Equipment | Equip/unequip and layered runtime stats | **FOUNDATION COMPLETE** |
 | Inventory | Capacity, stable slots and ownership validation | **FOUNDATION COMPLETE** |
-| Player trading | Secure ownership exchange | **FOUNDATION COMPLETE** for item-only domain; formal UI and FB settlement not implemented |
+| Player trading | Secure ownership and FB exchange | **FOUNDATION COMPLETE** for atomic item + FB settlement; formal UI and markets not implemented |
 | Party / team dungeons | Cooperative play | **PLANNED** |
 | Guild | Membership, roles, missions and reputation | **PLANNED** |
 | Siege | Competitive territory and prestige | **PLANNED** |
@@ -37,7 +37,7 @@ These are intended parts of the MMORPG, but they have no accepted production imp
 
 ### Trade
 
-G10 provides a transport-independent item Trade state machine with revision-bound confirmation, persistent item locks, ownership validation, atomic two-character settlement, idempotent finalization, concurrent item protection, and restart recovery. A formal Trade UI, FB settlement, Marketplace, and Auction House are not implemented.
+G10 provides a transport-independent item Trade state machine with revision-bound confirmation, persistent item locks, ownership validation, atomic two-character settlement, idempotent finalization, concurrent item protection, and restart recovery. G12 extends it with revision-bound FB offers and atomic item + FB settlement in PostgreSQL at 0% player-trade fee. A formal Trade UI, Marketplace, and Auction House are not implemented.
 
 ---
 
@@ -56,7 +56,7 @@ G10 provides a transport-independent item Trade state machine with revision-boun
 | Loot | Server-owned Drop、Pickup 与稳定 Item Identity | **FOUNDATION COMPLETE** |
 | Equipment | Equip / Unequip 与分层 Runtime Stats | **FOUNDATION COMPLETE** |
 | Inventory | Capacity、稳定 Slot 与 Ownership Validation | **FOUNDATION COMPLETE** |
-| Player Trading | 安全 Ownership Exchange | Item-only Domain 达到 **FOUNDATION COMPLETE**；正式 UI 与 FB Settlement 未实现 |
+| Player Trading | 安全 Ownership 与 FB Exchange | 原子 Item + FB Settlement 达到 **FOUNDATION COMPLETE**；正式 UI 与 Market 未实现 |
 | Party / Team Dungeon | 协作玩法 | **PLANNED** |
 | Guild | Membership、Role、Mission 与 Reputation | **PLANNED** |
 | Siege | Territory 与 Prestige 竞争 | **PLANNED** |
@@ -78,4 +78,4 @@ Browser 提交 Target、Movement、Normal Attack、Skill、Pickup、Equip、Uneq
 
 ### Trade
 
-G10 提供独立于 Transport 的 Item Trade State Machine，包含 Revision-bound Confirmation、Persistent Item Lock、Ownership Validation、双方 Character Atomic Settlement、Idempotent Finalization、Concurrent Item Protection 与 Restart Recovery。正式 Trade UI、FB Settlement、Marketplace 和 Auction House 尚未实现。
+G10 提供独立于 Transport 的 Item Trade State Machine，包含 Revision-bound Confirmation、Persistent Item Lock、Ownership Validation、双方 Character Atomic Settlement、Idempotent Finalization、Concurrent Item Protection 与 Restart Recovery。G12 在此基础上新增 Revision-bound FB Offer 与 PostgreSQL 原子 Item + FB Settlement，玩家交易手续费为 0%。正式 Trade UI、Marketplace 和 Auction House 尚未实现。

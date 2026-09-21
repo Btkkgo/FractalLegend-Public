@@ -17,7 +17,7 @@ G1–G10 were completed before the sanitized public mirror was established. This
 | G9 | PostgreSQL Persistence Foundation | PASS | Persistence 25/25; Node 222/222; Go 261/261; Combined 483/483; Race, integration, restart, and three-platform builds PASS | [Devlog](../devlog/G9-persistence-foundation.md) · [Interaction Record](../interactions/G9-persistence-foundation.md) |
 | G10 | Secure player item Trade Foundation | CLOSED / PASS | Historical Node 224/224; Trade 29/29; Go 290/290; Windows fixtures 2/2; cross-platform PASS | [Devlog](../devlog/G10-trade-foundation.md) · [ADR](../adr/0009-g10-trade-foundation.md) · [Interaction Record](../interactions/G10-trade-foundation.md) |
 
-G11 is **NEXT** and is outside this accepted G1–G10 timeline.
+This historical timeline stops at G10 because G1–G10 predate the public mirror. G11 and G12 were accepted later; see the [Development History](DEVELOPMENT-HISTORY.md) and their bilingual Devlogs. The timeline does not describe their current status as NEXT.
 
 ---
 
@@ -38,4 +38,4 @@ G1–G10 在 Sanitized Public Mirror 建立前已经完成。本时间线只链�
 | G9 | PostgreSQL Persistence Foundation | PASS | Persistence 25/25；Node 222/222；Go 261/261；Combined 483/483；Race、Integration、Restart 与三平台 Build PASS | [Devlog](../devlog/G9-persistence-foundation.md) · [Interaction Record](../interactions/G9-persistence-foundation.md) |
 | G10 | 安全 Player Item Trade Foundation | CLOSED / PASS | Historical Node 224/224；Trade 29/29；Go 290/290；Windows Fixture 2/2；Cross-platform PASS | [Devlog](../devlog/G10-trade-foundation.md) · [ADR](../adr/0009-g10-trade-foundation.md) · [Interaction Record](../interactions/G10-trade-foundation.md) |
 
-G11 状态为 **NEXT**，不属于这份已验收 G1–G10 Timeline。
+这份历史时间线止于 G10，因为 G1–G10 早于 Public Mirror。G11 与 G12 后来通过验收；详见 [Development History](DEVELOPMENT-HISTORY.md) 和各阶段双语 Devlog。本时间线不把它们当前状态描述为 NEXT。

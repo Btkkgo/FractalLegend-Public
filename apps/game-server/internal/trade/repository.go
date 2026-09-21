@@ -3,12 +3,21 @@ package trade
 import (
 	"context"
 	"errors"
+	"sort"
 	"sync"
 
+	"fractallegend/game-server/internal/ledger"
 	"fractallegend/game-server/internal/persistence"
 )
 
-const FailureAfterFirstCharacterWrite = "after_first_character_write"
+const (
+	FailureAfterFirstCharacterWrite = "after_first_character_write"
+	FailureAfterItemOwnershipUpdate = "after_item_ownership_update"
+	FailureAfterLedgerWrite         = "after_ledger_write"
+	FailureDuringBalanceUpdate      = "during_balance_update"
+	FailureBeforeCompletedState     = "before_completed_state"
+	FailureBeforeCommit             = "before_commit"
+)
 
 type Transaction interface {
 	Session() *Session
@@ -19,6 +28,10 @@ type Transaction interface {
 	UnlockItem(string) error
 	UnlockAll() error
 	AppendAudit(AuditEvent) error
+	PrepareSettlement([]string, []string, []string) error
+	LoadLedgerAccountByOwner(string) (ledger.LedgerAccount, error)
+	PostLedgerTransaction(ledger.PostDraft) (ledger.LedgerTransaction, error)
+	CheckFailure(string) error
 }
 
 type Repository interface {
@@ -31,12 +44,17 @@ type Repository interface {
 }
 
 type memoryTransaction struct {
-	session    *Session
-	characters map[string]persistence.CharacterAggregate
-	locks      map[string]ItemLock
-	audit      []AuditEvent
-	failure    error
-	writes     int
+	session            *Session
+	characters         map[string]persistence.CharacterAggregate
+	locks              map[string]ItemLock
+	audit              []AuditEvent
+	failure            error
+	writes             int
+	ledgerAccounts     map[string]ledger.LedgerAccount
+	ledgerOwners       map[string]string
+	ledgerTransactions map[string]ledger.LedgerTransaction
+	ledgerReferences   map[string]string
+	failures           map[string]error
 }
 
 func (t *memoryTransaction) Session() *Session { return t.session }
@@ -95,19 +113,141 @@ func (t *memoryTransaction) AppendAudit(event AuditEvent) error {
 	t.audit = append(t.audit, event)
 	return nil
 }
+func (t *memoryTransaction) PrepareSettlement(_, _, _ []string) error { return nil }
+func (t *memoryTransaction) LoadLedgerAccountByOwner(owner string) (ledger.LedgerAccount, error) {
+	id, ok := t.ledgerOwners[owner]
+	if !ok {
+		return ledger.LedgerAccount{}, ledger.ErrNotFound
+	}
+	return t.ledgerAccounts[id], nil
+}
+func (t *memoryTransaction) PostLedgerTransaction(draft ledger.PostDraft) (ledger.LedgerTransaction, error) {
+	key := draft.Reference.Type + "\x00" + draft.Reference.ID
+	if id, ok := t.ledgerReferences[key]; ok {
+		existing := t.ledgerTransactions[id]
+		if !sameLedgerIntent(existing, draft) {
+			return ledger.LedgerTransaction{}, ledger.ErrReferenceConflict
+		}
+		return cloneLedgerTransaction(existing), nil
+	}
+	if err := ledger.ValidatePostDraft(draft); err != nil {
+		return ledger.LedgerTransaction{}, err
+	}
+	balances := make(map[string]int64, len(draft.Entries))
+	for _, entry := range draft.Entries {
+		account, ok := t.ledgerAccounts[entry.AccountID]
+		if !ok {
+			return ledger.LedgerTransaction{}, ledger.ErrNotFound
+		}
+		next, err := ledger.AddAmount(account.Balance, entry.Amount)
+		if err != nil {
+			return ledger.LedgerTransaction{}, err
+		}
+		if next < 0 {
+			return ledger.LedgerTransaction{}, ledger.ErrInsufficientBalance
+		}
+		balances[entry.AccountID] = next
+	}
+	result := ledger.LedgerTransaction{ID: draft.ID, Type: draft.Type, Status: ledger.StatusPosted, Reference: draft.Reference, OriginalTransactionID: draft.OriginalTransactionID, SpendClassification: draft.SpendClassification, Reason: draft.Reason, CreatedAt: draft.CreatedAt}
+	for _, item := range draft.Entries {
+		account := t.ledgerAccounts[item.AccountID]
+		direction := ledger.DirectionCredit
+		if item.Amount < 0 {
+			direction = ledger.DirectionDebit
+		}
+		entry := ledger.LedgerEntry{ID: item.ID, TransactionID: draft.ID, AccountID: item.AccountID, EntryType: draft.Type, Amount: item.Amount, Direction: direction, BalanceBefore: account.Balance, BalanceAfter: balances[item.AccountID], CreatedAt: draft.CreatedAt}
+		account.Balance = entry.BalanceAfter
+		account.Revision++
+		account.UpdatedAt = draft.CreatedAt
+		t.ledgerAccounts[account.ID] = account
+		result.Entries = append(result.Entries, entry)
+		if len(result.Entries) == 1 {
+			if err := t.CheckFailure(FailureDuringBalanceUpdate); err != nil {
+				return ledger.LedgerTransaction{}, err
+			}
+		}
+	}
+	t.ledgerTransactions[result.ID] = cloneLedgerTransaction(result)
+	t.ledgerReferences[key] = result.ID
+	return cloneLedgerTransaction(result), nil
+}
+func (t *memoryTransaction) CheckFailure(point string) error {
+	if err := t.failures[point]; err != nil {
+		delete(t.failures, point)
+		return err
+	}
+	return nil
+}
 
 type MemoryRepository struct {
-	mu         sync.Mutex
-	sessions   map[string]Session
-	characters map[string]persistence.CharacterAggregate
-	locks      map[string]ItemLock
-	audit      map[string][]AuditEvent
-	failures   map[string]error
-	sequence   int64
+	mu                 sync.Mutex
+	sessions           map[string]Session
+	characters         map[string]persistence.CharacterAggregate
+	locks              map[string]ItemLock
+	audit              map[string][]AuditEvent
+	failures           map[string]error
+	sequence           int64
+	ledgerAccounts     map[string]ledger.LedgerAccount
+	ledgerOwners       map[string]string
+	ledgerTransactions map[string]ledger.LedgerTransaction
+	ledgerReferences   map[string]string
 }
 
 func NewMemoryRepository() *MemoryRepository {
-	return &MemoryRepository{sessions: map[string]Session{}, characters: map[string]persistence.CharacterAggregate{}, locks: map[string]ItemLock{}, audit: map[string][]AuditEvent{}, failures: map[string]error{}}
+	return &MemoryRepository{sessions: map[string]Session{}, characters: map[string]persistence.CharacterAggregate{}, locks: map[string]ItemLock{}, audit: map[string][]AuditEvent{}, failures: map[string]error{}, ledgerAccounts: map[string]ledger.LedgerAccount{}, ledgerOwners: map[string]string{}, ledgerTransactions: map[string]ledger.LedgerTransaction{}, ledgerReferences: map[string]string{}}
+}
+
+func (r *MemoryRepository) seedLedgerAccount(value ledger.LedgerAccount) error {
+	if value.ID == "" || value.OwnerID == "" || value.OwnerType != ledger.OwnerPlayer || value.Currency != ledger.CurrencyFB || value.Balance < 0 {
+		return ledger.ErrInvalidAccount
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if _, exists := r.ledgerAccounts[value.ID]; exists {
+		return ledger.ErrConflict
+	}
+	if _, exists := r.ledgerOwners[value.OwnerID]; exists {
+		return ledger.ErrConflict
+	}
+	r.ledgerAccounts[value.ID] = value
+	r.ledgerOwners[value.OwnerID] = value.ID
+	return nil
+}
+
+func (r *MemoryRepository) replaceLedgerAccount(value ledger.LedgerAccount) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if _, exists := r.ledgerAccounts[value.ID]; !exists || value.Balance < 0 {
+		return ledger.ErrNotFound
+	}
+	r.ledgerAccounts[value.ID] = value
+	return nil
+}
+
+func (r *MemoryRepository) ledgerAccountByOwner(ctx context.Context, owner string) (ledger.LedgerAccount, error) {
+	if err := ctx.Err(); err != nil {
+		return ledger.LedgerAccount{}, err
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	id, ok := r.ledgerOwners[owner]
+	if !ok {
+		return ledger.LedgerAccount{}, ledger.ErrNotFound
+	}
+	return r.ledgerAccounts[id], nil
+}
+
+func (r *MemoryRepository) ledgerTransaction(ctx context.Context, id string) (ledger.LedgerTransaction, error) {
+	if err := ctx.Err(); err != nil {
+		return ledger.LedgerTransaction{}, err
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	value, ok := r.ledgerTransactions[id]
+	if !ok {
+		return ledger.LedgerTransaction{}, ledger.ErrNotFound
+	}
+	return cloneLedgerTransaction(value), nil
 }
 
 func (r *MemoryRepository) SeedCharacter(value persistence.CharacterAggregate) error {
@@ -195,12 +335,39 @@ func (r *MemoryRepository) Transact(ctx context.Context, id string, fn func(Tran
 	for key, lock := range r.locks {
 		locks[key] = lock
 	}
-	tx := &memoryTransaction{session: &s, characters: characters, locks: locks, failure: r.failures[FailureAfterFirstCharacterWrite]}
+	accounts := make(map[string]ledger.LedgerAccount, len(r.ledgerAccounts))
+	for key, account := range r.ledgerAccounts {
+		accounts[key] = account
+	}
+	owners := make(map[string]string, len(r.ledgerOwners))
+	for key, id := range r.ledgerOwners {
+		owners[key] = id
+	}
+	transactions := make(map[string]ledger.LedgerTransaction, len(r.ledgerTransactions))
+	for key, value := range r.ledgerTransactions {
+		transactions[key] = cloneLedgerTransaction(value)
+	}
+	references := make(map[string]string, len(r.ledgerReferences))
+	for key, id := range r.ledgerReferences {
+		references[key] = id
+	}
+	failures := make(map[string]error, len(r.failures))
+	for key, value := range r.failures {
+		failures[key] = value
+	}
+	tx := &memoryTransaction{session: &s, characters: characters, locks: locks, failure: failures[FailureAfterFirstCharacterWrite], ledgerAccounts: accounts, ledgerOwners: owners, ledgerTransactions: transactions, ledgerReferences: references, failures: failures}
 	delete(r.failures, FailureAfterFirstCharacterWrite)
+	for _, point := range []string{FailureAfterItemOwnershipUpdate, FailureDuringBalanceUpdate, FailureAfterLedgerWrite, FailureBeforeCompletedState, FailureBeforeCommit} {
+		delete(r.failures, point)
+	}
 	if err := fn(tx); err != nil {
 		return Session{}, err
 	}
+	if err := tx.CheckFailure(FailureBeforeCommit); err != nil {
+		return Session{}, err
+	}
 	r.sessions[id], r.characters, r.locks = cloneSession(s), characters, locks
+	r.ledgerAccounts, r.ledgerOwners, r.ledgerTransactions, r.ledgerReferences = accounts, owners, transactions, references
 	for _, event := range tx.audit {
 		r.appendAudit(event)
 	}
@@ -229,6 +396,7 @@ func (r *MemoryRepository) AuditEvents(ctx context.Context, id string) ([]AuditE
 	result := append([]AuditEvent(nil), r.audit[id]...)
 	for i := range result {
 		result[i].ParticipantIDs = append([]string(nil), result[i].ParticipantIDs...)
+		result[i].LedgerTransactionIDs = append([]string(nil), result[i].LedgerTransactionIDs...)
 	}
 	return result, nil
 }
@@ -256,7 +424,40 @@ func (r *MemoryRepository) appendAudit(event AuditEvent) {
 	r.sequence++
 	event.Sequence = r.sequence
 	event.ParticipantIDs = append([]string(nil), event.ParticipantIDs...)
+	event.LedgerTransactionIDs = append([]string(nil), event.LedgerTransactionIDs...)
 	r.audit[event.TradeID] = append(r.audit[event.TradeID], event)
+}
+
+func cloneLedgerTransaction(value ledger.LedgerTransaction) ledger.LedgerTransaction {
+	value.Entries = append([]ledger.LedgerEntry(nil), value.Entries...)
+	return value
+}
+
+func sameLedgerIntent(existing ledger.LedgerTransaction, draft ledger.PostDraft) bool {
+	if existing.Type != draft.Type || existing.Reference != draft.Reference || existing.OriginalTransactionID != draft.OriginalTransactionID || existing.SpendClassification != draft.SpendClassification || existing.Reason != draft.Reason || len(existing.Entries) != len(draft.Entries) {
+		return false
+	}
+	for i := range draft.Entries {
+		if existing.Entries[i].AccountID != draft.Entries[i].AccountID || existing.Entries[i].Amount != draft.Entries[i].Amount {
+			return false
+		}
+	}
+	return true
+}
+
+func sortedUnique(values []string) []string {
+	seen := map[string]struct{}{}
+	for _, value := range values {
+		if value != "" {
+			seen[value] = struct{}{}
+		}
+	}
+	result := make([]string, 0, len(seen))
+	for value := range seen {
+		result = append(result, value)
+	}
+	sort.Strings(result)
+	return result
 }
 
 func cloneAggregate(value persistence.CharacterAggregate) persistence.CharacterAggregate {

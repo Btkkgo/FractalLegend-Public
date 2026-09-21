@@ -123,7 +123,7 @@ func TestDoubleFinalizeReturnsOneSettlement(t *testing.T) {
 		t.Fatal(err)
 	}
 	second, err := svc.FinalizeTrade(context.Background(), "trade-double")
-	if err != nil || second != first {
+	if err != nil || second.TradeID != first.TradeID || second.SettlementID != first.SettlementID || !second.CompletedAt.Equal(first.CompletedAt) || len(second.LedgerTransactionIDs) != len(first.LedgerTransactionIDs) {
 		t.Fatalf("first=%+v second=%+v err=%v", first, second, err)
 	}
 	ownerHas(t, repo, "player-b", "item-x", 10)
@@ -248,7 +248,7 @@ func TestRestartAfterSettlementKeepsFinalizeIdempotent(t *testing.T) {
 	}
 	restarted := NewService(repo, Options{Now: func() time.Time { return testNow }, NewID: func(prefix string) string { return prefix + "-restart" }, InventoryCapacity: 20})
 	second, err := restarted.FinalizeTrade(context.Background(), "trade-restart-after")
-	if err != nil || second != first {
+	if err != nil || second.TradeID != first.TradeID || second.SettlementID != first.SettlementID || !second.CompletedAt.Equal(first.CompletedAt) || len(second.LedgerTransactionIDs) != len(first.LedgerTransactionIDs) {
 		t.Fatalf("first=%+v second=%+v err=%v", first, second, err)
 	}
 }

@@ -12,7 +12,7 @@
 
 Fractal Legend is a browser-native Legend-style MMORPG being built for the Fractal / Bitcoin ecosystem. Its direction combines classic combat, player-driven economies, digital ownership, Ordinals assets, and a modular social game world.
 
-Development is milestone-driven. The accepted server-authoritative G1–G11 foundation covers world movement, browser rendering, living entities, combat, monster AI, one Warrior skill, loot, inventory, equipment, character stats, PostgreSQL persistence, secure item trading, and an internal FB ledger. This is an engineering foundation, not a public game release.
+Development is milestone-driven. The accepted server-authoritative G1–G12 foundation covers world movement, browser rendering, living entities, combat, monster AI, one Warrior skill, loot, inventory, equipment, character stats, PostgreSQL persistence, secure item trading, an internal FB ledger, and atomic item + FB player Trade settlement. This is an engineering foundation, not a public game release.
 
 ### Repository role
 
@@ -30,8 +30,9 @@ The long-term design treats Fractal and Bitcoin as more than branding. Ownership
 |---|---|---|
 | G1–G8 gameplay foundations | **FOUNDATION COMPLETE** | World, rendering, entities, combat, AI, one Warrior skill, loot, inventory, equipment, and runtime stats |
 | G9 Persistence Foundation | **FOUNDATION COMPLETE** | PostgreSQL Character Aggregate, reconnect, and full Game Server restart restore |
-| G10 Trade Foundation | **FOUNDATION COMPLETE** | Item-only secure trade domain; no Trade UI or FB settlement |
-| G11 FB Ledger Foundation | **FOUNDATION COMPLETE** | Internal server-authoritative ledger; no blockchain, deposit, withdrawal, wallet, or Trade-to-FB settlement |
+| G10 Trade Foundation | **FOUNDATION COMPLETE** | Secure item-trade domain, extended in G12; no Trade UI |
+| G11 FB Ledger Foundation | **FOUNDATION COMPLETE** | Internal server-authoritative ledger; no blockchain, deposit, withdrawal, or wallet |
+| G12 Item + FB Trade Settlement | **FOUNDATION COMPLETE** | Atomic PostgreSQL settlement, 0% fee, no Marketplace or blockchain settlement |
 | Complete browser MMORPG | **IN DEVELOPMENT** | Accepted technical slices do not form a public release |
 | Wallet / blockchain deposit and withdrawal | **PLANNED** | Not live |
 | Ordinals activation | **PLANNED** | No production activation exists |
@@ -39,18 +40,20 @@ The long-term design treats Fractal and Bitcoin as more than branding. Ownership
 
 ### Latest accepted milestone
 
-**G11 — FB Ledger Foundation: CLOSED / PASS**
+**G12 — Atomic Item + FB Trade Settlement: technical acceptance PASS**
 
-- G11 tests: **44/44 PASS**
-- PostgreSQL Ledger integration: **11/11 PASS**
-- Full Go regression: **334/334 PASS**, 0 failures, 0 skips
-- Go Race: **PASS** across 14 packages
+- G12 targeted checks: **45/45 PASS**, including **12/12** real PostgreSQL integration checks
+- Property sequence: **200/200 PASS**; **100** simultaneous settlements preserved FB conservation
+- Private canonical full Go regression: **379/379 PASS**, 0 failures, 0 skips
+- Go Race, Vet, and Windows/Linux/macOS builds: **PASS**
 - Node: **95/96 — KNOWN G2 ENVIRONMENT LIMITATION** caused only by the unavailable restricted Legacy Archive
-- Private canonical archive reference: `5e7eaf607fdfe238c3c135d10d9d28762be5515c`
+- Private canonical G12 commit reference: `0cfedb3eec0ede195841b6def0f8f2089b27bd81`
+
+G12 uses Option A with no FB Hold: balances may change after confirmation, and Finalize locks/revalidates accounts and rolls back entirely on insufficient funds. Extreme contention may exhaust the finite three-attempt retry budget, causing a safe failure without partial settlement.
 
 ### Public source snapshot
 
-The mirror publishes audited project-owned Go domains for AI, Character Stats, Combat Rules, Navigation, registries, PostgreSQL Persistence, the G10 Trade Foundation, and the G11 FB Ledger Foundation. It includes unit tests and versioned schema migrations. It intentionally excludes Legacy seller source, private fixtures, Canonical exports, import tools, protected assets, local-environment integrations, and the complete private runtime assembly.
+The mirror publishes audited project-owned Go domains for AI, Character Stats, Combat Rules, Navigation, registries, PostgreSQL Persistence, G10/G12 Trade, and the G11 FB Ledger Foundation. It includes unit tests and versioned schema migrations. It intentionally excludes Legacy seller source, private fixtures, Canonical exports, import tools, protected assets, local-environment integrations, and the complete private runtime assembly.
 
 Run the public Go checks:
 
@@ -76,10 +79,12 @@ See [Public Code Provenance](PUBLIC-CODE-PROVENANCE.md) for the exact publicatio
 - [Media](docs/public/MEDIA.md)
 - [Technical Screenshots](docs/public/SCREENSHOTS.md)
 - [FAQ](docs/public/FAQ.md)
-- [G9–G11 Devlogs](docs/devlog/)
+- [G9–G12 Devlogs](docs/devlog/)
 - [Curated Interaction Records](docs/interactions/)
 - [G10 Trade ADR](docs/adr/0009-g10-trade-foundation.md)
 - [G11 FB Ledger ADR](docs/adr/0010-g11-fb-ledger-foundation.md)
+- [G12 Atomic Settlement ADR](docs/adr/0011-g12-atomic-item-fb-trade-settlement.md)
+- [G12 Public Sync Allowlist](docs/public-sync/G12-PUBLIC-SYNC-CANDIDATE.md)
 - [Public Mirror Policy](PUBLIC-MIRROR-POLICY.md)
 - [Security Policy](SECURITY.md)
 
@@ -99,7 +104,7 @@ Fractal Legend has no announced public launch date. It is not a production servi
 
 Fractal Legend / 分形传奇是一款正在为 Fractal / Bitcoin 生态构建的浏览器原生传奇风格 MMORPG。项目方向结合经典战斗、玩家驱动经济、数字所有权、Ordinals 资产，以及模块化的社交游戏世界。
 
-开发按里程碑推进。已验收的 Server-authoritative G1–G11 Foundation 覆盖 World Movement、Browser Rendering、Living Entity、Combat、Monster AI、一项 Warrior Skill、Loot、Inventory、Equipment、Character Stats、PostgreSQL Persistence、安全的 Item Trade 和内部 FB Ledger。这是一套工程基础，并不代表游戏已经公开上线。
+开发按里程碑推进。已验收的 Server-authoritative G1–G12 Foundation 覆盖 World Movement、Browser Rendering、Living Entity、Combat、Monster AI、一项 Warrior Skill、Loot、Inventory、Equipment、Character Stats、PostgreSQL Persistence、安全的 Item Trade、内部 FB Ledger，以及原子 Item + FB 玩家 Trade Settlement。这是一套工程基础，并不代表游戏已经公开上线。
 
 ### 仓库定位
 
@@ -117,8 +122,9 @@ Public Mirror 不复制或重建 Private Repository History。更早里程碑 SH
 |---|---|---|
 | G1–G8 Gameplay Foundation | **FOUNDATION COMPLETE** | World、Rendering、Entity、Combat、AI、一项 Warrior Skill、Loot、Inventory、Equipment 与 Runtime Stats |
 | G9 Persistence Foundation | **FOUNDATION COMPLETE** | PostgreSQL Character Aggregate、Reconnect 与完整 Game Server Restart Restore |
-| G10 Trade Foundation | **FOUNDATION COMPLETE** | 仅 Item 的安全 Trade Domain；不含 Trade UI 或 FB Settlement |
-| G11 FB Ledger Foundation | **FOUNDATION COMPLETE** | 内部 Server-authoritative Ledger；不含 Blockchain、Deposit、Withdrawal、Wallet 或 Trade-to-FB Settlement |
+| G10 Trade Foundation | **FOUNDATION COMPLETE** | 安全 Item Trade Domain，在 G12 得到扩展；不含 Trade UI |
+| G11 FB Ledger Foundation | **FOUNDATION COMPLETE** | 内部 Server-authoritative Ledger；不含 Blockchain、Deposit、Withdrawal 或 Wallet |
+| G12 Item + FB Trade Settlement | **FOUNDATION COMPLETE** | PostgreSQL 原子结算、0% 手续费；不含 Marketplace 或 Blockchain Settlement |
 | 完整 Browser MMORPG | **IN DEVELOPMENT** | 已验收 Technical Slice 尚未组成公开 Release |
 | Wallet / Blockchain Deposit 与 Withdrawal | **PLANNED** | 尚未上线 |
 | Ordinals Activation | **PLANNED** | 不存在 Production Activation |
@@ -126,18 +132,20 @@ Public Mirror 不复制或重建 Private Repository History。更早里程碑 SH
 
 ### 最新已验收里程碑
 
-**G11 — FB Ledger Foundation：CLOSED / PASS**
+**G12 — Atomic Item + FB Trade Settlement：技术验收 PASS**
 
-- G11 Test：**44/44 PASS**
-- PostgreSQL Ledger Integration：**11/11 PASS**
-- Go 完整回归：**334/334 PASS**、0 Fail、0 Skip
-- Go Race：14 个 Package **PASS**
+- G12 专项检查：**45/45 PASS**，其中真实 PostgreSQL Integration **12/12**
+- Property Sequence：**200/200 PASS**；**100** 个同时 Settlement 保持 FB 守恒
+- Private Canonical Go 完整回归：**379/379 PASS**、0 Fail、0 Skip
+- Go Race、Vet 与 Windows/Linux/macOS Build：**PASS**
 - Node：**95/96 — KNOWN G2 ENVIRONMENT LIMITATION**，唯一原因是受限制 Legacy Archive 不可用
-- Private Canonical Archive Reference：`5e7eaf607fdfe238c3c135d10d9d28762be5515c`
+- Private Canonical G12 Commit Reference：`0cfedb3eec0ede195841b6def0f8f2089b27bd81`
+
+G12 采用不建立 FB Hold 的 Option A：Confirmation 后余额可能变化；Finalize 会锁定并重新验证 Account，余额不足时整个 Transaction 回滚。极端竞争可能耗尽最多三次的有限 Retry，导致安全失败而不产生部分结算。
 
 ### 公开源码快照
 
-本镜像公开经过审计、属于项目自有的 Go Domain，包括 AI、Character Stats、Combat Rules、Navigation、Registry、PostgreSQL Persistence、G10 Trade Foundation 和 G11 FB Ledger Foundation，并包含 Unit Test 与 Versioned Schema Migration。镜像明确排除 Legacy Seller Source、Private Fixture、Canonical Export、Import Tool、受保护 Asset、本地环境 Integration 和完整 Private Runtime Assembly。
+本镜像公开经过审计、属于项目自有的 Go Domain，包括 AI、Character Stats、Combat Rules、Navigation、Registry、PostgreSQL Persistence、G10/G12 Trade 和 G11 FB Ledger Foundation，并包含 Unit Test 与 Versioned Schema Migration。镜像明确排除 Legacy Seller Source、Private Fixture、Canonical Export、Import Tool、受保护 Asset、本地环境 Integration 和完整 Private Runtime Assembly。
 
 运行公开 Go 检查：
 
@@ -163,10 +171,12 @@ go test ./...
 - [Media](docs/public/MEDIA.md)
 - [Technical Screenshot](docs/public/SCREENSHOTS.md)
 - [FAQ](docs/public/FAQ.md)
-- [G9–G11 Devlog](docs/devlog/)
+- [G9–G12 Devlog](docs/devlog/)
 - [整理后的 Interaction Record](docs/interactions/)
 - [G10 Trade ADR](docs/adr/0009-g10-trade-foundation.md)
 - [G11 FB Ledger ADR](docs/adr/0010-g11-fb-ledger-foundation.md)
+- [G12 Atomic Settlement ADR](docs/adr/0011-g12-atomic-item-fb-trade-settlement.md)
+- [G12 Public Sync Allowlist](docs/public-sync/G12-PUBLIC-SYNC-CANDIDATE.md)
 - [Public Mirror Policy](PUBLIC-MIRROR-POLICY.md)
 - [Security Policy](SECURITY.md)
 

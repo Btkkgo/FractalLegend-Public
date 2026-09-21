@@ -10,10 +10,11 @@ The roadmap is milestone-driven. It does not promise dates.
 - G9: PostgreSQL Character Aggregate persistence and restart restore.
 - G10: secure item Trade Foundation.
 - G11: server-authoritative internal FB Ledger Foundation with double-entry conservation, immutable history, idempotency, concurrency protection, reversal, reconciliation, and restart persistence.
+- G12: atomic item + FB player Trade settlement with revision-bound offers, Gross postings, 0% fee, rollback, and restart replay.
 
 ### Next
 
-- Plan later economy and blockchain adapters as separately reviewed milestones; none are implemented by G11.
+- Plan later economy and blockchain adapters as separately reviewed milestones; none are implemented by G12.
 - Continue the browser product experience using accepted server authority.
 - Define contribution and manufacturing boundaries without inventing live currency behavior.
 
@@ -26,7 +27,7 @@ The roadmap is milestone-driven. It does not promise dates.
 - Wallet and domain identity.
 - Ordinals ownership, metadata verification, mapping, and activation.
 - Fractal / Bitcoin deposit, withdrawal, confirmation, and reorg handling.
-- Item + FB trade settlement, Marketplace, and Auction.
+- Marketplace and Auction beyond the accepted direct item + FB Trade settlement.
 - Profiles, follows, feeds, guild/party chat, voice, video, tips, and red packets.
 - Admin, security hardening, performance, mobile support, and Beta readiness.
 
@@ -44,10 +45,11 @@ Roadmap 按里程碑推进，不承诺日期。
 - G9：PostgreSQL Character Aggregate Persistence 与 Restart Restore。
 - G10：安全 Item Trade Foundation。
 - G11：Server-authoritative Internal FB Ledger Foundation，包含 Double-entry Conservation、Immutable History、Idempotency、Concurrency Protection、Reversal、Reconciliation 与 Restart Persistence。
+- G12：原子 Item + FB 玩家 Trade Settlement，包含 Revision-bound Offer、Gross Posting、0% Fee、Rollback 与 Restart Replay。
 
 ### 下一步
 
-- 把后续 Economy 与 Blockchain Adapter 作为独立审核阶段规划；G11 尚未实现这些能力。
+- 把后续 Economy 与 Blockchain Adapter 作为独立审核阶段规划；G12 尚未实现这些能力。
 - 继续以已验收 Server Authority 扩展 Browser Product Experience。
 - 定义 Contribution 与 Manufacturing Boundary，不虚构 Live Currency Behavior。
 
@@ -60,7 +62,7 @@ Roadmap 按里程碑推进，不承诺日期。
 - Wallet 与 Domain Identity。
 - Ordinals Ownership、Metadata Verification、Mapping 与 Activation。
 - Fractal / Bitcoin Deposit、Withdrawal、Confirmation 与 Reorg Handling。
-- Item + FB Trade Settlement、Marketplace 与 Auction。
+- 已验收的 Direct Item + FB Trade Settlement 以外的 Marketplace 与 Auction。
 - Profile、Follow、Feed、Guild/Party Chat、Voice、Video、Tip 与 Red Packet。
 - Admin、Security Hardening、Performance、Mobile Support 与 Beta Readiness。
 

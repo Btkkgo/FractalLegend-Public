@@ -7,6 +7,7 @@ import (
 	"sort"
 	"time"
 
+	"fractallegend/game-server/internal/ledger"
 	"fractallegend/game-server/internal/persistence"
 )
 
@@ -65,6 +66,37 @@ func participant(session *Session, actor string) (*[]OfferItem, *int64, error) {
 	default:
 		return nil, nil, ErrInvalidParticipant
 	}
+}
+
+func participantFBOffer(session *Session, actor string) (*int64, error) {
+	switch actor {
+	case session.PlayerAID:
+		return &session.PlayerAFBOffer, nil
+	case session.PlayerBID:
+		return &session.PlayerBFBOffer, nil
+	default:
+		return nil, ErrInvalidParticipant
+	}
+}
+
+func validateFBOffer(tx Transaction, owner string, amount int64) error {
+	if amount < 0 {
+		return ledger.ErrInvalidAmount
+	}
+	if amount == 0 {
+		return nil
+	}
+	account, err := tx.LoadLedgerAccountByOwner(owner)
+	if err != nil {
+		return err
+	}
+	if account.Currency != ledger.CurrencyFB || account.OwnerType != ledger.OwnerPlayer || account.OwnerID != owner {
+		return ledger.ErrInvalidAccount
+	}
+	if account.Balance < amount {
+		return ledger.ErrInsufficientBalance
+	}
+	return nil
 }
 
 func findItem(character persistence.CharacterAggregate, id string) (persistence.ItemInstance, bool) {
@@ -229,6 +261,50 @@ func (s *Service) RemoveItem(ctx context.Context, tradeID, actor, itemID string,
 	return result, err
 }
 
+func (s *Service) SetFBOffer(ctx context.Context, tradeID, actor string, amount, expectedRevision int64) (Session, error) {
+	if amount < 0 {
+		return Session{}, ledger.ErrInvalidAmount
+	}
+	var expired bool
+	result, err := s.repo.Transact(ctx, tradeID, func(tx Transaction) error {
+		session := tx.Session()
+		if due, e := expireIfDue(tx, session, s.now(), func(k string, b State, o string) AuditEvent { return s.event(session, k, b, o) }); e != nil {
+			return e
+		} else if due {
+			expired = true
+			return nil
+		}
+		if session.State != StateNegotiating && session.State != StateReadyToSettle {
+			return ErrTerminalState
+		}
+		if session.Revision != expectedRevision {
+			return ErrStaleRevision
+		}
+		offer, e := participantFBOffer(session, actor)
+		if e != nil {
+			return e
+		}
+		if *offer == amount {
+			return nil
+		}
+		*offer = amount
+		session.Revision++
+		session.PlayerAConfirmedRevision = 0
+		session.PlayerBConfirmedRevision = 0
+		before := session.State
+		session.State = StateNegotiating
+		session.UpdatedAt = s.now()
+		return tx.AppendAudit(s.event(session, "trade.fb_offer_changed", before, "FB_OFFER_CHANGED"))
+	})
+	if err != nil {
+		return Session{}, err
+	}
+	if expired {
+		return Session{}, ErrTerminalState
+	}
+	return result, nil
+}
+
 func (s *Service) ConfirmTrade(ctx context.Context, tradeID, actor string, revision int64) (Session, error) {
 	var expired bool
 	result, err := s.repo.Transact(ctx, tradeID, func(tx Transaction) error {
@@ -249,7 +325,21 @@ func (s *Service) ConfirmTrade(ctx context.Context, tradeID, actor string, revis
 		if e != nil {
 			return e
 		}
+		itemIDs := make([]string, 0, len(*offers))
+		for _, offer := range *offers {
+			itemIDs = append(itemIDs, offer.ItemInstanceID)
+		}
+		if e = tx.PrepareSettlement([]string{actor}, []string{actor}, sortedUnique(itemIDs)); e != nil {
+			return e
+		}
 		if e = validateOffer(tx, session, actor, *offers); e != nil {
+			return e
+		}
+		fbOffer, e := participantFBOffer(session, actor)
+		if e != nil {
+			return e
+		}
+		if e = validateFBOffer(tx, actor, *fbOffer); e != nil {
 			return e
 		}
 		if *confirmed == revision {
@@ -359,42 +449,108 @@ func (s *Service) FinalizeTrade(ctx context.Context, tradeID string) (Settlement
 		if session.State != StateReadyToSettle || session.PlayerAConfirmedRevision != session.Revision || session.PlayerBConfirmedRevision != session.Revision {
 			return ErrNotReady
 		}
+		itemIDs := make([]string, 0, len(session.PlayerAOffer)+len(session.PlayerBOffer))
+		for _, offer := range session.PlayerAOffer {
+			itemIDs = append(itemIDs, offer.ItemInstanceID)
+		}
+		for _, offer := range session.PlayerBOffer {
+			itemIDs = append(itemIDs, offer.ItemInstanceID)
+		}
+		if err := tx.PrepareSettlement([]string{session.PlayerAID, session.PlayerBID}, []string{session.PlayerAID, session.PlayerBID}, sortedUnique(itemIDs)); err != nil {
+			return err
+		}
 		if err := validateOffer(tx, session, session.PlayerAID, session.PlayerAOffer); err != nil {
 			return err
 		}
 		if err := validateOffer(tx, session, session.PlayerBID, session.PlayerBOffer); err != nil {
 			return err
 		}
+		if err := validateFBOffer(tx, session.PlayerAID, session.PlayerAFBOffer); err != nil {
+			return err
+		}
+		if err := validateFBOffer(tx, session.PlayerBID, session.PlayerBFBOffer); err != nil {
+			return err
+		}
 		if err := tx.AppendAudit(s.event(session, "trade.settlement_started", session.State, "STARTED")); err != nil {
 			return err
 		}
-		a, err := tx.LoadCharacter(session.PlayerAID)
-		if err != nil {
-			return err
+		var err error
+		if len(session.PlayerAOffer) > 0 || len(session.PlayerBOffer) > 0 {
+			a, loadErr := tx.LoadCharacter(session.PlayerAID)
+			if loadErr != nil {
+				return loadErr
+			}
+			b, loadErr := tx.LoadCharacter(session.PlayerBID)
+			if loadErr != nil {
+				return loadErr
+			}
+			if err = s.transferOffers(&a, &b, session.PlayerAOffer); err != nil {
+				return err
+			}
+			if err = s.transferOffers(&b, &a, session.PlayerBOffer); err != nil {
+				return err
+			}
+			if len(a.Items) > s.capacity || len(b.Items) > s.capacity {
+				return ErrInventoryCapacity
+			}
+			normalizeSlots(&a)
+			normalizeSlots(&b)
+			if err = tx.SaveCharacter(a); err != nil {
+				return err
+			}
+			if err = tx.SaveCharacter(b); err != nil {
+				return err
+			}
 		}
-		b, err := tx.LoadCharacter(session.PlayerBID)
-		if err != nil {
-			return err
-		}
-		if err = s.transferOffers(&a, &b, session.PlayerAOffer); err != nil {
-			return err
-		}
-		if err = s.transferOffers(&b, &a, session.PlayerBOffer); err != nil {
-			return err
-		}
-		if len(a.Items) > s.capacity || len(b.Items) > s.capacity {
-			return ErrInventoryCapacity
-		}
-		normalizeSlots(&a)
-		normalizeSlots(&b)
-		if err = tx.SaveCharacter(a); err != nil {
-			return err
-		}
-		if err = tx.SaveCharacter(b); err != nil {
+		if err = tx.CheckFailure(FailureAfterItemOwnershipUpdate); err != nil {
 			return err
 		}
 		now := s.now()
 		result = SettlementResult{TradeID: session.TradeID, SettlementID: s.newID("settlement"), CompletedAt: now}
+		var aAccount, bAccount ledger.LedgerAccount
+		if session.PlayerAFBOffer > 0 || session.PlayerBFBOffer > 0 {
+			aAccount, err = tx.LoadLedgerAccountByOwner(session.PlayerAID)
+			if err != nil {
+				return err
+			}
+			bAccount, err = tx.LoadLedgerAccountByOwner(session.PlayerBID)
+			if err != nil {
+				return err
+			}
+		}
+		postGross := func(from, to ledger.LedgerAccount, amount int64, suffix string) error {
+			if amount == 0 {
+				return nil
+			}
+			transactionID := s.newID("ledger")
+			draft := ledger.PostDraft{
+				ID: transactionID, Type: ledger.TransactionPlayerTransfer,
+				Reference:           ledger.LedgerReference{Type: "PLAYER_TRADE", ID: session.TradeID + ":" + suffix},
+				SpendClassification: ledger.SpendEligible, Reason: "G12 player trade settlement", CreatedAt: now,
+				Entries: []ledger.EntryDraft{
+					{ID: s.newID("entry"), AccountID: from.ID, Amount: -amount},
+					{ID: s.newID("entry"), AccountID: to.ID, Amount: amount},
+				},
+			}
+			posted, postErr := tx.PostLedgerTransaction(draft)
+			if postErr != nil {
+				return postErr
+			}
+			result.LedgerTransactionIDs = append(result.LedgerTransactionIDs, posted.ID)
+			return nil
+		}
+		if err = postGross(aAccount, bAccount, session.PlayerAFBOffer, "A_TO_B"); err != nil {
+			return err
+		}
+		if err = postGross(bAccount, aAccount, session.PlayerBFBOffer, "B_TO_A"); err != nil {
+			return err
+		}
+		if err = tx.CheckFailure(FailureAfterLedgerWrite); err != nil {
+			return err
+		}
+		if err = tx.CheckFailure(FailureBeforeCompletedState); err != nil {
+			return err
+		}
 		before := session.State
 		session.State = StateCompleted
 		session.CompletedAt = &now
@@ -403,7 +559,12 @@ func (s *Service) FinalizeTrade(ctx context.Context, tradeID string) (Settlement
 		if err = tx.UnlockAll(); err != nil {
 			return err
 		}
-		return tx.AppendAudit(s.event(session, "trade.completed", before, "COMPLETED"))
+		completed := s.event(session, "trade.completed", before, "COMPLETED")
+		completed.LedgerTransactionIDs = append([]string(nil), result.LedgerTransactionIDs...)
+		if err = tx.AppendAudit(completed); err != nil {
+			return err
+		}
+		return nil
 	})
 	if err != nil {
 		classified := settlementError(err)
@@ -416,6 +577,24 @@ func (s *Service) FinalizeTrade(ctx context.Context, tradeID string) (Settlement
 		return SettlementResult{}, ErrTerminalState
 	}
 	return result, nil
+}
+
+func (s *Service) TradeReceipt(ctx context.Context, tradeID string) (TradeReceipt, error) {
+	session, err := s.repo.LoadTrade(ctx, tradeID)
+	if err != nil {
+		return TradeReceipt{}, err
+	}
+	if session.State != StateCompleted || session.Settlement == nil {
+		return TradeReceipt{}, ErrNotReady
+	}
+	return TradeReceipt{
+		TradeID: session.TradeID, SettlementID: session.Settlement.SettlementID,
+		PlayerAID: session.PlayerAID, PlayerBID: session.PlayerBID,
+		PlayerAOffer: append([]OfferItem(nil), session.PlayerAOffer...), PlayerBOffer: append([]OfferItem(nil), session.PlayerBOffer...),
+		PlayerAFBOffer: session.PlayerAFBOffer, PlayerBFBOffer: session.PlayerBFBOffer,
+		Revision: session.Revision, Status: session.State,
+		LedgerTransactionIDs: append([]string(nil), session.Settlement.LedgerTransactionIDs...), CompletedAt: session.Settlement.CompletedAt,
+	}, nil
 }
 
 func (s *Service) transferOffers(source, destination *persistence.CharacterAggregate, offers []OfferItem) error {

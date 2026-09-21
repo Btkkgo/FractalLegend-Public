@@ -28,7 +28,7 @@ Not automatically. On-chain rarity cannot bypass balance, progression, eligibili
 
 ### Is FB live?
 
-No. G11 internal Ledger Foundation is NEXT; no implementation is included in this mirror, and a production economy is not live.
+An internal server-authoritative FB Ledger Foundation exists from G11, and G12 uses it for atomic player Trade settlement. A production economy, wallet, real deposit, and withdrawal are not live.
 
 ### Can I deposit or withdraw FB now?
 
@@ -40,7 +40,7 @@ Mining is planned around a capped global Black Iron emission pool and validated 
 
 ### Will there be trading?
 
-G10 completed an item-only Trade Foundation. Formal Trade UI, FB settlement, Marketplace, and Auction are not implemented.
+G10 completed the item Trade Foundation; G12 added atomic item + FB player Trade settlement with 0% fee. A formal Trade UI, Marketplace, and Auction are not implemented.
 
 ### Will there be guilds and siege?
 
@@ -88,7 +88,7 @@ Bitcoin 为目标资产生态提供更广泛的 Ownership 与 Provenance 背景�
 
 ### FB 上线了吗？
 
-没有。G11 Internal Ledger Foundation 状态为 NEXT；本镜像不包含其 Implementation，Production Economy 也尚未上线。
+G11 已建立内部 Server-authoritative FB Ledger Foundation，G12 使用它完成原子玩家 Trade Settlement。Production Economy、Wallet、真实 Deposit 与 Withdrawal 尚未上线。
 
 ### 现在可以充值或提现 FB 吗？
 
@@ -100,7 +100,7 @@ Mining 计划围绕有上限的 Global Black Iron Emission Pool 与经过验证�
 
 ### 会有交易吗？
 
-G10 已完成仅支持 Item 的 Trade Foundation。正式 Trade UI、FB Settlement、Marketplace 与 Auction 尚未实现。
+G10 已完成 Item Trade Foundation；G12 新增原子 Item + FB 玩家 Trade Settlement，手续费为 0%。正式 Trade UI、Marketplace 与 Auction 尚未实现。
 
 ### 会有 Guild 与 Siege 吗？
 

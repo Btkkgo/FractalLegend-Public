@@ -22,6 +22,12 @@ Summary: PostgreSQL Character Aggregate, optimistic revision, reconnect restore,
 
 Historical context: this card was captured after the Windows regression closed but before final manual acceptance, so the image correctly says “AWAITING MANUAL ACCEPTANCE.” The later manual gate passed and G10 is now CLOSED / PASS. It is retained to preserve the actual verification sequence.
 
+### G12 — Atomic Item + FB Trade Settlement
+
+![G12 Atomic Item + FB Trade Settlement](../social/screenshots/g12-fb-trade-settlement.png)
+
+Historical context: this sanitized verification card was captured before manual acceptance and therefore says `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING`. G12 technical acceptance later passed. It records 45/45 targeted checks, 12/12 real PostgreSQL checks, 379/379 full Go regression, Race and Vet, 200 property iterations, 100 simultaneous settlements, and Windows/Linux/macOS builds. It does not imply a product release. SHA-256: `161e2493863bb1c2cc93de35508529f713dc3ea35af76d3bbed8749b28d94517`.
+
 ---
 
 ## 中文 — 完整对应版本
@@ -45,3 +51,9 @@ Historical context: this card was captured after the Windows regression closed b
 ![G10 Trade Foundation](../social/screenshots/g10-trade-foundation.png)
 
 历史背景：该 Card 截取于 Windows Regression 关闭之后、最终人工验收之前，因此图片准确显示“AWAITING MANUAL ACCEPTANCE”。之后的 Manual Gate 已通过，G10 当前为 CLOSED / PASS。保留该图是为了如实呈现验证顺序。
+
+### G12 — Atomic Item + FB Trade Settlement
+
+![G12 Atomic Item + FB Trade Settlement](../social/screenshots/g12-fb-trade-settlement.png)
+
+历史背景：该脱敏 Verification Card 截取于人工验收前，因此显示 `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING`。之后 G12 技术验收已通过。图片记录了专项检查 45/45、真实 PostgreSQL 检查 12/12、Go 完整回归 379/379、Race 与 Vet、200 轮 Property Iteration、100 个同时 Settlement，以及 Windows/Linux/macOS Build。它不代表产品 Release。SHA-256：`161e2493863bb1c2cc93de35508529f713dc3ea35af76d3bbed8749b28d94517`。

@@ -32,7 +32,7 @@ This is product direction. Mainnet integration, wallets, deposits, withdrawals, 
 
 ### Where is development today?
 
-G1–G10 are accepted foundations from the private canonical development line. G10 is the latest closed milestone. G11 FB Ledger Foundation is NEXT in the public mirror, and no G11 implementation is included here. No public launch date has been announced.
+G1–G10 are accepted foundations from the private canonical development line and predate this mirror. G11 added the internal FB Ledger Foundation; G12 added atomic item + FB direct player Trade settlement and passed technical acceptance. Neither milestone is a public game release. No public launch date has been announced.
 
 See [Current Status](CURRENT-STATUS.md), [Development Timeline](DEVELOPMENT-TIMELINE.md), and [Roadmap](ROADMAP.md).
 
@@ -70,6 +70,6 @@ Fractal Legend / 分形传奇是一款正在为 Fractal / Bitcoin 生态开发�
 
 ### 当前开发到哪里？
 
-G1–G10 是 Private Canonical Development Line 上的已验收 Foundation。G10 是最新关闭的 Milestone。G11 FB Ledger Foundation 在 Public Mirror 中的状态为 NEXT，本仓库不包含 G11 Implementation。项目尚未公布公开上线日期。
+G1–G10 是 Private Canonical Development Line 上的已验收 Foundation，且早于本镜像建立。G11 新增内部 FB Ledger Foundation；G12 新增原子 Item + FB Direct Player Trade Settlement，并通过技术验收。这两个阶段都不代表游戏公开 Release。项目尚未公布公开上线日期。
 
 详见[当前状态](CURRENT-STATUS.md)、[开发时间线](DEVELOPMENT-TIMELINE.md)和[路线图](ROADMAP.md)。

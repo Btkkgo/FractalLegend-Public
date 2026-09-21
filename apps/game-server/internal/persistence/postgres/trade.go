@@ -3,7 +3,9 @@ package postgres
 import (
 	"context"
 	"errors"
+	"sort"
 
+	"fractallegend/game-server/internal/ledger"
 	"fractallegend/game-server/internal/persistence"
 	"fractallegend/game-server/internal/trade"
 	"github.com/jackc/pgx/v5"
@@ -43,6 +45,7 @@ func (t *tradeTransaction) SaveCharacter(value persistence.CharacterAggregate) e
 
 func (t *tradeTransaction) flushCharacters() error {
 	ids := []string{t.session.PlayerAID, t.session.PlayerBID}
+	sort.Strings(ids)
 	for index, id := range ids {
 		value, ok := t.pending[id]
 		if !ok {
@@ -134,6 +137,90 @@ func (t *tradeTransaction) AppendAudit(event trade.AuditEvent) error {
 	return insertAudit(t.ctx, t.tx, event)
 }
 
+func (t *tradeTransaction) PrepareSettlement(ownerIDs, characterIDs, itemIDs []string) error {
+	owners := append([]string(nil), ownerIDs...)
+	sort.Strings(owners)
+	if len(owners) > 0 {
+		rows, err := t.tx.Query(t.ctx, `SELECT account_id FROM fb_ledger_accounts WHERE owner_type='PLAYER' AND owner_id=ANY($1) ORDER BY account_id FOR UPDATE`, owners)
+		if err != nil {
+			return classifyLedgerError(err)
+		}
+		for rows.Next() {
+			var id string
+			if err = rows.Scan(&id); err != nil {
+				rows.Close()
+				return classifyLedgerError(err)
+			}
+		}
+		if err = rows.Err(); err != nil {
+			rows.Close()
+			return classifyLedgerError(err)
+		}
+		rows.Close()
+	}
+	characters := append([]string(nil), characterIDs...)
+	sort.Strings(characters)
+	if len(characters) > 0 {
+		rows, err := t.tx.Query(t.ctx, `SELECT id FROM characters WHERE id=ANY($1) ORDER BY id FOR UPDATE`, characters)
+		if err != nil {
+			return classifyTradeError(err)
+		}
+		count := 0
+		for rows.Next() {
+			var id string
+			if err = rows.Scan(&id); err != nil {
+				rows.Close()
+				return classifyTradeError(err)
+			}
+			count++
+		}
+		if err = rows.Err(); err != nil {
+			rows.Close()
+			return classifyTradeError(err)
+		}
+		rows.Close()
+		if count != len(characters) {
+			return persistence.ErrNotFound
+		}
+	}
+	items := append([]string(nil), itemIDs...)
+	sort.Strings(items)
+	if len(items) > 0 {
+		rows, err := t.tx.Query(t.ctx, `SELECT item_instance_id FROM trade_item_locks WHERE item_instance_id=ANY($1) ORDER BY item_instance_id FOR UPDATE`, items)
+		if err != nil {
+			return classifyTradeError(err)
+		}
+		for rows.Next() {
+			var id string
+			if err = rows.Scan(&id); err != nil {
+				rows.Close()
+				return classifyTradeError(err)
+			}
+		}
+		if err = rows.Err(); err != nil {
+			rows.Close()
+			return classifyTradeError(err)
+		}
+		rows.Close()
+	}
+	return nil
+}
+
+func (t *tradeTransaction) LoadLedgerAccountByOwner(owner string) (ledger.LedgerAccount, error) {
+	return loadLedgerAccountRow(t.tx.QueryRow(t.ctx, `SELECT account_id,owner_id,owner_type,currency,balance,revision,created_at,updated_at FROM fb_ledger_accounts WHERE owner_type='PLAYER' AND owner_id=$1 FOR UPDATE`, owner))
+}
+
+func (t *tradeTransaction) PostLedgerTransaction(draft ledger.PostDraft) (ledger.LedgerTransaction, error) {
+	return t.store.postLedgerTransactionTx(t.ctx, t.tx, draft)
+}
+
+func (t *tradeTransaction) CheckFailure(point string) error {
+	if t.store.tradeFailureInjector == nil {
+		return nil
+	}
+	return t.store.tradeFailureInjector(point)
+}
+
 func (s *Store) CreateTrade(ctx context.Context, value trade.Session, event trade.AuditEvent) error {
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
@@ -167,6 +254,21 @@ func (s *Store) LoadTrade(ctx context.Context, id string) (trade.Session, error)
 }
 
 func (s *Store) Transact(ctx context.Context, id string, fn func(trade.Transaction) error) (trade.Session, error) {
+	var last error
+	for attempt := 0; attempt < 3; attempt++ {
+		value, err := s.transactTradeOnce(ctx, id, fn)
+		if err == nil {
+			return value, nil
+		}
+		last = err
+		if !isRetryableTradeError(err) {
+			return trade.Session{}, err
+		}
+	}
+	return trade.Session{}, errors.Join(trade.ErrRetryExhausted, last)
+}
+
+func (s *Store) transactTradeOnce(ctx context.Context, id string, fn func(trade.Transaction) error) (trade.Session, error) {
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable})
 	if err != nil {
 		return trade.Session{}, classifyTradeError(err)
@@ -186,6 +288,11 @@ func (s *Store) Transact(ctx context.Context, id string, fn func(trade.Transacti
 	if err = persistTradeTx(ctx, tx, value); err != nil {
 		return trade.Session{}, err
 	}
+	if s.tradeFailureInjector != nil {
+		if err = s.tradeFailureInjector(trade.FailureBeforeCommit); err != nil {
+			return trade.Session{}, err
+		}
+	}
 	if err = tx.Commit(ctx); err != nil {
 		return trade.Session{}, classifyTradeError(err)
 	}
@@ -199,7 +306,7 @@ func (s *Store) IsItemLocked(ctx context.Context, id string) (bool, error) {
 }
 
 func (s *Store) AuditEvents(ctx context.Context, id string) ([]trade.AuditEvent, error) {
-	rows, err := s.pool.Query(ctx, `SELECT sequence,trade_id,kind,revision,previous_state,new_state,player_a_id,player_b_id,occurred_at,outcome FROM trade_audit_events WHERE trade_id=$1 ORDER BY sequence`, id)
+	rows, err := s.pool.Query(ctx, `SELECT sequence,trade_id,kind,revision,previous_state,new_state,player_a_id,player_b_id,occurred_at,outcome,ledger_transaction_ids FROM trade_audit_events WHERE trade_id=$1 ORDER BY sequence`, id)
 	if err != nil {
 		return nil, classifyTradeError(err)
 	}
@@ -208,7 +315,7 @@ func (s *Store) AuditEvents(ctx context.Context, id string) ([]trade.AuditEvent,
 	for rows.Next() {
 		var event trade.AuditEvent
 		var a, b string
-		if err = rows.Scan(&event.Sequence, &event.TradeID, &event.Kind, &event.Revision, &event.PreviousState, &event.NewState, &a, &b, &event.OccurredAt, &event.Outcome); err != nil {
+		if err = rows.Scan(&event.Sequence, &event.TradeID, &event.Kind, &event.Revision, &event.PreviousState, &event.NewState, &a, &b, &event.OccurredAt, &event.Outcome, &event.LedgerTransactionIDs); err != nil {
 			return nil, classifyTradeError(err)
 		}
 		event.ParticipantIDs = []string{a, b}
@@ -237,12 +344,12 @@ func (s *Store) RecordSettlementFailure(ctx context.Context, id string, event tr
 }
 
 func loadTradeTx(ctx context.Context, tx pgx.Tx, id string, lock bool) (trade.Session, error) {
-	query := `SELECT trade_id,player_a_id,player_b_id,state,revision,player_a_confirmed_revision,player_b_confirmed_revision,created_at,updated_at,expires_at,completed_at,cancelled_at FROM trade_sessions WHERE trade_id=$1`
+	query := `SELECT trade_id,player_a_id,player_b_id,state,revision,player_a_confirmed_revision,player_b_confirmed_revision,player_a_fb_offer,player_b_fb_offer,created_at,updated_at,expires_at,completed_at,cancelled_at FROM trade_sessions WHERE trade_id=$1`
 	if lock {
 		query += " FOR UPDATE"
 	}
 	var value trade.Session
-	err := tx.QueryRow(ctx, query, id).Scan(&value.TradeID, &value.PlayerAID, &value.PlayerBID, &value.State, &value.Revision, &value.PlayerAConfirmedRevision, &value.PlayerBConfirmedRevision, &value.CreatedAt, &value.UpdatedAt, &value.ExpiresAt, &value.CompletedAt, &value.CancelledAt)
+	err := tx.QueryRow(ctx, query, id).Scan(&value.TradeID, &value.PlayerAID, &value.PlayerBID, &value.State, &value.Revision, &value.PlayerAConfirmedRevision, &value.PlayerBConfirmedRevision, &value.PlayerAFBOffer, &value.PlayerBFBOffer, &value.CreatedAt, &value.UpdatedAt, &value.ExpiresAt, &value.CompletedAt, &value.CancelledAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return trade.Session{}, trade.ErrNotFound
 	}
@@ -275,7 +382,7 @@ func loadTradeTx(ctx context.Context, tx pgx.Tx, id string, lock bool) (trade.Se
 	}
 	rows.Close()
 	var result trade.SettlementResult
-	err = tx.QueryRow(ctx, "SELECT trade_id,settlement_id,completed_at FROM trade_settlements WHERE trade_id=$1", id).Scan(&result.TradeID, &result.SettlementID, &result.CompletedAt)
+	err = tx.QueryRow(ctx, "SELECT trade_id,settlement_id,ledger_transaction_ids,completed_at FROM trade_settlements WHERE trade_id=$1", id).Scan(&result.TradeID, &result.SettlementID, &result.LedgerTransactionIDs, &result.CompletedAt)
 	if err == nil {
 		value.Settlement = &result
 	} else if !errors.Is(err, pgx.ErrNoRows) {
@@ -285,7 +392,7 @@ func loadTradeTx(ctx context.Context, tx pgx.Tx, id string, lock bool) (trade.Se
 }
 
 func persistTradeTx(ctx context.Context, tx pgx.Tx, value trade.Session) error {
-	_, err := tx.Exec(ctx, `UPDATE trade_sessions SET state=$1,revision=$2,player_a_confirmed_revision=$3,player_b_confirmed_revision=$4,updated_at=$5,expires_at=$6,completed_at=$7,cancelled_at=$8 WHERE trade_id=$9`, value.State, value.Revision, value.PlayerAConfirmedRevision, value.PlayerBConfirmedRevision, value.UpdatedAt, value.ExpiresAt, value.CompletedAt, value.CancelledAt, value.TradeID)
+	_, err := tx.Exec(ctx, `UPDATE trade_sessions SET state=$1,revision=$2,player_a_confirmed_revision=$3,player_b_confirmed_revision=$4,player_a_fb_offer=$5,player_b_fb_offer=$6,updated_at=$7,expires_at=$8,completed_at=$9,cancelled_at=$10 WHERE trade_id=$11`, value.State, value.Revision, value.PlayerAConfirmedRevision, value.PlayerBConfirmedRevision, value.PlayerAFBOffer, value.PlayerBFBOffer, value.UpdatedAt, value.ExpiresAt, value.CompletedAt, value.CancelledAt, value.TradeID)
 	if err != nil {
 		return classifyTradeError(err)
 	}
@@ -303,7 +410,11 @@ func persistTradeTx(ctx context.Context, tx pgx.Tx, value trade.Session) error {
 		}
 	}
 	if value.Settlement != nil {
-		_, err = tx.Exec(ctx, `INSERT INTO trade_settlements(settlement_id,trade_id,completed_at) VALUES($1,$2,$3) ON CONFLICT(trade_id) DO NOTHING`, value.Settlement.SettlementID, value.TradeID, value.Settlement.CompletedAt)
+		ledgerIDs := value.Settlement.LedgerTransactionIDs
+		if ledgerIDs == nil {
+			ledgerIDs = []string{}
+		}
+		_, err = tx.Exec(ctx, `INSERT INTO trade_settlements(settlement_id,trade_id,ledger_transaction_ids,completed_at) VALUES($1,$2,$3,$4) ON CONFLICT(trade_id) DO NOTHING`, value.Settlement.SettlementID, value.TradeID, ledgerIDs, value.Settlement.CompletedAt)
 		if err != nil {
 			return classifyTradeError(err)
 		}
@@ -315,7 +426,11 @@ func insertAudit(ctx context.Context, tx pgx.Tx, event trade.AuditEvent) error {
 	if len(event.ParticipantIDs) != 2 {
 		return persistence.ErrInvalidAggregate
 	}
-	_, err := tx.Exec(ctx, `INSERT INTO trade_audit_events(trade_id,kind,revision,previous_state,new_state,player_a_id,player_b_id,occurred_at,outcome) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, event.TradeID, event.Kind, event.Revision, event.PreviousState, event.NewState, event.ParticipantIDs[0], event.ParticipantIDs[1], event.OccurredAt, event.Outcome)
+	ledgerIDs := event.LedgerTransactionIDs
+	if ledgerIDs == nil {
+		ledgerIDs = []string{}
+	}
+	_, err := tx.Exec(ctx, `INSERT INTO trade_audit_events(trade_id,kind,revision,previous_state,new_state,player_a_id,player_b_id,occurred_at,outcome,ledger_transaction_ids) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, event.TradeID, event.Kind, event.Revision, event.PreviousState, event.NewState, event.ParticipantIDs[0], event.ParticipantIDs[1], event.OccurredAt, event.Outcome, ledgerIDs)
 	return classifyTradeError(err)
 }
 
@@ -411,6 +526,11 @@ func classifyTradeError(err error) error {
 		}
 	}
 	return err
+}
+
+func isRetryableTradeError(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && (pgErr.Code == "40001" || pgErr.Code == "40P01")
 }
 
 var _ trade.Repository = (*Store)(nil)

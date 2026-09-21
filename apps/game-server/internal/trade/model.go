@@ -19,6 +19,7 @@ var (
 	ErrInventoryCapacity  = errors.New("inventory capacity exceeded")
 	ErrSettlementFailed   = errors.New("trade settlement failed")
 	ErrUnsupportedAsset   = errors.New("unsupported trade asset")
+	ErrRetryExhausted     = errors.New("trade settlement retry exhausted")
 )
 
 type State string
@@ -47,9 +48,10 @@ type OfferItem struct {
 }
 
 type SettlementResult struct {
-	TradeID      string
-	SettlementID string
-	CompletedAt  time.Time
+	TradeID              string
+	SettlementID         string
+	LedgerTransactionIDs []string
+	CompletedAt          time.Time
 }
 
 type Session struct {
@@ -60,6 +62,8 @@ type Session struct {
 	Revision                 int64
 	PlayerAOffer             []OfferItem
 	PlayerBOffer             []OfferItem
+	PlayerAFBOffer           int64
+	PlayerBFBOffer           int64
 	PlayerAConfirmedRevision int64
 	PlayerBConfirmedRevision int64
 	CreatedAt                time.Time
@@ -77,15 +81,31 @@ type ItemLock struct {
 }
 
 type AuditEvent struct {
-	Sequence       int64
-	TradeID        string
-	Kind           string
-	Revision       int64
-	PreviousState  State
-	NewState       State
-	ParticipantIDs []string
-	OccurredAt     time.Time
-	Outcome        string
+	Sequence             int64
+	TradeID              string
+	Kind                 string
+	Revision             int64
+	PreviousState        State
+	NewState             State
+	ParticipantIDs       []string
+	OccurredAt           time.Time
+	Outcome              string
+	LedgerTransactionIDs []string
+}
+
+type TradeReceipt struct {
+	TradeID              string
+	SettlementID         string
+	PlayerAID            string
+	PlayerBID            string
+	PlayerAOffer         []OfferItem
+	PlayerBOffer         []OfferItem
+	PlayerAFBOffer       int64
+	PlayerBFBOffer       int64
+	Revision             int64
+	Status               State
+	LedgerTransactionIDs []string
+	CompletedAt          time.Time
 }
 
 func cloneSession(value Session) Session {
@@ -101,6 +121,7 @@ func cloneSession(value Session) Session {
 	}
 	if value.Settlement != nil {
 		v := *value.Settlement
+		v.LedgerTransactionIDs = append([]string(nil), value.Settlement.LedgerTransactionIDs...)
 		value.Settlement = &v
 	}
 	return value

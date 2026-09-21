@@ -6,7 +6,7 @@ Fractal Legend separates monetary assets, progression values, reputation, and ma
 
 | Value | Intended role | Transferability | Current status |
 |---|---|---|---|
-| FB | Long-term primary economic asset for trading, transfers, deposits and withdrawals | Intended to be transferable | Internal Ledger is **NEXT**; real deposits and withdrawals are **NOT LIVE** |
+| FB | Long-term primary economic asset for trading, transfers, deposits and withdrawals | Internal player-Trade settlement is implemented | Internal Ledger and direct player-Trade settlement are **FOUNDATION COMPLETE**; real deposits and withdrawals are **NOT LIVE** |
 | Contribution Points | Activation, manufacturing, advanced requirements and system progression | Not freely tradable | **PLANNED** |
 | Reputation | Participation, guilds, activities and long-term behavior | Not a withdrawable currency | **PLANNED** |
 | Black Iron Ore | Game material for mining, crafting and possible activation/economy rules | Material rules not finalized | **PLANNED** |
@@ -14,9 +14,9 @@ Fractal Legend separates monetary assets, progression values, reputation, and ma
 
 ### FB
 
-The long-term goal is for FB to support player transfers, settlement, deposits, and withdrawals under auditable rules. G10 does not settle trades with FB. G11 is the next planned internal Ledger foundation; no G11 implementation or blockchain integration is included in this mirror, and no live economy is claimed.
+The long-term goal is for FB to support player transfers, settlement, deposits, and withdrawals under auditable rules. G11 established an internal immutable Ledger, and G12 added atomic direct player Trade settlement with Gross postings and 0% fee. No blockchain integration or live production economy is claimed.
 
-Real Fractal Bitcoin deposit, withdrawal, wallet signing, blockchain broadcast, confirmation, reorg handling, Marketplace, Auction, and Item + FB settlement are not implemented.
+Real Fractal Bitcoin deposit, withdrawal, wallet signing, blockchain broadcast, confirmation, reorg handling, Marketplace, and Auction are not implemented.
 
 ### Contribution Points
 
@@ -36,7 +36,7 @@ Higher-level mining tools may increase a player's Mining Power, but they must no
 
 ### Trade boundary
 
-G10 proves item ownership exchange with persistent locks, revisions, atomic settlement, idempotency, concurrency protection, and restart recovery. Formal Trade UI, FB settlement, Marketplace, Auction House, fees, Warehouse, and Durability remain unimplemented. The documented product constraint for future player-to-player trade settlement fees is 0%.
+G10 proves item ownership exchange with persistent locks, revisions, atomic settlement, idempotency, concurrency protection, and restart recovery. G12 adds revision-bound FB offers and one atomic Item + FB settlement path; the player-to-player fee is exactly 0%. Option A creates no FB Hold, so balances may change after confirmation; Finalize locks and revalidates accounts, rolling back fully on insufficient funds. Extreme contention can exhaust the finite three-attempt retry budget, causing a safe failure without partial settlement. Formal Trade UI, Marketplace, Auction House, Warehouse, and Durability remain unimplemented.
 
 ---
 
@@ -46,7 +46,7 @@ Fractal Legend 将货币资产、成长数值、Reputation 和 Material 分开�
 
 | 数值 | 目标用途 | 可转移性 | 当前状态 |
 |---|---|---|---|
-| FB | 长期主要经济资产，用于交易、转账、充值和提现 | 计划可转移 | Internal Ledger 状态为 **NEXT**；真实充值与提现 **NOT LIVE** |
+| FB | 长期主要经济资产，用于交易、转账、充值和提现 | 已实现内部玩家 Trade Settlement | Internal Ledger 与 Direct Player Trade Settlement 已达到 **FOUNDATION COMPLETE**；真实充值与提现 **NOT LIVE** |
 | Contribution Points | Asset Activation、Manufacturing、Advanced Requirement 与 System Progression | 不可自由交易 | **PLANNED** |
 | Reputation | Participation、Guild、活动与长期行为 | 不是可提现货币 | **PLANNED** |
 | Black Iron Ore | 用于 Mining、Crafting 和可能的 Activation / Economy Rule 的游戏材料 | Material Rule 尚未确定 | **PLANNED** |
@@ -54,9 +54,9 @@ Fractal Legend 将货币资产、成长数值、Reputation 和 Material 分开�
 
 ### FB
 
-长期目标是让 FB 在可审计规则下支持 Player Transfer、Settlement、Deposit 与 Withdrawal。G10 不使用 FB 结算交易。G11 是下一项计划中的 Internal Ledger Foundation；本镜像不包含 G11 Implementation 或 Blockchain Integration，也不声称存在 Live Economy。
+长期目标是让 FB 在可审计规则下支持 Player Transfer、Settlement、Deposit 与 Withdrawal。G11 建立内部不可变 Ledger，G12 新增使用 Gross Posting 与 0% Fee 的原子 Direct Player Trade Settlement。本镜像不声称 Blockchain Integration 或 Live Production Economy 已上线。
 
-真实 Fractal Bitcoin Deposit、Withdrawal、Wallet Signing、Blockchain Broadcast、Confirmation、Reorg Handling、Marketplace、Auction 和 Item + FB Settlement 均未实现。
+真实 Fractal Bitcoin Deposit、Withdrawal、Wallet Signing、Blockchain Broadcast、Confirmation、Reorg Handling、Marketplace 和 Auction 均未实现。
 
 ### Contribution Points
 
@@ -76,4 +76,4 @@ Black Iron Ore 是游戏材料，不是 Currency。规划中的 Mining Model 为
 
 ### Trade Boundary
 
-G10 已证明具备 Persistent Lock、Revision、Atomic Settlement、Idempotency、Concurrency Protection 和 Restart Recovery 的 Item Ownership Exchange。正式 Trade UI、FB Settlement、Marketplace、Auction House、Fee、Warehouse 和 Durability 尚未实现。未来 Player-to-player Trade Settlement Fee 的已记录产品约束为 0%。
+G10 已证明具备 Persistent Lock、Revision、Atomic Settlement、Idempotency、Concurrency Protection 和 Restart Recovery 的 Item Ownership Exchange。G12 新增 Revision-bound FB Offer 和一条原子 Item + FB Settlement Path；玩家之间手续费严格为 0%。Option A 不建立 FB Hold，因此 Confirmation 后余额可能变化；Finalize 会锁定并重新验证 Account，余额不足时完整回滚。极端竞争可能耗尽最多三次的有限 Retry，导致安全失败而不产生部分结算。正式 Trade UI、Marketplace、Auction House、Warehouse 与 Durability 仍未实现。
