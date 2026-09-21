@@ -12,12 +12,13 @@ The roadmap is milestone-driven. It does not promise dates.
 - G11: server-authoritative internal FB Ledger Foundation with double-entry conservation, immutable history, idempotency, concurrency protection, reversal, reconciliation, and restart persistence.
 - G12: atomic item + FB player Trade settlement with revision-bound offers, Gross postings, 0% fee, rollback, and restart replay.
 - G13: internal non-transferable Contribution Ledger with versioned 1:1 eligible-system-spend rule, atomic FB linkage, idempotency, rollback, reconciliation, and no live producer.
+- G14: atomic linked FB refund/reversal and Contribution compensation with bounded partial refunds, recovery debt, future-credit debt repayment, and review hold; no live producer.
 
 ### Next
 
 - Plan later economy and blockchain adapters as separately reviewed milestones; G13 adds no live deposit, withdrawal, wallet, or chain feature.
 - Continue the browser product experience using accepted server authority.
-- Before any real eligible system-spend producer, implement atomic FB refund/reversal plus Contribution reversal/compensation; this is a **POST-G13 HARD GATE**. Manufacturing use and Contribution spending remain future work.
+- The G14 refund/compensation hard gate is closed. A real eligible system-spend producer, production Contribution spending, and manufacturing use remain separate future work.
 
 ### Future
 
@@ -48,12 +49,13 @@ Roadmap 按里程碑推进，不承诺日期。
 - G11：Server-authoritative Internal FB Ledger Foundation，包含 Double-entry Conservation、Immutable History、Idempotency、Concurrency Protection、Reversal、Reconciliation 与 Restart Persistence。
 - G12：原子 Item + FB 玩家 Trade Settlement，包含 Revision-bound Offer、Gross Posting、0% Fee、Rollback 与 Restart Replay。
 - G13：内部不可转账的 Contribution Ledger，包含版本化 1:1 合格 System Spend Rule、原子 FB 关联、Idempotency、Rollback 与 Reconciliation；尚无真实 Producer。
+- G14：原子关联 FB Refund/Reversal 与 Contribution Compensation，支持有上限的部分退款、Recovery Debt、未来 Credit 先偿债与 Review Hold；尚无真实 Producer。
 
 ### 下一步
 
 - 把后续 Economy 与 Blockchain Adapter 作为独立审核阶段规划；G13 没有新增真实 Deposit、Withdrawal、Wallet 或 Chain 功能。
 - 继续以已验收 Server Authority 扩展 Browser Product Experience。
-- 接入任何真实合格 System Spend Producer 前，必须实现原子 FB Refund/Reversal 加 Contribution Reversal/Compensation；这是 **POST-G13 HARD GATE**。Manufacturing 用途与 Contribution Spend 仍属于未来工作。
+- G14 Refund/Compensation 硬门已关闭。真实合格 System Spend Producer、生产用 Contribution 消费与 Manufacturing 用途仍须作为独立未来工作。
 
 ### 未来
 

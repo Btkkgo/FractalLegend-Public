@@ -26,7 +26,7 @@ func (s *Store) CreateContributionAccount(ctx context.Context, playerID string) 
 
 func (s *Store) LoadContributionAccount(ctx context.Context, playerID string) (contribution.Account, error) {
 	var value contribution.Account
-	err := s.pool.QueryRow(ctx, `SELECT player_id,balance,revision,created_at,updated_at FROM contribution_accounts WHERE player_id=$1`, playerID).Scan(&value.PlayerID, &value.Balance, &value.Revision, &value.CreatedAt, &value.UpdatedAt)
+	err := s.pool.QueryRow(ctx, `SELECT player_id,balance,recovery_debt,review_required,revision,created_at,updated_at FROM contribution_accounts WHERE player_id=$1`, playerID).Scan(&value.PlayerID, &value.Balance, &value.RecoveryDebt, &value.ReviewRequired, &value.Revision, &value.CreatedAt, &value.UpdatedAt)
 	return value, classifyContributionError(err)
 }
 
@@ -59,6 +59,9 @@ func (s *Store) PostContributionSystemSpend(ctx context.Context, request contrib
 			return result, nil
 		}
 		if !retryContributionTransaction(postErr) {
+			if errors.Is(postErr, contribution.ErrManualReview) {
+				s.markContributionReview(ctx, request.PlayerID)
+			}
 			return contribution.PostingResult{}, classifyContributionError(postErr)
 		}
 		if err = ctx.Err(); err != nil {
@@ -133,11 +136,21 @@ func (s *Store) postContributionSystemSpendTx(ctx context.Context, tx pgx.Tx, re
 		return contribution.PostingResult{}, err
 	}
 	var account contribution.Account
-	err = tx.QueryRow(ctx, `SELECT player_id,balance,revision,created_at,updated_at FROM contribution_accounts WHERE player_id=$1 FOR UPDATE`, request.PlayerID).Scan(&account.PlayerID, &account.Balance, &account.Revision, &account.CreatedAt, &account.UpdatedAt)
+	err = tx.QueryRow(ctx, `SELECT player_id,balance,recovery_debt,review_required,revision,created_at,updated_at FROM contribution_accounts WHERE player_id=$1 FOR UPDATE`, request.PlayerID).Scan(&account.PlayerID, &account.Balance, &account.RecoveryDebt, &account.ReviewRequired, &account.Revision, &account.CreatedAt, &account.UpdatedAt)
 	if err != nil {
 		return contribution.PostingResult{}, classifyContributionError(err)
 	}
-	after, err := ledger.AddAmount(account.Balance, request.EligibleSpend)
+	if account.ReviewRequired {
+		return contribution.PostingResult{}, contribution.ErrManualReview
+	}
+	if err = verifyContributionPlayerTx(ctx, tx, account); err != nil {
+		return contribution.PostingResult{}, err
+	}
+	settled := request.EligibleSpend
+	if account.RecoveryDebt < settled {
+		settled = account.RecoveryDebt
+	}
+	after, err := ledger.AddAmount(account.Balance, request.EligibleSpend-settled)
 	if err != nil {
 		return contribution.PostingResult{}, contribution.ErrOverflow
 	}
@@ -148,10 +161,10 @@ func (s *Store) postContributionSystemSpendTx(ctx context.Context, tx pgx.Tx, re
 		ID: newContributionID("contribution-entry"), PlayerID: request.PlayerID,
 		PlayerFBAccountID: request.PlayerFBAccountID, SystemFBAccountID: request.SystemFBAccountID,
 		Source: request.Source, SourceID: request.SourceID, EligibleSpend: request.EligibleSpend,
-		Amount: request.EligibleSpend, BalanceBefore: account.Balance, BalanceAfter: after,
+		Amount: request.EligibleSpend, DebtSettled: settled, BalanceBefore: account.Balance, BalanceAfter: after,
 		RuleVersion: request.RuleVersion, FBTransactionID: posted.ID, CreatedAt: now,
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO contribution_entries(entry_id,player_id,player_fb_account_id,system_fb_account_id,source,source_id,eligible_spend,amount,balance_before,balance_after,rule_version,fb_transaction_id,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`, entry.ID, entry.PlayerID, entry.PlayerFBAccountID, entry.SystemFBAccountID, entry.Source, entry.SourceID, entry.EligibleSpend, entry.Amount, entry.BalanceBefore, entry.BalanceAfter, entry.RuleVersion, entry.FBTransactionID, entry.CreatedAt)
+	_, err = tx.Exec(ctx, `INSERT INTO contribution_entries(entry_id,player_id,player_fb_account_id,system_fb_account_id,source,source_id,eligible_spend,amount,debt_settled,balance_before,balance_after,rule_version,fb_transaction_id,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`, entry.ID, entry.PlayerID, entry.PlayerFBAccountID, entry.SystemFBAccountID, entry.Source, entry.SourceID, entry.EligibleSpend, entry.Amount, entry.DebtSettled, entry.BalanceBefore, entry.BalanceAfter, entry.RuleVersion, entry.FBTransactionID, entry.CreatedAt)
 	if err != nil {
 		return contribution.PostingResult{}, classifyContributionError(err)
 	}
@@ -159,7 +172,7 @@ func (s *Store) postContributionSystemSpendTx(ctx context.Context, tx pgx.Tx, re
 		return contribution.PostingResult{}, err
 	}
 	var revision int64
-	err = tx.QueryRow(ctx, `UPDATE contribution_accounts SET balance=$1,revision=revision+1,updated_at=$2 WHERE player_id=$3 AND revision=$4 RETURNING revision`, after, now, account.PlayerID, account.Revision).Scan(&revision)
+	err = tx.QueryRow(ctx, `UPDATE contribution_accounts SET balance=$1,recovery_debt=$2,revision=revision+1,updated_at=$3 WHERE player_id=$4 AND revision=$5 RETURNING revision`, after, account.RecoveryDebt-settled, now, account.PlayerID, account.Revision).Scan(&revision)
 	if err != nil {
 		return contribution.PostingResult{}, classifyContributionError(err)
 	}
@@ -178,12 +191,12 @@ func (s *Store) postContributionSystemSpendTx(ctx context.Context, tx pgx.Tx, re
 
 func loadContributionBySourceTx(ctx context.Context, tx pgx.Tx, request contribution.SpendRequest) (contribution.Entry, error) {
 	var value contribution.Entry
-	err := tx.QueryRow(ctx, `SELECT entry_id,player_id,player_fb_account_id,system_fb_account_id,source,source_id,eligible_spend,amount,balance_before,balance_after,rule_version,fb_transaction_id,created_at FROM contribution_entries WHERE source=$1 AND source_id=$2 AND rule_version=$3`, request.Source, request.SourceID, request.RuleVersion).Scan(&value.ID, &value.PlayerID, &value.PlayerFBAccountID, &value.SystemFBAccountID, &value.Source, &value.SourceID, &value.EligibleSpend, &value.Amount, &value.BalanceBefore, &value.BalanceAfter, &value.RuleVersion, &value.FBTransactionID, &value.CreatedAt)
+	err := tx.QueryRow(ctx, `SELECT entry_id,player_id,player_fb_account_id,system_fb_account_id,source,source_id,eligible_spend,amount,debt_settled,balance_before,balance_after,rule_version,fb_transaction_id,created_at FROM contribution_entries WHERE source=$1 AND source_id=$2 AND rule_version=$3`, request.Source, request.SourceID, request.RuleVersion).Scan(&value.ID, &value.PlayerID, &value.PlayerFBAccountID, &value.SystemFBAccountID, &value.Source, &value.SourceID, &value.EligibleSpend, &value.Amount, &value.DebtSettled, &value.BalanceBefore, &value.BalanceAfter, &value.RuleVersion, &value.FBTransactionID, &value.CreatedAt)
 	return value, classifyContributionError(err)
 }
 
 func (s *Store) ContributionEntries(ctx context.Context, playerID string) ([]contribution.Entry, error) {
-	rows, err := s.pool.Query(ctx, `SELECT entry_id,player_id,player_fb_account_id,system_fb_account_id,source,source_id,eligible_spend,amount,balance_before,balance_after,rule_version,fb_transaction_id,created_at FROM contribution_entries WHERE player_id=$1 ORDER BY balance_before,entry_id`, playerID)
+	rows, err := s.pool.Query(ctx, `SELECT entry_id,player_id,player_fb_account_id,system_fb_account_id,source,source_id,eligible_spend,amount,debt_settled,balance_before,balance_after,rule_version,fb_transaction_id,created_at FROM contribution_entries WHERE player_id=$1 ORDER BY balance_before,entry_id`, playerID)
 	if err != nil {
 		return nil, classifyContributionError(err)
 	}
@@ -191,7 +204,7 @@ func (s *Store) ContributionEntries(ctx context.Context, playerID string) ([]con
 	var result []contribution.Entry
 	for rows.Next() {
 		var value contribution.Entry
-		if err = rows.Scan(&value.ID, &value.PlayerID, &value.PlayerFBAccountID, &value.SystemFBAccountID, &value.Source, &value.SourceID, &value.EligibleSpend, &value.Amount, &value.BalanceBefore, &value.BalanceAfter, &value.RuleVersion, &value.FBTransactionID, &value.CreatedAt); err != nil {
+		if err = rows.Scan(&value.ID, &value.PlayerID, &value.PlayerFBAccountID, &value.SystemFBAccountID, &value.Source, &value.SourceID, &value.EligibleSpend, &value.Amount, &value.DebtSettled, &value.BalanceBefore, &value.BalanceAfter, &value.RuleVersion, &value.FBTransactionID, &value.CreatedAt); err != nil {
 			return nil, classifyContributionError(err)
 		}
 		result = append(result, value)
@@ -217,7 +230,21 @@ func (s *Store) ContributionAuditEvents(ctx context.Context, playerID string) ([
 }
 
 func (s *Store) ReconcileContribution(ctx context.Context) (contribution.ReconciliationReport, error) {
-	rows, err := s.pool.Query(ctx, `SELECT a.player_id,a.balance,COALESCE(sum(e.amount),0)::bigint FROM contribution_accounts a LEFT JOIN contribution_entries e ON e.player_id=a.player_id GROUP BY a.player_id,a.balance ORDER BY a.player_id`)
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
+	if err != nil {
+		return contribution.ReconciliationReport{}, classifyContributionError(err)
+	}
+	defer tx.Rollback(ctx)
+	rows, err := tx.Query(ctx, `SELECT a.player_id,a.balance,a.recovery_debt,
+       COALESCE(e.earned,0)::bigint,COALESCE(e.settled,0)::bigint,COALESCE(u.consumed,0)::bigint,
+       COALESCE(c.reversed,0)::bigint,COALESCE(c.debt_created,0)::bigint,COALESCE(c.compensated,0)::bigint,
+       COALESCE(f.refunded,0)::bigint
+       FROM contribution_accounts a
+       LEFT JOIN LATERAL (SELECT sum(amount) earned,sum(debt_settled) settled FROM contribution_entries WHERE player_id=a.player_id) e ON true
+       LEFT JOIN LATERAL (SELECT sum(amount) consumed FROM contribution_consumptions WHERE player_id=a.player_id) u ON true
+       LEFT JOIN LATERAL (SELECT sum(available_reversed) reversed,sum(debt_created) debt_created,sum(amount) compensated FROM contribution_compensations WHERE player_id=a.player_id) c ON true
+       LEFT JOIN LATERAL (SELECT sum(p.amount) refunded FROM fb_ledger_transactions t JOIN contribution_entries source ON source.fb_transaction_id=t.original_transaction_id JOIN fb_ledger_entries p ON p.transaction_id=t.transaction_id AND p.account_id=source.player_fb_account_id WHERE source.player_id=a.player_id AND t.transaction_type IN ('REFUND','REVERSAL')) f ON true
+       ORDER BY a.player_id`)
 	if err != nil {
 		return contribution.ReconciliationReport{}, classifyContributionError(err)
 	}
@@ -225,15 +252,70 @@ func (s *Store) ReconcileContribution(ctx context.Context) (contribution.Reconci
 	report := contribution.ReconciliationReport{Balanced: true}
 	for rows.Next() {
 		var value contribution.ReconciliationMismatch
-		if err = rows.Scan(&value.PlayerID, &value.Balance, &value.EntriesTotal); err != nil {
+		var debt, earned, settled, consumed, reversed, debtCreated, compensated, refunded int64
+		if err = rows.Scan(&value.PlayerID, &value.Balance, &debt, &earned, &settled, &consumed, &reversed, &debtCreated, &compensated, &refunded); err != nil {
 			return contribution.ReconciliationReport{}, classifyContributionError(err)
 		}
-		if value.Balance != value.EntriesTotal {
+		value.EntriesTotal = earned - settled - consumed - reversed
+		if value.Balance != value.EntriesTotal || debt != debtCreated-settled || (debt > 0 && value.Balance > 0) || refunded != compensated {
 			report.Balanced = false
 			report.Mismatches = append(report.Mismatches, value)
 		}
 	}
-	return report, classifyContributionError(rows.Err())
+	if err = rows.Err(); err != nil {
+		return contribution.ReconciliationReport{}, classifyContributionError(err)
+	}
+	rows.Close()
+	// A valid aggregate balance cannot hide duplicate or excessive compensation
+	// against a single original spend.
+	problemRows, err := tx.Query(ctx, `SELECT e.player_id FROM contribution_entries e
+       LEFT JOIN LATERAL (SELECT COALESCE(sum(amount),0)::bigint compensated FROM contribution_compensations WHERE original_entry_id=e.entry_id) c ON true
+       LEFT JOIN LATERAL (SELECT COALESCE(sum(p.amount),0)::bigint refunded FROM fb_ledger_transactions t JOIN fb_ledger_entries p ON p.transaction_id=t.transaction_id AND p.account_id=e.player_fb_account_id WHERE t.original_transaction_id=e.fb_transaction_id AND t.transaction_type IN ('REFUND','REVERSAL')) f ON true
+       WHERE c.compensated>e.amount OR f.refunded>e.eligible_spend OR c.compensated<>f.refunded OR e.rule_version<>'CONTRIBUTION_RULE_V1'`)
+	if err != nil {
+		return contribution.ReconciliationReport{}, classifyContributionError(err)
+	}
+	for problemRows.Next() {
+		var player string
+		if err = problemRows.Scan(&player); err != nil {
+			problemRows.Close()
+			return contribution.ReconciliationReport{}, err
+		}
+		report.Balanced = false
+		report.Mismatches = append(report.Mismatches, contribution.ReconciliationMismatch{PlayerID: player})
+	}
+	if err = problemRows.Err(); err != nil {
+		problemRows.Close()
+		return contribution.ReconciliationReport{}, err
+	}
+	problemRows.Close()
+	linkRows, err := tx.Query(ctx, `SELECT c.player_id FROM contribution_compensations c JOIN contribution_entries e ON e.entry_id=c.original_entry_id JOIN fb_ledger_transactions t ON t.transaction_id=c.fb_transaction_id WHERE c.original_fb_transaction_id<>e.fb_transaction_id OR t.original_transaction_id<>e.fb_transaction_id OR t.reference_type<>'CONTRIBUTION_REFUND' OR t.reference_id<>c.reference_id OR c.rule_version<>e.rule_version`)
+	if err != nil {
+		return contribution.ReconciliationReport{}, classifyContributionError(err)
+	}
+	for linkRows.Next() {
+		var player string
+		if err = linkRows.Scan(&player); err != nil {
+			linkRows.Close()
+			return contribution.ReconciliationReport{}, err
+		}
+		report.Balanced = false
+		report.Mismatches = append(report.Mismatches, contribution.ReconciliationMismatch{PlayerID: player})
+	}
+	if err = linkRows.Err(); err != nil {
+		linkRows.Close()
+		return contribution.ReconciliationReport{}, err
+	}
+	linkRows.Close()
+	if err = tx.Commit(ctx); err != nil {
+		return contribution.ReconciliationReport{}, classifyContributionError(err)
+	}
+	if !report.Balanced {
+		for _, m := range report.Mismatches {
+			_, _ = s.pool.Exec(ctx, `UPDATE contribution_accounts SET review_required=true WHERE player_id=$1`, m.PlayerID)
+		}
+	}
+	return report, nil
 }
 
 func (s *Store) checkContributionFailure(point string) error {
@@ -241,6 +323,12 @@ func (s *Store) checkContributionFailure(point string) error {
 		return s.contributionFailureInjector(point)
 	}
 	return nil
+}
+
+func (s *Store) markContributionReview(ctx context.Context, playerID string) {
+	if s != nil && s.pool != nil && playerID != "" {
+		_, _ = s.pool.Exec(ctx, `UPDATE contribution_accounts SET review_required=true WHERE player_id=$1`, playerID)
+	}
 }
 
 func retryContributionTransaction(err error) bool {

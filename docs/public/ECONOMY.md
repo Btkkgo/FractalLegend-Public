@@ -7,7 +7,7 @@ Fractal Legend separates monetary assets, progression values, reputation, and ma
 | Value | Intended role | Transferability | Current status |
 |---|---|---|---|
 | FB | Long-term primary economic asset for trading, transfers, deposits and withdrawals | Internal player-Trade settlement is implemented | Internal Ledger and direct player-Trade settlement are **FOUNDATION COMPLETE**; real deposits and withdrawals are **NOT LIVE** |
-| Contribution Points | Future activation, manufacturing, advanced requirements and system progression | Non-transferable | Internal G13 credit-only Ledger **FOUNDATION COMPLETE**; consumption and live issuance absent |
+| Contribution Points | Future activation, manufacturing, advanced requirements and system progression | Non-transferable | Internal G13–G14 Ledger and refund recovery **FOUNDATION COMPLETE**; production consumption and live issuance absent |
 | Reputation | Participation, guilds, activities and long-term behavior | Not a withdrawable currency | **PLANNED** |
 | Black Iron Ore | Game material for mining, crafting and possible activation/economy rules | Material rules not finalized | **PLANNED** |
 | Other materials | Crafting and progression inputs | Defined per future system | **PLANNED** |
@@ -22,7 +22,7 @@ Real Fractal Bitcoin deposit, withdrawal, wallet signing, blockchain broadcast, 
 
 G13 established a non-transferable, credit-only Contribution Ledger. `CONTRIBUTION_RULE_V1` grants exactly one point per one explicitly eligible FB system-spend unit. Only the internal `SYSTEM_SERVICE` foundation category is eligible; it has no live gameplay producer. Deposit, player Trade, transfers, refunds, recycle, mining, siege, rewards, and admin adjustments earn zero; unknown sources fail closed. Eligible FB debit and Contribution credit share one PostgreSQL transaction. Contribution consumption and the future activation/manufacturing uses are not implemented.
 
-**POST-G13 HARD GATE:** The current block on refund/reversal of a linked eligible spend is temporary fail-closed safety behavior, not a final production design. Atomic FB refund/reversal and Contribution reversal/compensation, including recovery or review if points were already spent, must be implemented before any real eligible spend producer goes live.
+**G14 hard gate closed:** The internal coordinator now atomically posts linked FB refund/reversal and Contribution compensation, including bounded partial refunds, recovery debt for already-used points, future-credit debt repayment, and review hold. Ordinary Ledger refunds remain fail-closed; there is no real eligible spend producer or production Contribution spend writer.
 
 ### Reputation
 
@@ -49,7 +49,7 @@ Fractal Legend 将货币资产、成长数值、Reputation 和 Material 分开�
 | 数值 | 目标用途 | 可转移性 | 当前状态 |
 |---|---|---|---|
 | FB | 长期主要经济资产，用于交易、转账、充值和提现 | 已实现内部玩家 Trade Settlement | Internal Ledger 与 Direct Player Trade Settlement 已达到 **FOUNDATION COMPLETE**；真实充值与提现 **NOT LIVE** |
-| Contribution Points | 未来的 Asset Activation、Manufacturing、Advanced Requirement 与 System Progression | 不可转账 | 内部 G13 仅 Credit 的 Ledger **FOUNDATION COMPLETE**；尚无消耗与真实发放入口 |
+| Contribution Points | 未来的 Asset Activation、Manufacturing、Advanced Requirement 与 System Progression | 不可转账 | 内部 G13–G14 Ledger 与 Refund Recovery **FOUNDATION COMPLETE**；尚无生产用消耗与真实发放入口 |
 | Reputation | Participation、Guild、活动与长期行为 | 不是可提现货币 | **PLANNED** |
 | Black Iron Ore | 用于 Mining、Crafting 和可能的 Activation / Economy Rule 的游戏材料 | Material Rule 尚未确定 | **PLANNED** |
 | Other Materials | Crafting 与 Progression Input | 由未来系统分别定义 | **PLANNED** |
@@ -64,7 +64,7 @@ Fractal Legend 将货币资产、成长数值、Reputation 和 Material 分开�
 
 G13 建立不可转账、仅 Credit 的 Contribution Ledger。`CONTRIBUTION_RULE_V1` 对每 1 单位经显式判定合格的 FB System Spend 恰好发放 1 Point。只有内部 `SYSTEM_SERVICE` Foundation 类别合格，尚无真实游戏 Producer。Deposit、Player Trade、Transfer、Refund、Recycle、Mining、Siege、Reward 和 Admin Adjustment 均发放零分；未知来源默认拒绝。合格 FB Debit 与 Contribution Credit 在同一个 PostgreSQL Transaction 中完成。Contribution Consumption 以及未来的 Activation/Manufacturing 用途尚未实现。
 
-**POST-G13 HARD GATE：** 当前对关联合格消费的 Refund/Reversal Block 是临时 Fail-closed 安全行为，不是最终生产设计。任何真实合格消费 Producer 上线以前，必须实现原子 FB Refund/Reversal 和 Contribution Reversal/Compensation；积分已被消费时还需 Recovery 或 Review 流程。
+**G14 硬门已关闭：** 内部 Coordinator 现可原子写入关联 FB Refund/Reversal 与 Contribution Compensation，包括有上限的部分退款、已使用积分的 Recovery Debt、未来 Credit 先偿债及 Review Hold。普通 Ledger 退款仍默认拒绝；尚无真实合格消费 Producer 或生产用 Contribution Spend Writer。
 
 ### Reputation
 

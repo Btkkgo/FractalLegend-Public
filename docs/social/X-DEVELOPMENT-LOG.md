@@ -1,4 +1,4 @@
-# Fractal Legend G1–G13 — X Development Log Drafts
+# Fractal Legend G1–G14 — X Development Log Drafts
 
 Status: milestone posts below are drafts only and have not been published by Codex.
 
@@ -139,6 +139,28 @@ Status: **Draft only · Not published · Technical acceptance PASS · Manual acc
 Screenshot suggestion: use `screenshots/g13-contribution-ledger-foundation.png`, a sanitized card derived from the actual 41/41 G13, 19/19 real PostgreSQL, 420/420 full Go, Race, 200-iteration property, 100-way concurrency, and three-platform build results. It records `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING` and the known G2 Node 95/96 limitation. The pending line is the historical capture state; G13 manual acceptance later passed. Do not describe the image as release evidence. Do not show accounts, credentials, DSNs, local paths, database rows, or restricted Legacy content.
 
 截图建议：使用 `screenshots/g13-contribution-ledger-foundation.png`，它是根据实际 41/41 G13、19/19 真实 PostgreSQL、420/420 Go 完整回归、Race、200 轮 Property、100 并发及三平台 Build 结果制作的脱敏卡片。卡片记录 `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING` 和已知 G2 Node 95/96 限制。Pending 一行是拍摄时的历史状态；G13 人工验收此后已通过。不得把图片描述为 Release 证据；不得展示账号、Credential、DSN、本地路径、Database Row 或受限制 Legacy 内容。
+
+## G14 — Contribution refund / reversal atomic compensation
+
+Status: **Draft only · Not published · Technical acceptance PASS · Manual acceptance PASS**
+
+状态：**仅为草稿 · 未发布 · 技术验收 PASS · 人工验收 PASS**
+
+### A. English Primary Thread
+
+1. 🧑‍💻 > G14 adds an internal atomic safety foundation for eligible FB spend refunds. A full refund reverses the matching Contribution entitlement; partial refunds are cumulative and bounded by the original spend. No live eligible spend producer is connected. #gamedev #golang
+2. 🧑‍💻 > Already-used Contribution becomes explicit recovery debt, never a silent negative balance. Later eligible credits settle debt before becoming spendable. FB refund and Contribution compensation commit together in PostgreSQL; duplicate requests apply once. #postgresql
+3. 🧑‍💻 > Verified checks: 21/21 G14 PostgreSQL checks, two 200-iteration property sequences, 100-way duplicate and partial-refund concurrency, 447/447 full Go, Race, and Windows/Linux/macOS builds passed. Manual acceptance passed. Existing restricted-archive G2 Node result remains 95/96. This is not a release.
+
+### B. 中文完整 Thread 对照
+
+1. 🧑‍💻 > G14 为合格 FB 消费退款新增内部原子安全基础。完整退款冲正相应 Contribution 权益；部分退款按原始消费累计，并受原始金额上限约束。尚未接入真实合格消费 Producer。#gamedev #golang
+2. 🧑‍💻 > 已使用的 Contribution 会变成明确的 Recovery Debt，不会变成未说明的负余额。以后的合格 Credit 会先偿债，剩余部分才可消费。FB 退款和 Contribution 补偿在 PostgreSQL 中一起 Commit；重复请求只作用一次。#postgresql
+3. 🧑‍💻 > 已验证：21/21 G14 PostgreSQL 检查、两组各 200 轮 Property、100 并发重复与部分退款、447/447 Go 完整回归、Race 以及 Windows/Linux/macOS Build 均通过。人工验收已通过。既有受限素材导致的 G2 Node 结果仍为 95/96。这不是 Release。
+
+Screenshot suggestion: prepare a new sanitized, project-owned verification card only after manual image review. It may show the 100 FB spend → 20 available + 80 recovery debt example, 21/21 G14 checks, 447/447 Go, Race, three-platform builds, and `MANUAL ACCEPTANCE PASS`. It must not show a terminal prompt, personal account, email, credential, DSN, local path, raw database row, private Issue link, or restricted Legacy content. No G14 screenshot has been created or published in this turn.
+
+截图建议：仅在人工审图后准备新的、项目自有的脱敏验证卡。可以展示 100 FB 消费 → 20 可用余额 + 80 Recovery Debt 的示例、21/21 G14 检查、447/447 Go、Race、三平台 Build 与 `MANUAL ACCEPTANCE PASS`。不得展示 Terminal Prompt、个人账号、Email、Credential、DSN、本地路径、原始数据库行、Private Issue Link 或受限制 Legacy Content。本轮尚未创建或发布 G14 截图。
 
 ## Public screenshot checklist
 

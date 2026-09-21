@@ -12,7 +12,7 @@
 
 Fractal Legend is a browser-native Legend-style MMORPG being built for the Fractal / Bitcoin ecosystem. Its direction combines classic combat, player-driven economies, digital ownership, Ordinals assets, and a modular social game world.
 
-Development is milestone-driven. The accepted server-authoritative G1–G13 foundation covers world movement, browser rendering, living entities, combat, monster AI, one Warrior skill, loot, inventory, equipment, character stats, PostgreSQL persistence, secure item trading, an internal FB ledger, atomic item + FB player Trade settlement, and an internal non-transferable Contribution Ledger. This is an engineering foundation, not a public game release.
+Development is milestone-driven. The accepted server-authoritative G1–G14 foundation covers world movement, browser rendering, living entities, combat, monster AI, one Warrior skill, loot, inventory, equipment, character stats, PostgreSQL persistence, secure item trading, an internal FB ledger, atomic item + FB player Trade settlement, and an internal non-transferable Contribution Ledger. This is an engineering foundation, not a public game release.
 
 ### Repository role
 
@@ -34,6 +34,7 @@ The long-term design treats Fractal and Bitcoin as more than branding. Ownership
 | G11 FB Ledger Foundation | **FOUNDATION COMPLETE** | Internal server-authoritative ledger; no blockchain, deposit, withdrawal, or wallet |
 | G12 Item + FB Trade Settlement | **FOUNDATION COMPLETE** | Atomic PostgreSQL settlement, 0% fee, no Marketplace or blockchain settlement |
 | G13 Contribution Ledger | **FOUNDATION COMPLETE** | Internal non-transferable 1:1 eligible-spend ledger; no live spend producer |
+| G14 Refund / Reversal Compensation | **FOUNDATION COMPLETE** | Atomic FB + Contribution compensation, recovery debt, hold; no live spend producer |
 | Complete browser MMORPG | **IN DEVELOPMENT** | Accepted technical slices do not form a public release |
 | Wallet / blockchain deposit and withdrawal | **PLANNED** | Not live |
 | Ordinals activation | **PLANNED** | No production activation exists |
@@ -41,20 +42,19 @@ The long-term design treats Fractal and Bitcoin as more than branding. Ownership
 
 ### Latest accepted milestone
 
-**G13 — Contribution Ledger Foundation: technical and manual acceptance PASS**
+**G14 — Contribution Refund / Reversal Atomic Compensation: technical and manual acceptance PASS**
 
-- G13 targeted checks: **41/41 PASS**, including **19/19** real PostgreSQL integration checks
-- Property sequence: **200/200 PASS**; **100** concurrent distinct-source postings and same-source replays passed
-- Private canonical full Go regression: **420/420 PASS**, 0 failures, 0 skips
-- Go Race, Vet, and Windows/Linux/macOS builds: **PASS**
-- Node: **95/96 — KNOWN PRE-EXISTING G2 LIMITATION** caused only by the unavailable restricted Legacy Archive
-- Private canonical G13 commit reference: `3986d02947b63afe2ed0822bd3859fea431d4dda`; merge reference: `748e3156e85832fcb95334d51bc2be03ea7f9581`
+- G14 focused checks: **27/27 PASS** (6 unit and 21 real PostgreSQL)
+- Property sequences: **200/200 each**; 100 duplicate refunds, 100 distinct partial refunds, and 100 concurrent credit/refund operations passed
+- Private canonical full Go and Race: **447/447 PASS** each, 0 failures, 0 skips; Vet and Windows/Linux/macOS builds passed
+- Node: **95/96 — KNOWN PRE-EXISTING G2 LIMITATION** because the restricted Legacy Archive is unavailable
+- Private canonical G14 commit reference: `4b267c191a3de668c84c849685a2cb0231769e77`; merge reference: `86ba77b9dbe39a2bfc1352c3d7842e92e2f2009b`
 
-`CONTRIBUTION_RULE_V1` grants one point per eligible FB system-spend unit. Only the internal `SYSTEM_SERVICE` foundation category is eligible; unknown sources fail closed and G12 player Trade earns zero points. FB debit and Contribution credit share one PostgreSQL transaction. **POST-G13 HARD GATE:** Blocking refunds/reversals of linked spends is temporary safety behavior, not the final production design. Before any real eligible spend producer connects, atomic FB refund/reversal plus Contribution reversal/compensation must be implemented, including an explicit recovery path if points were already spent.
+G14 closes the G13-linked refund/reversal compensation hard gate: the internal PostgreSQL coordinator atomically refunds FB and reverses related Contribution entitlement, including bounded partial refunds, recovery debt for already-used points, future-credit debt repayment, idempotency, concurrency protection, and reconciliation hold. Ordinary Ledger calls still fail closed for G13-linked refunds. No real eligible system-spend producer or production Contribution spending was connected. This is not a public game release.
 
 ### Public source snapshot
 
-The mirror publishes audited project-owned Go domains for AI, Character Stats, Combat Rules, Navigation, registries, PostgreSQL Persistence, G10/G12 Trade, the G11 FB Ledger, and the G13 Contribution Ledger Foundation. It includes unit tests and versioned schema migrations. It intentionally excludes Legacy seller source, private fixtures, Canonical exports, import tools, protected assets, local-environment integrations, and the complete private runtime assembly.
+The mirror publishes audited project-owned Go domains for AI, Character Stats, Combat Rules, Navigation, registries, PostgreSQL Persistence, G10/G12 Trade, the G11 FB Ledger, and the G13–G14 Contribution Ledger and refund recovery foundations. It includes unit tests and versioned schema migrations. It intentionally excludes Legacy seller source, private fixtures, Canonical exports, import tools, protected assets, local-environment integrations, and the complete private runtime assembly.
 
 Run the public Go checks:
 
@@ -80,7 +80,7 @@ See [Public Code Provenance](PUBLIC-CODE-PROVENANCE.md) for the exact publicatio
 - [Media](docs/public/MEDIA.md)
 - [Technical Screenshots](docs/public/SCREENSHOTS.md)
 - [FAQ](docs/public/FAQ.md)
-- [G9–G13 Devlogs](docs/devlog/)
+- [G9–G14 Devlogs](docs/devlog/)
 - [Curated Interaction Records](docs/interactions/)
 - [G10 Trade ADR](docs/adr/0009-g10-trade-foundation.md)
 - [G11 FB Ledger ADR](docs/adr/0010-g11-fb-ledger-foundation.md)
@@ -90,6 +90,10 @@ See [Public Code Provenance](PUBLIC-CODE-PROVENANCE.md) for the exact publicatio
 - [G13 Devlog](docs/devlog/G13-contribution-ledger-foundation.md)
 - [G13 Interaction Record](docs/interactions/G13-contribution-ledger-foundation.md)
 - [G13 Public Sync Allowlist](docs/public-sync/G13-PUBLIC-SYNC-CANDIDATE.md)
+- [G14 Refund ADR](docs/adr/0013-g14-contribution-refund-reversal.md)
+- [G14 Devlog](docs/devlog/G14-contribution-refund-reversal.md)
+- [G14 Interaction Record](docs/interactions/G14-contribution-refund-reversal.md)
+- [G14 Public Sync Allowlist](docs/public-sync/G14-PUBLIC-SYNC-CANDIDATE.md)
 - [Public Mirror Policy](PUBLIC-MIRROR-POLICY.md)
 - [Security Policy](SECURITY.md)
 
@@ -109,7 +113,7 @@ Fractal Legend has no announced public launch date. It is not a production servi
 
 Fractal Legend / 分形传奇是一款正在为 Fractal / Bitcoin 生态构建的浏览器原生传奇风格 MMORPG。项目方向结合经典战斗、玩家驱动经济、数字所有权、Ordinals 资产，以及模块化的社交游戏世界。
 
-开发按里程碑推进。已验收的 Server-authoritative G1–G13 Foundation 覆盖 World Movement、Browser Rendering、Living Entity、Combat、Monster AI、一项 Warrior Skill、Loot、Inventory、Equipment、Character Stats、PostgreSQL Persistence、安全的 Item Trade、内部 FB Ledger、原子 Item + FB 玩家 Trade Settlement，以及内部不可转账的 Contribution Ledger。这是一套工程基础，并不代表游戏已经公开上线。
+开发按里程碑推进。已验收的 Server-authoritative G1–G14 Foundation 覆盖 World Movement、Browser Rendering、Living Entity、Combat、Monster AI、一项 Warrior Skill、Loot、Inventory、Equipment、Character Stats、PostgreSQL Persistence、安全的 Item Trade、内部 FB Ledger、原子 Item + FB 玩家 Trade Settlement，以及内部不可转账的 Contribution Ledger。这是一套工程基础，并不代表游戏已经公开上线。
 
 ### 仓库定位
 
@@ -131,6 +135,7 @@ Public Mirror 不复制或重建 Private Repository History。更早里程碑 SH
 | G11 FB Ledger Foundation | **FOUNDATION COMPLETE** | 内部 Server-authoritative Ledger；不含 Blockchain、Deposit、Withdrawal 或 Wallet |
 | G12 Item + FB Trade Settlement | **FOUNDATION COMPLETE** | PostgreSQL 原子结算、0% 手续费；不含 Marketplace 或 Blockchain Settlement |
 | G13 Contribution Ledger | **FOUNDATION COMPLETE** | 内部不可转账的 1:1 合格消费账本；尚无真实消费 Producer |
+| G14 Refund / Reversal Compensation | **FOUNDATION COMPLETE** | 原子 FB + Contribution 补偿、Recovery Debt 与 Hold；尚无真实消费 Producer |
 | 完整 Browser MMORPG | **IN DEVELOPMENT** | 已验收 Technical Slice 尚未组成公开 Release |
 | Wallet / Blockchain Deposit 与 Withdrawal | **PLANNED** | 尚未上线 |
 | Ordinals Activation | **PLANNED** | 不存在 Production Activation |
@@ -138,20 +143,19 @@ Public Mirror 不复制或重建 Private Repository History。更早里程碑 SH
 
 ### 最新已验收里程碑
 
-**G13 — Contribution Ledger Foundation：技术与人工验收 PASS**
+**G14 — Contribution Refund / Reversal Atomic Compensation：技术与人工验收 PASS**
 
-- G13 专项检查：**41/41 PASS**，其中真实 PostgreSQL Integration **19/19**
-- Property Sequence：**200/200 PASS**；**100** 并发不同 Source Posting 和同 Source Replay 通过
-- Private Canonical Go 完整回归：**420/420 PASS**、0 Fail、0 Skip
-- Go Race、Vet 与 Windows/Linux/macOS Build：**PASS**
-- Node：**95/96 — KNOWN PRE-EXISTING G2 LIMITATION**，唯一原因是受限制 Legacy Archive 不可用
-- Private Canonical G13 Commit Reference：`3986d02947b63afe2ed0822bd3859fea431d4dda`；Merge Reference：`748e3156e85832fcb95334d51bc2be03ea7f9581`
+- G14 专项检查：**27/27 PASS**（6 项 Unit、21 项真实 PostgreSQL）
+- Property Sequence：两组各 **200/200**；100 个重复退款、100 个不同部分退款和 100 次并发 Credit/Refund 操作通过
+- Private Canonical Go 全量与 Race：各 **447/447 PASS**，0 Fail、0 Skip；Vet 及 Windows/Linux/macOS Build 通过
+- Node：**95/96 — KNOWN PRE-EXISTING G2 LIMITATION**，原因是受限制 Legacy Archive 不可用
+- Private Canonical G14 Commit Reference：`4b267c191a3de668c84c849685a2cb0231769e77`；Merge Reference：`86ba77b9dbe39a2bfc1352c3d7842e92e2f2009b`
 
-`CONTRIBUTION_RULE_V1` 对每 1 单位合格 FB System Spend 发放 1 Point。仅内部 `SYSTEM_SERVICE` Foundation 类别合格；未知来源默认拒绝，G12 Player Trade 发放零分。FB Debit 与 Contribution Credit 在同一个 PostgreSQL Transaction 中完成。**POST-G13 HARD GATE：** 当前对关联消费的 Refund/Reversal Block 是临时安全行为，不是最终生产设计。接入任何真实合格消费 Producer 前，必须实现原子 FB Refund/Reversal 加 Contribution Reversal/Compensation，包括积分已被消费时的明确 Recovery 路径。
+G14 已关闭 G13 关联退款／冲正的补偿硬门：内部 PostgreSQL Coordinator 原子退还 FB 并冲正关联 Contribution 权益，支持有上限的部分退款、已使用积分的 Recovery Debt、未来 Credit 先偿债、幂等、并发保护和对账 Hold。普通 Ledger 调用对 G13 关联退款仍默认拒绝。尚未接入真实合格 System Spend Producer 或生产用 Contribution 消费。这不是公开游戏 Release。
 
 ### 公开源码快照
 
-本镜像公开经过审计、属于项目自有的 Go Domain，包括 AI、Character Stats、Combat Rules、Navigation、Registry、PostgreSQL Persistence、G10/G12 Trade、G11 FB Ledger 和 G13 Contribution Ledger Foundation，并包含 Unit Test 与 Versioned Schema Migration。镜像明确排除 Legacy Seller Source、Private Fixture、Canonical Export、Import Tool、受保护 Asset、本地环境 Integration 和完整 Private Runtime Assembly。
+本镜像公开经过审计、属于项目自有的 Go Domain，包括 AI、Character Stats、Combat Rules、Navigation、Registry、PostgreSQL Persistence、G10/G12 Trade、G11 FB Ledger 和 G13–G14 Contribution Ledger 与 Refund Recovery Foundation，并包含 Unit Test 与 Versioned Schema Migration。镜像明确排除 Legacy Seller Source、Private Fixture、Canonical Export、Import Tool、受保护 Asset、本地环境 Integration 和完整 Private Runtime Assembly。
 
 运行公开 Go 检查：
 
@@ -177,7 +181,7 @@ go test ./...
 - [Media](docs/public/MEDIA.md)
 - [Technical Screenshot](docs/public/SCREENSHOTS.md)
 - [FAQ](docs/public/FAQ.md)
-- [G9–G13 Devlog](docs/devlog/)
+- [G9–G14 Devlog](docs/devlog/)
 - [整理后的 Interaction Record](docs/interactions/)
 - [G10 Trade ADR](docs/adr/0009-g10-trade-foundation.md)
 - [G11 FB Ledger ADR](docs/adr/0010-g11-fb-ledger-foundation.md)
@@ -187,6 +191,10 @@ go test ./...
 - [G13 Devlog](docs/devlog/G13-contribution-ledger-foundation.md)
 - [G13 Interaction Record](docs/interactions/G13-contribution-ledger-foundation.md)
 - [G13 Public Sync Allowlist](docs/public-sync/G13-PUBLIC-SYNC-CANDIDATE.md)
+- [G14 Refund ADR](docs/adr/0013-g14-contribution-refund-reversal.md)
+- [G14 Devlog](docs/devlog/G14-contribution-refund-reversal.md)
+- [G14 Interaction Record](docs/interactions/G14-contribution-refund-reversal.md)
+- [G14 Public Sync Allowlist](docs/public-sync/G14-PUBLIC-SYNC-CANDIDATE.md)
 - [Public Mirror Policy](PUBLIC-MIRROR-POLICY.md)
 - [Security Policy](SECURITY.md)
 

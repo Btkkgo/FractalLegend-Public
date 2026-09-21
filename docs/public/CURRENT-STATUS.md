@@ -19,6 +19,7 @@ Updated for the sanitized public mirror on 2026-09-21. “Foundation Complete”
 | G11 FB Ledger | **FOUNDATION COMPLETE** | Internal server-authoritative Ledger; no wallet or blockchain adapter |
 | G12 Item + FB Trade Settlement | **FOUNDATION COMPLETE** | Atomic PostgreSQL settlement with 0% fee; no Marketplace or Trade UI |
 | G13 Contribution Ledger | **FOUNDATION COMPLETE** | Internal non-transferable ledger; 1:1 eligible system spend; no live producer |
+| G14 Refund / Reversal Compensation | **FOUNDATION COMPLETE** | Atomic FB + Contribution recovery, bounded partial refunds, debt and hold; no live producer |
 | Complete browser MMORPG | **IN DEVELOPMENT** | Accepted slices do not form a public release |
 | Multi-class gameplay | **PLANNED** | Warrior is the only confirmed Web runtime class |
 | Boss / Party / Team Dungeon | **PLANNED** | No accepted implementation |
@@ -34,7 +35,7 @@ The private canonical repository preserves complete internal development and acc
 
 ### Latest closed milestone
 
-G13 technical and manual acceptance are PASS. Its recorded private checks passed G13 targeted 41/41, real PostgreSQL 19/19, 200/200 property iterations, 100-way distinct-source posting and same-source replay, full Go 420/420 with 0 skips, Race, Vet, and Windows/Linux/macOS builds. Node remains **95/96 — KNOWN PRE-EXISTING G2 LIMITATION** because the Atlas Determinism Test requires an unavailable restricted Legacy archive. Only the internal `SYSTEM_SERVICE` category is eligible in V1; no real gameplay spend producer is connected. The current G13-linked FB refund/reversal block is a temporary fail-closed measure. **POST-G13 HARD GATE:** atomic FB refund/reversal plus Contribution reversal/compensation, including recovery for already-spent points, must precede any real eligible spend producer.
+G14 technical and manual acceptance are PASS. Private checks passed 27/27 G14 focused tests (21/21 real PostgreSQL), two 200-iteration property sequences, 100-way duplicate and partial refund concurrency, full Go and Race 447/447 each, Vet, and Windows/Linux/macOS builds. Node remains **95/96 — KNOWN PRE-EXISTING G2 LIMITATION** because the G2 Atlas test requires a restricted Legacy archive. G14 closes the internal G13-linked refund/reversal compensation hard gate with atomic FB + Contribution posting, recovery debt, future-credit debt repayment, and review hold. Ordinary Ledger refunds remain fail-closed. There is still no real eligible system-spend producer or production Contribution spending.
 
 ### Release status
 
@@ -61,6 +62,7 @@ There is no public launch date, production deployment, mainnet economy, public T
 | G11 FB Ledger | **FOUNDATION COMPLETE** | 内部 Server-authoritative Ledger；不含 Wallet 或 Blockchain Adapter |
 | G12 Item + FB Trade Settlement | **FOUNDATION COMPLETE** | PostgreSQL 原子结算、0% 手续费；不含 Marketplace 或 Trade UI |
 | G13 Contribution Ledger | **FOUNDATION COMPLETE** | 内部不可转账账本；合格 System Spend 1:1；尚无真实 Producer |
+| G14 Refund / Reversal Compensation | **FOUNDATION COMPLETE** | 原子 FB + Contribution 恢复、部分退款上限、债务和 Hold；尚无真实 Producer |
 | 完整 Browser MMORPG | **IN DEVELOPMENT** | 已验收 Slice 尚未组成公开 Release |
 | Multi-class Gameplay | **PLANNED** | Warrior 是唯一确认的 Web Runtime Class |
 | Boss / Party / Team Dungeon | **PLANNED** | 没有已验收实现 |
@@ -76,7 +78,7 @@ Private Canonical Repository 保留完整内部开发与验收历史。本 Sanit
 
 ### 最新关闭里程碑
 
-G13 技术验收和人工验收均已 PASS。记录的 Private Check 包括：G13 专项 41/41、真实 PostgreSQL 19/19、Property Iteration 200/200、100 并发不同 Source Posting 与同 Source Replay、Go 完整回归 420/420 且 0 Skip、Race、Vet，以及 Windows/Linux/macOS Build。Node 仍为 **95/96 — KNOWN PRE-EXISTING G2 LIMITATION**，因为 Atlas Determinism Test 需要本环境不可用的受限制 Legacy Archive。V1 仅内部 `SYSTEM_SERVICE` 类别合格；尚未连接真实游戏消费 Producer。当前 G13 关联 FB Refund/Reversal Block 是临时 Fail-closed 措施。**POST-G13 HARD GATE：** 接入任何真实合格消费 Producer 前，必须完成原子 FB Refund/Reversal 加 Contribution Reversal/Compensation，并规定积分已消费时的 Recovery 流程。
+G14 技术验收与人工验收均已 PASS。Private Check 包括 27/27 G14 专项测试（其中 21/21 真实 PostgreSQL）、两组各 200 轮 Property、100 并发重复与部分退款，以及各 447/447 的 Go 全量与 Race、Vet 和 Windows/Linux/macOS Build。Node 仍为 **95/96 — KNOWN PRE-EXISTING G2 LIMITATION**，因为 G2 Atlas Test 需要受限制 Legacy Archive。G14 通过原子 FB + Contribution 入账、Recovery Debt、未来 Credit 先偿债及 Review Hold，关闭了内部 G13 关联退款／冲正补偿硬门。普通 Ledger 退款仍默认拒绝。真实合格 System Spend Producer 与生产用 Contribution 消费仍未接入。
 
 ### Release 状态
 

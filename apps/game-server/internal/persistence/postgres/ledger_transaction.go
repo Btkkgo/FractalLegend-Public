@@ -14,6 +14,12 @@ import (
 // existing database transaction. G12 uses this entry point so item ownership,
 // FB movements, the receipt, and the completed trade state share one commit.
 func (s *Store) postLedgerTransactionTx(ctx context.Context, tx pgx.Tx, draft ledger.PostDraft) (ledger.LedgerTransaction, error) {
+	return s.postLedgerTransactionTxWithContributionRefund(ctx, tx, draft, false)
+}
+
+// The override is private to the G14 atomic orchestrator. Public Ledger writes
+// retain G13's fail-closed gate for eligible Contribution spends.
+func (s *Store) postLedgerTransactionTxWithContributionRefund(ctx context.Context, tx pgx.Tx, draft ledger.PostDraft, contributionRefund bool) (ledger.LedgerTransaction, error) {
 	if err := ledger.ValidatePostDraft(draft); err != nil {
 		return ledger.LedgerTransaction{}, err
 	}
@@ -38,18 +44,18 @@ func (s *Store) postLedgerTransactionTx(ctx context.Context, tx pgx.Tx, draft le
 		} else if err != nil {
 			return ledger.LedgerTransaction{}, classifyLedgerError(err)
 		}
-		// G13 has credit-only Contribution. Until an atomic compensating
-		// Contribution posting exists, refunding its FB spend would leave
-		// unearned points behind. Fail closed at the shared Ledger write path.
-		if originalReferenceType == "CONTRIBUTION_SYSTEM_SPEND" {
+		// G14 refunds require the private atomic Contribution coordinator.
+		// All other shared Ledger callers fail closed for G13-linked spends.
+		if originalReferenceType == "CONTRIBUTION_SYSTEM_SPEND" && (!contributionRefund || draft.Reference.Type != "CONTRIBUTION_REFUND" || (draft.Type != ledger.TransactionRefund && draft.Type != ledger.TransactionReversal)) {
 			return ledger.LedgerTransaction{}, ledger.ErrInvalidTransaction
 		}
-		var compensated bool
-		if err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM fb_ledger_transactions WHERE transaction_type IN ('REFUND','REVERSAL') AND original_transaction_id=$1)", draft.OriginalTransactionID).Scan(&compensated); err != nil {
-			return ledger.LedgerTransaction{}, classifyLedgerError(err)
-		}
-		if compensated {
-			return ledger.LedgerTransaction{}, ledger.ErrAlreadyCompensated
+		if contributionRefund && originalReferenceType != "CONTRIBUTION_SYSTEM_SPEND" { return ledger.LedgerTransaction{}, ledger.ErrInvalidTransaction }
+		if !contributionRefund {
+			var compensated bool
+			if err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM fb_ledger_transactions WHERE transaction_type IN ('REFUND','REVERSAL') AND original_transaction_id=$1)", draft.OriginalTransactionID).Scan(&compensated); err != nil {
+				return ledger.LedgerTransaction{}, classifyLedgerError(err)
+			}
+			if compensated { return ledger.LedgerTransaction{}, ledger.ErrAlreadyCompensated }
 		}
 	}
 

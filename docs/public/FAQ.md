@@ -32,7 +32,7 @@ An internal server-authoritative FB Ledger Foundation exists from G11, and G12 u
 
 ### Are Contribution Points live?
 
-G13 accepted an internal, non-transferable Contribution Ledger Foundation with a versioned 1:1 eligible FB system-spend rule. It has no real gameplay spend producer or Contribution spending. Linked FB refunds/reversals are temporarily blocked fail-closed; atomic FB and Contribution compensation is a hard gate before any real producer.
+G13 accepted an internal, non-transferable Contribution Ledger with a versioned 1:1 eligible FB system-spend rule. G14 accepted atomic linked FB refund/reversal and Contribution compensation, including recovery debt for already-used points. Ordinary Ledger refunds still fail closed; there is no real gameplay spend producer or production Contribution spending.
 
 ### Can I deposit or withdraw FB now?
 
@@ -96,7 +96,7 @@ G11 已建立内部 Server-authoritative FB Ledger Foundation，G12 使用它完
 
 ### Contribution Point 上线了吗？
 
-G13 已验收内部、不可转账的 Contribution Ledger Foundation，采用版本化的 1:1 合格 FB System Spend 规则。它没有真实游戏消费 Producer，也没有 Contribution Spend。关联的 FB Refund/Reversal 暂时按 Fail-closed 阻断；原子 FB 与 Contribution Compensation 是接入任何真实 Producer 前的强制 Gate。
+G13 已验收内部、不可转账的 Contribution Ledger，采用版本化的 1:1 合格 FB System Spend 规则。G14 已验收原子关联 FB Refund/Reversal 与 Contribution Compensation，包括已使用积分的 Recovery Debt。普通 Ledger 退款仍默认拒绝；尚无真实游戏消费 Producer 或生产用 Contribution 消费。
 
 ### 现在可以充值或提现 FB 吗？
 

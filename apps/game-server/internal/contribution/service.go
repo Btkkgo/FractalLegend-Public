@@ -45,11 +45,39 @@ func (s *Service) PostSystemSpend(ctx context.Context, request SpendRequest) (Po
 	return s.repo.PostContributionSystemSpend(ctx, request)
 }
 
+func (s *Service) RefundSystemSpend(ctx context.Context, request RefundRequest) (RefundResult, error) {
+	if s == nil || s.repo == nil {
+		return RefundResult{}, ErrUnavailable
+	}
+	if request.OriginalFBTransactionID == "" || request.PlayerID == "" || request.PlayerFBAccountID == "" || request.ReferenceID == "" || request.Amount <= 0 || len(request.ReferenceID) > 128 || len(request.PlayerID) > 128 || len(request.PlayerFBAccountID) > 128 || len(request.OriginalFBTransactionID) > 128 {
+		return RefundResult{}, ErrInvalidRefund
+	}
+	return s.repo.RefundContributionSystemSpend(ctx, request)
+}
+
+// ValidateSpend is only a server-side rule check; G14 does not create a spend producer.
+func (s *Service) ValidateSpend(ctx context.Context, playerID string, amount int64) error {
+	if s == nil || s.repo == nil {
+		return ErrUnavailable
+	}
+	if playerID == "" || amount <= 0 {
+		return ErrInvalidAmount
+	}
+	return s.repo.ValidateContributionSpend(ctx, playerID, amount)
+}
+
 func (s *Service) Entries(ctx context.Context, playerID string) ([]Entry, error) {
 	if s == nil || s.repo == nil {
 		return nil, ErrUnavailable
 	}
 	return s.repo.ContributionEntries(ctx, playerID)
+}
+
+func (s *Service) Compensations(ctx context.Context, playerID string) ([]Compensation, error) {
+	if s == nil || s.repo == nil {
+		return nil, ErrUnavailable
+	}
+	return s.repo.ContributionCompensations(ctx, playerID)
 }
 
 func (s *Service) AuditEvents(ctx context.Context, playerID string) ([]AuditEvent, error) {
