@@ -2,7 +2,7 @@
 
 Status: **Accepted decision · G12 technical acceptance PASS**
 
-Tracking: [GitHub Issue #8 — G12 FB-backed Player Trade Settlement](https://github.com/Btkkgo/FractalLegend/issues/8)
+Tracking: private canonical Issue #8 (archive reference only) / 私有 Canonical Issue #8（仅档案引用）
 
 ## English — Primary
 
