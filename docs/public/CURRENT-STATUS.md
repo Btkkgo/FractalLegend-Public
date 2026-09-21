@@ -18,13 +18,14 @@ Updated for the sanitized public mirror on 2026-09-21. “Foundation Complete”
 | G10 Trade | **FOUNDATION COMPLETE** | Item-trade domain, extended by G12; UI and markets absent |
 | G11 FB Ledger | **FOUNDATION COMPLETE** | Internal server-authoritative Ledger; no wallet or blockchain adapter |
 | G12 Item + FB Trade Settlement | **FOUNDATION COMPLETE** | Atomic PostgreSQL settlement with 0% fee; no Marketplace or Trade UI |
+| G13 Contribution Ledger | **FOUNDATION COMPLETE** | Internal non-transferable ledger; 1:1 eligible system spend; no live producer |
 | Complete browser MMORPG | **IN DEVELOPMENT** | Accepted slices do not form a public release |
 | Multi-class gameplay | **PLANNED** | Warrior is the only confirmed Web runtime class |
 | Boss / Party / Team Dungeon | **PLANNED** | No accepted implementation |
 | Guild / Siege | **PLANNED** | No accepted implementation |
 | Wallet / blockchain | **PLANNED** | No live deposit, withdrawal, or chain adapter |
 | Ordinals activation | **PLANNED** | No production verification or activation |
-| Mining / Contribution / Reputation | **PLANNED** | Design direction only |
+| Mining / Reputation | **PLANNED** | Design direction only |
 | Social / voice / video / feed | **PLANNED / RESEARCH** | No accepted implementation |
 
 ### Repository topology
@@ -33,7 +34,7 @@ The private canonical repository preserves complete internal development and acc
 
 ### Latest closed milestone
 
-G12 technical acceptance is PASS. Its recorded private checks passed G12 targeted 45/45, real PostgreSQL 12/12, 200/200 property iterations, 100 simultaneous settlements, full Go 379/379 with 0 skips, Race, Vet, and Windows/Linux/macOS builds. Node remains 95/96 because the existing G2 Atlas Determinism Test requires an unavailable restricted Legacy archive. G12 uses no FB Hold; balances can change after confirmation, so Finalize rechecks locked accounts and rolls back entirely on insufficient funds. Extreme contention can exhaust the three-attempt retry budget, causing a safe failure without partial settlement.
+G13 technical and manual acceptance are PASS. Its recorded private checks passed G13 targeted 41/41, real PostgreSQL 19/19, 200/200 property iterations, 100-way distinct-source posting and same-source replay, full Go 420/420 with 0 skips, Race, Vet, and Windows/Linux/macOS builds. Node remains **95/96 — KNOWN PRE-EXISTING G2 LIMITATION** because the Atlas Determinism Test requires an unavailable restricted Legacy archive. Only the internal `SYSTEM_SERVICE` category is eligible in V1; no real gameplay spend producer is connected. The current G13-linked FB refund/reversal block is a temporary fail-closed measure. **POST-G13 HARD GATE:** atomic FB refund/reversal plus Contribution reversal/compensation, including recovery for already-spent points, must precede any real eligible spend producer.
 
 ### Release status
 
@@ -59,13 +60,14 @@ There is no public launch date, production deployment, mainnet economy, public T
 | G10 Trade | **FOUNDATION COMPLETE** | Item Trade Domain，由 G12 扩展；不含 UI 与 Market |
 | G11 FB Ledger | **FOUNDATION COMPLETE** | 内部 Server-authoritative Ledger；不含 Wallet 或 Blockchain Adapter |
 | G12 Item + FB Trade Settlement | **FOUNDATION COMPLETE** | PostgreSQL 原子结算、0% 手续费；不含 Marketplace 或 Trade UI |
+| G13 Contribution Ledger | **FOUNDATION COMPLETE** | 内部不可转账账本；合格 System Spend 1:1；尚无真实 Producer |
 | 完整 Browser MMORPG | **IN DEVELOPMENT** | 已验收 Slice 尚未组成公开 Release |
 | Multi-class Gameplay | **PLANNED** | Warrior 是唯一确认的 Web Runtime Class |
 | Boss / Party / Team Dungeon | **PLANNED** | 没有已验收实现 |
 | Guild / Siege | **PLANNED** | 没有已验收实现 |
 | Wallet / Blockchain | **PLANNED** | 没有 Live Deposit、Withdrawal 或 Chain Adapter |
 | Ordinals Activation | **PLANNED** | 没有 Production Verification 或 Activation |
-| Mining / Contribution / Reputation | **PLANNED** | 仅为设计方向 |
+| Mining / Reputation | **PLANNED** | 仅为设计方向 |
 | Social / Voice / Video / Feed | **PLANNED / RESEARCH** | 没有已验收实现 |
 
 ### Repository Topology
@@ -74,7 +76,7 @@ Private Canonical Repository 保留完整内部开发与验收历史。本 Sanit
 
 ### 最新关闭里程碑
 
-G12 技术验收已确认 PASS。记录的 Private Check 包括：G12 专项 45/45、真实 PostgreSQL 12/12、Property Iteration 200/200、100 个同时 Settlement、Go 完整回归 379/379 且 0 Skip、Race、Vet，以及 Windows/Linux/macOS Build。Node 仍为 95/96，因为既有 G2 Atlas Determinism Test 需要本环境不可用的受限制 Legacy Archive。G12 不建立 FB Hold；Confirmation 后余额可能变化，因此 Finalize 会重新检查已锁定 Account，余额不足时整个 Transaction 回滚。极端竞争可能耗尽三次 Retry，导致安全失败而不产生部分结算。
+G13 技术验收和人工验收均已 PASS。记录的 Private Check 包括：G13 专项 41/41、真实 PostgreSQL 19/19、Property Iteration 200/200、100 并发不同 Source Posting 与同 Source Replay、Go 完整回归 420/420 且 0 Skip、Race、Vet，以及 Windows/Linux/macOS Build。Node 仍为 **95/96 — KNOWN PRE-EXISTING G2 LIMITATION**，因为 Atlas Determinism Test 需要本环境不可用的受限制 Legacy Archive。V1 仅内部 `SYSTEM_SERVICE` 类别合格；尚未连接真实游戏消费 Producer。当前 G13 关联 FB Refund/Reversal Block 是临时 Fail-closed 措施。**POST-G13 HARD GATE：** 接入任何真实合格消费 Producer 前，必须完成原子 FB Refund/Reversal 加 Contribution Reversal/Compensation，并规定积分已消费时的 Recovery 流程。
 
 ### Release 状态
 

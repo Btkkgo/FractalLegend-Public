@@ -14,7 +14,7 @@ The project explores how classic MMORPG combat, meaningful player ownership, aud
 
 The intended loop is to explore worlds, fight monsters and bosses, grow a character, learn skills, collect and equip items, trade safely, cooperate in parties and guilds, compete in siege, mine resources, activate eligible digital assets, and build a persistent social identity.
 
-The accepted implementation currently covers a smaller technical slice: movement, rendering, living entities, combat, basic monster AI, one Warrior skill, loot, inventory, equipment, runtime stats, Character Aggregate persistence, and an item-only Trade Foundation.
+The accepted implementation currently covers a smaller technical slice: movement, rendering, living entities, combat, basic monster AI, one Warrior skill, loot, inventory, equipment, runtime stats, Character Aggregate persistence, item + FB player Trade settlement, and internal FB and Contribution ledgers. The Contribution Ledger has no live game spend producer.
 
 ### What makes it different?
 
@@ -32,7 +32,7 @@ This is product direction. Mainnet integration, wallets, deposits, withdrawals, 
 
 ### Where is development today?
 
-G1–G10 are accepted foundations from the private canonical development line and predate this mirror. G11 added the internal FB Ledger Foundation; G12 added atomic item + FB direct player Trade settlement and passed technical acceptance. Neither milestone is a public game release. No public launch date has been announced.
+G1–G10 are accepted foundations from the private canonical development line and predate this mirror. G11 added the internal FB Ledger Foundation; G12 added atomic item + FB direct player Trade settlement; G13 added a non-transferable Contribution Ledger Foundation. G13 technical and manual acceptance passed. These milestones are not a public game release. No public launch date has been announced.
 
 See [Current Status](CURRENT-STATUS.md), [Development Timeline](DEVELOPMENT-TIMELINE.md), and [Roadmap](ROADMAP.md).
 
@@ -52,7 +52,7 @@ Fractal Legend / 分形传奇是一款正在为 Fractal / Bitcoin 生态开发�
 
 目标循环包括探索世界、挑战怪物与 Boss、培养角色、学习技能、收集并装备物品、安全交易、参与 Party 与 Guild 协作、竞争 Siege、开采资源、激活符合条件的 Digital Asset，以及建立持久 Social Identity。
 
-当前已验收实现只覆盖较小的技术切片：Movement、Rendering、Living Entity、Combat、Basic Monster AI、一项 Warrior Skill、Loot、Inventory、Equipment、Runtime Stats、Character Aggregate Persistence，以及仅支持 Item 的 Trade Foundation。
+当前已验收实现只覆盖较小的技术切片：Movement、Rendering、Living Entity、Combat、Basic Monster AI、一项 Warrior Skill、Loot、Inventory、Equipment、Runtime Stats、Character Aggregate Persistence、Item + FB 玩家 Trade Settlement，以及内部 FB 与 Contribution Ledger。Contribution Ledger 尚无真实游戏消费 Producer。
 
 ### 项目有什么不同？
 
@@ -70,6 +70,6 @@ Fractal Legend / 分形传奇是一款正在为 Fractal / Bitcoin 生态开发�
 
 ### 当前开发到哪里？
 
-G1–G10 是 Private Canonical Development Line 上的已验收 Foundation，且早于本镜像建立。G11 新增内部 FB Ledger Foundation；G12 新增原子 Item + FB Direct Player Trade Settlement，并通过技术验收。这两个阶段都不代表游戏公开 Release。项目尚未公布公开上线日期。
+G1–G10 是 Private Canonical Development Line 上的已验收 Foundation，且早于本镜像建立。G11 新增内部 FB Ledger Foundation；G12 新增原子 Item + FB Direct Player Trade Settlement；G13 新增不可转账的 Contribution Ledger Foundation。G13 技术与人工验收已通过。这些阶段都不代表游戏公开 Release。项目尚未公布公开上线日期。
 
 详见[当前状态](CURRENT-STATUS.md)、[开发时间线](DEVELOPMENT-TIMELINE.md)和[路线图](ROADMAP.md)。

@@ -32,11 +32,17 @@ func (s *Store) postLedgerTransactionTx(ctx context.Context, tx pgx.Tx, draft le
 		return ledger.LedgerTransaction{}, err
 	}
 	if draft.OriginalTransactionID != "" {
-		var original string
-		if err = tx.QueryRow(ctx, "SELECT transaction_id FROM fb_ledger_transactions WHERE transaction_id=$1 FOR UPDATE", draft.OriginalTransactionID).Scan(&original); errors.Is(err, pgx.ErrNoRows) {
+		var original, originalReferenceType string
+		if err = tx.QueryRow(ctx, "SELECT transaction_id,reference_type FROM fb_ledger_transactions WHERE transaction_id=$1 FOR UPDATE", draft.OriginalTransactionID).Scan(&original, &originalReferenceType); errors.Is(err, pgx.ErrNoRows) {
 			return ledger.LedgerTransaction{}, ledger.ErrNotFound
 		} else if err != nil {
 			return ledger.LedgerTransaction{}, classifyLedgerError(err)
+		}
+		// G13 has credit-only Contribution. Until an atomic compensating
+		// Contribution posting exists, refunding its FB spend would leave
+		// unearned points behind. Fail closed at the shared Ledger write path.
+		if originalReferenceType == "CONTRIBUTION_SYSTEM_SPEND" {
+			return ledger.LedgerTransaction{}, ledger.ErrInvalidTransaction
 		}
 		var compensated bool
 		if err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM fb_ledger_transactions WHERE transaction_type IN ('REFUND','REVERSAL') AND original_transaction_id=$1)", draft.OriginalTransactionID).Scan(&compensated); err != nil {

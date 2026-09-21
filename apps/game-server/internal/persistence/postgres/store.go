@@ -22,9 +22,10 @@ import (
 var migrations embed.FS
 
 type Store struct {
-	pool                  *pgxpool.Pool
-	tradeFailureInjector  func(string) error
-	ledgerFailureInjector func(string) error
+	pool                        *pgxpool.Pool
+	tradeFailureInjector        func(string) error
+	ledgerFailureInjector       func(string) error
+	contributionFailureInjector func(string) error
 }
 
 func Open(ctx context.Context, databaseURL string) (*Store, error) {

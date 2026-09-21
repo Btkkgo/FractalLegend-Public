@@ -1,4 +1,4 @@
-# Fractal Legend G1–G12 — X Development Log Drafts
+# Fractal Legend G1–G13 — X Development Log Drafts
 
 Status: milestone posts below are drafts only and have not been published by Codex.
 
@@ -118,6 +118,28 @@ The card was captured before manual acceptance and therefore still says `READY_F
 
 此卡片摄于人工验收前，因此仍显示 `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING`。若在 Stage Close 后使用，配文须说明该行是历史截图状态，并明确 G12 技术验收已 PASS；原图有意保持不变。
 
+## G13 — Contribution Ledger foundation
+
+Status: **Draft only · Not published · Technical acceptance PASS · Manual acceptance PASS**
+
+状态：**仅为草稿 · 未发布 · 技术验收 PASS · 人工验收 PASS**
+
+### A. English Primary Thread
+
+1. G13 adds an internal, non-transferable Contribution Ledger to Fractal Legend. V1 grants 1 point per 1 explicitly eligible FB system-spend unit. Unknown sources fail closed; G12 player trades earn 0. #gamedev #golang
+2. FB debit and point credit share one PostgreSQL transaction. G13 checks passed 41/41, including 19/19 real PostgreSQL checks; full Go passed 420/420. Race and Windows/Linux/macOS builds passed. #postgresql
+3. G13 passed manual acceptance; this foundation is not a release. There is no live spend producer. Mining, Marketplace, Wallet, Deposit, Withdrawal, Blockchain, and Ordinals features are not active.
+
+### B. 中文完整 Thread 对照
+
+1. G13 为 Fractal Legend 新增内部、不可转账的 Contribution Ledger。V1 对每 1 单位经显式判定合格的 FB System Spend 发放 1 Point。未知来源默认拒绝；G12 Player Trade 发放 0 Point。#gamedev #golang
+2. FB Debit 与 Point Credit 在同一个 PostgreSQL Transaction 中完成。G13 专项检查 41/41 通过，其中真实 PostgreSQL 检查 19/19；Go 完整回归 420/420 通过。Race 与 Windows/Linux/macOS Build 通过。#postgresql
+3. G13 已通过人工验收；这套 Foundation 不是 Release。尚无真实消费 Producer。Mining、Marketplace、Wallet、Deposit、Withdrawal、Blockchain 和 Ordinals 功能均未上线。
+
+Screenshot suggestion: use `screenshots/g13-contribution-ledger-foundation.png`, a sanitized card derived from the actual 41/41 G13, 19/19 real PostgreSQL, 420/420 full Go, Race, 200-iteration property, 100-way concurrency, and three-platform build results. It records `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING` and the known G2 Node 95/96 limitation. The pending line is the historical capture state; G13 manual acceptance later passed. Do not describe the image as release evidence. Do not show accounts, credentials, DSNs, local paths, database rows, or restricted Legacy content.
+
+截图建议：使用 `screenshots/g13-contribution-ledger-foundation.png`，它是根据实际 41/41 G13、19/19 真实 PostgreSQL、420/420 Go 完整回归、Race、200 轮 Property、100 并发及三平台 Build 结果制作的脱敏卡片。卡片记录 `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING` 和已知 G2 Node 95/96 限制。Pending 一行是拍摄时的历史状态；G13 人工验收此后已通过。不得把图片描述为 Release 证据；不得展示账号、Credential、DSN、本地路径、Database Row 或受限制 Legacy 内容。
+
 ## Public screenshot checklist
 
 Before publishing any frame:
@@ -126,7 +148,15 @@ Before publishing any frame:
 - Show no terminal prompt, home directory, local drive path, account name, email, repository credential, token, password, or environment variable.
 - Show no raw database row dump, packet capture, private server configuration, or restricted Legacy binary/resource content.
 - Generated Fractal Override art, game UI, public architecture labels, test totals, and runtime state are suitable for publication.
-- Keep unfinished systems labeled accurately. Trade, Warehouse, Durability, Economy, and production deployment are not live.
+- Keep unfinished systems labeled accurately. Trade UI, Warehouse, Durability, Marketplace, and production deployment are not live.
+
+发布任何画面前：
+
+- 裁切到游戏页面或专门制作的公开测试摘要。
+- 不展示 Terminal Prompt、Home Directory、本地磁盘路径、账号、Email、仓库 Credential、Token、Password 或 Environment Variable。
+- 不展示原始 Database Row Dump、Packet Capture、Private Server Configuration 或受限制 Legacy Binary/Resource 内容。
+- 可以展示生成的 Fractal Override 美术、游戏 UI、公开架构标识、测试总数和 Runtime State。
+- 准确标识未完成的系统。Trade UI、Warehouse、Durability、Marketplace 和生产部署均未上线。
 
 ## Reviewed screenshot material
 
@@ -137,5 +167,6 @@ Before publishing any frame:
 | `screenshots/g10-trade-foundation.png` | G10 sanitized Windows closure verification / G10 脱敏 Windows Closure 验证结果 | Approved after visual inspection; shows Historical Node 224/224, G10 Trade 29/29, Go 290/290 with 0 skips, process fixtures, Windows amd64 build, preserved failure history, and manual-acceptance status. No account, credential, DSN, token, terminal prompt, local path, raw database row, or restricted resource content is visible. New SHA-256: `c0672d3cd1c998e9a5ce07c8542a118ae93fdfd0b9ffdff7a1a84496624d95b2`; replaced SHA-256: `e2dbe70f41236eba07836c5d91fd91d25c14d0b64ab84a2c517710f13896582c`. / 已通过目视检查；展示 Historical Node 224/224、G10 Trade 29/29、Go 290/290（0 Skip）、Process Fixture、Windows amd64 Build、保留的失败历史和人工验收状态，未显示账号、凭据、DSN、Token、Terminal Prompt、本地路径、原始数据库行或受限制资源内容。新 SHA-256：`c0672d3cd1c998e9a5ce07c8542a118ae93fdfd0b9ffdff7a1a84496624d95b2`；被替换的 SHA-256：`e2dbe70f41236eba07836c5d91fd91d25c14d0b64ab84a2c517710f13896582c`。 |
 | `screenshots/g11-fb-ledger-foundation.png` | G11 sanitized Ledger verification / G11 脱敏 Ledger 验证结果 | Approved after visual inspection; shows 44/44 G11 tests, 334/334 Go regression, 11/11 real PostgreSQL Ledger integration, Race, invariants, concurrency, cross-platform builds, the honest G2 environment note, and review state. No account, credential, DSN, token, terminal prompt, local path, raw database row, wallet data, or restricted resource content is visible. SHA-256: `634ccb1a252e36379adeb051b242f478bfb71c2f5864b1ccaa2222f932b21ec0`. / 已通过目视检查；展示 44/44 G11 Test、334/334 Go Regression、11/11 真实 PostgreSQL Ledger Integration、Race、Invariant、Concurrency、Cross-platform Build、如实记录的 G2 环境说明和 Review 状态；未显示账号、凭据、DSN、Token、Terminal Prompt、本地路径、原始数据库行、Wallet Data 或受限制资源内容。SHA-256：`634ccb1a252e36379adeb051b242f478bfb71c2f5864b1ccaa2222f932b21ec0`。 |
 | `screenshots/g12-fb-trade-settlement.png` | G12 sanitized atomic-settlement verification / G12 脱敏原子结算验证结果 | Review candidate generated from the actual final test results. It shows 45/45 targeted checks, 12/12 PostgreSQL checks, 379/379 full Go, final Race, 200 property iterations, 100 simultaneous settlements, zero fee, conservation, three-platform builds, and READY_FOR_REVIEW. It contains no terminal prompt, account, credential, DSN, token, local path, database row, wallet data, or restricted Legacy content. SHA-256: `161e2493863bb1c2cc93de35508529f713dc3ea35af76d3bbed8749b28d94517`. / 根据最终实际测试结果生成的 Review Candidate，展示 45/45 专项检查、12/12 PostgreSQL 检查、379/379 Go 完整回归、最终 Race、200 轮 Property Iteration、100 个同时 Settlement、零手续费、守恒、三平台 Build 和 READY_FOR_REVIEW；不包含 Terminal Prompt、账号、Credential、DSN、Token、本地路径、Database Row、Wallet Data 或受限制 Legacy Content。SHA-256：`161e2493863bb1c2cc93de35508529f713dc3ea35af76d3bbed8749b28d94517`。 |
+| `screenshots/g13-contribution-ledger-foundation.png` | G13 sanitized Contribution verification / G13 脱敏 Contribution 验证结果 | Visually reviewed candidate from actual final checks: 41/41 G13, 19/19 real PostgreSQL, 420/420 Go, Race, 200 property iterations, 100-way concurrency, three-platform builds, and honest G2 Node 95/96 limitation. The card explicitly says manual acceptance is pending. No terminal prompt, account, credential, DSN, token, local path, database row, wallet data, or restricted Legacy content is visible. SHA-256: `cae1f1a2985a4c8f7ce954310b013c6529c9370ef30e33664ad78fe3c5ba250c`. / 根据最终真实检查生成并经过目视审查的候选图：展示 41/41 G13、19/19 真实 PostgreSQL、420/420 Go、Race、200 轮 Property、100 并发、三平台 Build，以及如实标注的 G2 Node 95/96 限制。卡片明确标记等待人工验收。未显示 Terminal Prompt、账号、Credential、DSN、Token、本地路径、Database Row、Wallet Data 或受限制 Legacy 内容。SHA-256：`cae1f1a2985a4c8f7ce954310b013c6529c9370ef30e33664ad78fe3c5ba250c`。 |
 
 Earlier-stage screenshot suggestions above are a capture plan. They are not evidence that those screenshots have already been produced or published.

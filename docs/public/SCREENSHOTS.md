@@ -28,6 +28,12 @@ Historical context: this card was captured after the Windows regression closed b
 
 Historical context: this sanitized verification card was captured before manual acceptance and therefore says `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING`. G12 technical acceptance later passed. It records 45/45 targeted checks, 12/12 real PostgreSQL checks, 379/379 full Go regression, Race and Vet, 200 property iterations, 100 simultaneous settlements, and Windows/Linux/macOS builds. It does not imply a product release. SHA-256: `161e2493863bb1c2cc93de35508529f713dc3ea35af76d3bbed8749b28d94517`.
 
+### G13 — Contribution Ledger Foundation
+
+![G13 Contribution Ledger Foundation](../social/screenshots/g13-contribution-ledger-foundation.png)
+
+Historical context: this sanitized card was captured before manual acceptance, so it says `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING`. G13 technical and manual acceptance later passed. It records 41/41 targeted checks, 19/19 real PostgreSQL checks, 420/420 full Go regression, Race and Vet, 200 property iterations, 100-way concurrency, three-platform builds, and the known G2 Node 95/96 limitation. It is not release evidence. SHA-256: `cae1f1a2985a4c8f7ce954310b013c6529c9370ef30e33664ad78fe3c5ba250c`.
+
 ---
 
 ## 中文 — 完整对应版本
@@ -57,3 +63,9 @@ Historical context: this sanitized verification card was captured before manual 
 ![G12 Atomic Item + FB Trade Settlement](../social/screenshots/g12-fb-trade-settlement.png)
 
 历史背景：该脱敏 Verification Card 截取于人工验收前，因此显示 `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING`。之后 G12 技术验收已通过。图片记录了专项检查 45/45、真实 PostgreSQL 检查 12/12、Go 完整回归 379/379、Race 与 Vet、200 轮 Property Iteration、100 个同时 Settlement，以及 Windows/Linux/macOS Build。它不代表产品 Release。SHA-256：`161e2493863bb1c2cc93de35508529f713dc3ea35af76d3bbed8749b28d94517`。
+
+### G13 — Contribution Ledger Foundation
+
+![G13 Contribution Ledger Foundation](../social/screenshots/g13-contribution-ledger-foundation.png)
+
+历史背景：该脱敏卡片截取于人工验收前，因此显示 `READY_FOR_REVIEW · MANUAL ACCEPTANCE PENDING`。G13 技术验收与人工验收此后均已通过。它记录专项检查 41/41、真实 PostgreSQL 检查 19/19、Go 完整回归 420/420、Race 与 Vet、200 轮 Property Iteration、100 并发、三平台 Build，以及已知 G2 Node 95/96 限制。它不是 Release 证据。SHA-256：`cae1f1a2985a4c8f7ce954310b013c6529c9370ef30e33664ad78fe3c5ba250c`。

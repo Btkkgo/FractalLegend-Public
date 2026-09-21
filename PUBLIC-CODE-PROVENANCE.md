@@ -23,16 +23,18 @@ This mirror was assembled from an explicit allowlist into a new Git repository. 
 | `apps/game-server/internal/persistence/` | Fractal Legend project-owned G9 implementation | Character Aggregate repository, PostgreSQL adapter, tests, and versioned schema migration | Uses audited Go modules listed below |
 | `apps/game-server/internal/trade/` | Fractal Legend project-owned G10/G12 implementation | Server-authoritative item and FB Trade Domain, atomic settlement coordinator, repository contract, and synthetic tests | Standard library plus project persistence and Ledger packages |
 | `apps/game-server/internal/ledger/` | Fractal Legend project-owned G11 implementation | Server-authoritative FB Ledger Domain, repository contract, conservation rules, and synthetic tests | Standard library only |
+| `apps/game-server/internal/contribution/` | Fractal Legend project-owned G13 implementation | Versioned non-transferable eligibility policy, account and entry model, internal coordinator contract, and synthetic tests; no live producer | Standard library plus project Ledger model |
 | `apps/game-server/internal/persistence/postgres/ledger*.go` and `migrations/0003_fb_ledger.sql` | Fractal Legend project-owned G11 implementation | PostgreSQL Ledger adapter, integration/schema tests, and DDL; no database content | Uses audited Go modules listed below |
 | `apps/game-server/internal/persistence/postgres/trade.go`, `ledger_transaction.go`, `g12_trade_settlement_test.go`, and `migrations/0004_fb_trade_settlement.sql` | Fractal Legend project-owned G12 implementation | Shared-transaction Trade/Ledger adapter, synthetic integration tests, and DDL; no database content | Uses audited Go modules listed below |
+| `apps/game-server/internal/persistence/postgres/contribution*.go`, G13 update to `ledger_transaction.go` and `store.go`, and `migrations/0005_contribution_ledger.sql` | Fractal Legend project-owned G13 implementation | Atomic FB/Contribution coordinator, refund fail-closed guard, real PostgreSQL synthetic integration tests, and schema constraints; no database content | Uses audited Go modules listed below |
 | `docs/public/` | Fractal Legend public documentation | Sanitized bilingual project overview, status, roadmap, architecture, history, and approved media | No runtime dependency |
-| `docs/adr/0009-g10-trade-foundation.md` through `docs/adr/0011-g12-atomic-item-fb-trade-settlement.md` | Fractal Legend project-owned ADRs | Bilingual accepted decision records with private environment generalized | No runtime dependency |
-| `docs/devlog/G9-persistence-foundation.md` through `docs/devlog/G12-fb-trade-settlement.md` | Fractal Legend project-owned Devlogs | Bilingual technical results; private links and paths removed or generalized | No runtime dependency |
+| `docs/adr/0009-g10-trade-foundation.md` through `docs/adr/0012-g13-contribution-ledger-foundation.md` | Fractal Legend project-owned ADRs | Bilingual accepted decision records with private environment generalized | No runtime dependency |
+| `docs/devlog/G9-persistence-foundation.md` through `docs/devlog/G13-contribution-ledger-foundation.md` | Fractal Legend project-owned Devlogs | Bilingual technical results; private links and paths removed or generalized | No runtime dependency |
 | `docs/interactions/` | Fractal Legend curated engineering records | Bilingual decision summaries, not raw private conversations | No runtime dependency |
 | `docs/social/screenshots/` | Fractal Legend technical screenshots | Approved, sanitized validation screenshots; no account, credential, or local path visible | Image assets only |
 | `docs/public/assets/marketing/` | Owner-approved Fractal Legend marketing asset | Approved launch poster with recorded SHA-256 | Image asset only |
 
-The four `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL only and are not database dumps or player data.
+The five `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL only and are not database dumps or player data.
 
 ### Go dependency audit
 
@@ -78,16 +80,18 @@ The initial mirror excludes the complete private runtime assembly, `foundation/`
 | `apps/game-server/internal/persistence/` | Fractal Legend 项目自有 G9 实现 | Character Aggregate Repository、PostgreSQL Adapter、Test 与 Versioned Schema Migration | 使用下方已审计 Go Module |
 | `apps/game-server/internal/trade/` | Fractal Legend 项目自有 G10/G12 实现 | Server-authoritative Item 与 FB Trade Domain、原子 Settlement Coordinator、Repository Contract 与 Synthetic Test | Standard Library 加项目 Persistence 和 Ledger Package |
 | `apps/game-server/internal/ledger/` | Fractal Legend 项目自有 G11 实现 | Server-authoritative FB Ledger Domain、Repository Contract、Conservation Rule 与 Synthetic Test | 仅 Standard Library |
+| `apps/game-server/internal/contribution/` | Fractal Legend 项目自有 G13 实现 | 版本化不可转账资格规则、Account 与 Entry Model、内部 Coordinator Contract 和 Synthetic Test；无真实 Producer | Standard Library 加项目 Ledger Model |
 | `apps/game-server/internal/persistence/postgres/ledger*.go` 与 `migrations/0003_fb_ledger.sql` | Fractal Legend 项目自有 G11 实现 | PostgreSQL Ledger Adapter、Integration/Schema Test 与 DDL；不含 Database Content | 使用下方已审计 Go Module |
 | `apps/game-server/internal/persistence/postgres/trade.go`、`ledger_transaction.go`、`g12_trade_settlement_test.go` 与 `migrations/0004_fb_trade_settlement.sql` | Fractal Legend 项目自有 G12 实现 | 共用 Transaction 的 Trade/Ledger Adapter、Synthetic Integration Test 与 DDL；不含 Database Content | 使用下方已审计 Go Module |
+| `apps/game-server/internal/persistence/postgres/contribution*.go`、G13 对 `ledger_transaction.go` 与 `store.go` 的更新，以及 `migrations/0005_contribution_ledger.sql` | Fractal Legend 项目自有 G13 实现 | 原子 FB/Contribution Coordinator、Refund Fail-closed Guard、真实 PostgreSQL Synthetic Integration Test 与 Schema Constraint；不含 Database Content | 使用下方已审计 Go Module |
 | `docs/public/` | Fractal Legend 公开文档 | 已脱敏的双语 Project Overview、Status、Roadmap、Architecture、History 与已批准 Media | 无 Runtime Dependency |
-| `docs/adr/0009-g10-trade-foundation.md` 至 `docs/adr/0011-g12-atomic-item-fb-trade-settlement.md` | Fractal Legend 项目自有 ADR | 双语已验收 Decision Record，Private Environment 已泛化 | 无 Runtime Dependency |
-| `docs/devlog/G9-persistence-foundation.md` 至 `docs/devlog/G12-fb-trade-settlement.md` | Fractal Legend 项目自有 Devlog | 双语技术结果；已删除或泛化 Private Link 与 Path | 无 Runtime Dependency |
+| `docs/adr/0009-g10-trade-foundation.md` 至 `docs/adr/0012-g13-contribution-ledger-foundation.md` | Fractal Legend 项目自有 ADR | 双语已验收 Decision Record，Private Environment 已泛化 | 无 Runtime Dependency |
+| `docs/devlog/G9-persistence-foundation.md` 至 `docs/devlog/G13-contribution-ledger-foundation.md` | Fractal Legend 项目自有 Devlog | 双语技术结果；已删除或泛化 Private Link 与 Path | 无 Runtime Dependency |
 | `docs/interactions/` | Fractal Legend 整理后的 Engineering Record | 双语 Decision Summary，不是完整私人对话 | 无 Runtime Dependency |
 | `docs/social/screenshots/` | Fractal Legend Technical Screenshot | 已批准并脱敏；不显示 Account、Credential 或 Local Path | 仅 Image Asset |
 | `docs/public/assets/marketing/` | 所有者批准的 Fractal Legend Marketing Asset | 已批准 Launch Poster，并记录 SHA-256 | 仅 Image Asset |
 
-`internal/persistence/postgres/migrations/` 下的四个 `.sql` 文件是项目自有 Schema Migration，只包含 DDL，不是 Database Dump 或 Player Data。
+`internal/persistence/postgres/migrations/` 下的五个 `.sql` 文件是项目自有 Schema Migration，只包含 DDL，不是 Database Dump 或 Player Data。
 
 ### Go Dependency Audit
 

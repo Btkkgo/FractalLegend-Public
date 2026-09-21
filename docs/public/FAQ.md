@@ -30,6 +30,10 @@ Not automatically. On-chain rarity cannot bypass balance, progression, eligibili
 
 An internal server-authoritative FB Ledger Foundation exists from G11, and G12 uses it for atomic player Trade settlement. A production economy, wallet, real deposit, and withdrawal are not live.
 
+### Are Contribution Points live?
+
+G13 accepted an internal, non-transferable Contribution Ledger Foundation with a versioned 1:1 eligible FB system-spend rule. It has no real gameplay spend producer or Contribution spending. Linked FB refunds/reversals are temporarily blocked fail-closed; atomic FB and Contribution compensation is a hard gate before any real producer.
+
 ### Can I deposit or withdraw FB now?
 
 No. Wallets, real deposits, withdrawals, broadcast, confirmation, and reorg handling are not implemented.
@@ -89,6 +93,10 @@ Bitcoin 为目标资产生态提供更广泛的 Ownership 与 Provenance 背景�
 ### FB 上线了吗？
 
 G11 已建立内部 Server-authoritative FB Ledger Foundation，G12 使用它完成原子玩家 Trade Settlement。Production Economy、Wallet、真实 Deposit 与 Withdrawal 尚未上线。
+
+### Contribution Point 上线了吗？
+
+G13 已验收内部、不可转账的 Contribution Ledger Foundation，采用版本化的 1:1 合格 FB System Spend 规则。它没有真实游戏消费 Producer，也没有 Contribution Spend。关联的 FB Refund/Reversal 暂时按 Fail-closed 阻断；原子 FB 与 Contribution Compensation 是接入任何真实 Producer 前的强制 Gate。
 
 ### 现在可以充值或提现 FB 吗？
 
