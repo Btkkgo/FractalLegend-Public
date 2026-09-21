@@ -22,14 +22,16 @@ This mirror was assembled from an explicit allowlist into a new Git repository. 
 | `apps/game-server/internal/skills/registry.go` | Fractal Legend project-owned implementation | Generic skill registry and runtime override model; path-bearing fixtures are excluded | Standard library only |
 | `apps/game-server/internal/persistence/` | Fractal Legend project-owned G9 implementation | Character Aggregate repository, PostgreSQL adapter, tests, and versioned schema migration | Uses audited Go modules listed below |
 | `apps/game-server/internal/trade/` | Fractal Legend project-owned G10 implementation | Server-authoritative item Trade Domain, repository contract, audit model, and synthetic tests | Standard library plus project persistence package |
+| `apps/game-server/internal/ledger/` | Fractal Legend project-owned G11 implementation | Server-authoritative FB Ledger Domain, repository contract, conservation rules, and synthetic tests | Standard library only |
+| `apps/game-server/internal/persistence/postgres/ledger*.go` and `migrations/0003_fb_ledger.sql` | Fractal Legend project-owned G11 implementation | PostgreSQL Ledger adapter, integration/schema tests, and DDL; no database content | Uses audited Go modules listed below |
 | `docs/public/` | Fractal Legend public documentation | Sanitized bilingual project overview, status, roadmap, architecture, history, and approved media | No runtime dependency |
-| `docs/adr/0009-g10-trade-foundation.md` | Fractal Legend project-owned ADR | Bilingual accepted decision record with private environment generalized | No runtime dependency |
-| `docs/devlog/G9-persistence-foundation.md`, `docs/devlog/G10-trade-foundation.md` | Fractal Legend project-owned Devlogs | Bilingual technical results; private links and paths removed or generalized | No runtime dependency |
+| `docs/adr/0009-g10-trade-foundation.md`, `docs/adr/0010-g11-fb-ledger-foundation.md` | Fractal Legend project-owned ADRs | Bilingual accepted decision records with private environment generalized | No runtime dependency |
+| `docs/devlog/G9-persistence-foundation.md` through `docs/devlog/G11-fb-ledger-foundation.md` | Fractal Legend project-owned Devlogs | Bilingual technical results; private links and paths removed or generalized | No runtime dependency |
 | `docs/interactions/` | Fractal Legend curated engineering records | Bilingual decision summaries, not raw private conversations | No runtime dependency |
 | `docs/social/screenshots/` | Fractal Legend technical screenshots | Approved, sanitized validation screenshots; no account, credential, or local path visible | Image assets only |
 | `docs/public/assets/marketing/` | Owner-approved Fractal Legend marketing asset | Approved launch poster with recorded SHA-256 | Image asset only |
 
-The two `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL only and are not database dumps or player data.
+The three `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL only and are not database dumps or player data.
 
 ### Go dependency audit
 
@@ -74,14 +76,16 @@ The initial mirror excludes the complete private runtime assembly, `foundation/`
 | `apps/game-server/internal/skills/registry.go` | Fractal Legend 项目自有实现 | Generic Skill Registry 与 Runtime Override Model；排除包含路径的 Fixture | 仅 Standard Library |
 | `apps/game-server/internal/persistence/` | Fractal Legend 项目自有 G9 实现 | Character Aggregate Repository、PostgreSQL Adapter、Test 与 Versioned Schema Migration | 使用下方已审计 Go Module |
 | `apps/game-server/internal/trade/` | Fractal Legend 项目自有 G10 实现 | Server-authoritative Item Trade Domain、Repository Contract、Audit Model 与 Synthetic Test | Standard Library 加项目 Persistence Package |
+| `apps/game-server/internal/ledger/` | Fractal Legend 项目自有 G11 实现 | Server-authoritative FB Ledger Domain、Repository Contract、Conservation Rule 与 Synthetic Test | 仅 Standard Library |
+| `apps/game-server/internal/persistence/postgres/ledger*.go` 与 `migrations/0003_fb_ledger.sql` | Fractal Legend 项目自有 G11 实现 | PostgreSQL Ledger Adapter、Integration/Schema Test 与 DDL；不含 Database Content | 使用下方已审计 Go Module |
 | `docs/public/` | Fractal Legend 公开文档 | 已脱敏的双语 Project Overview、Status、Roadmap、Architecture、History 与已批准 Media | 无 Runtime Dependency |
-| `docs/adr/0009-g10-trade-foundation.md` | Fractal Legend 项目自有 ADR | 双语已验收 Decision Record，Private Environment 已泛化 | 无 Runtime Dependency |
-| `docs/devlog/G9-persistence-foundation.md`、`docs/devlog/G10-trade-foundation.md` | Fractal Legend 项目自有 Devlog | 双语技术结果；已删除或泛化 Private Link 与 Path | 无 Runtime Dependency |
+| `docs/adr/0009-g10-trade-foundation.md`、`docs/adr/0010-g11-fb-ledger-foundation.md` | Fractal Legend 项目自有 ADR | 双语已验收 Decision Record，Private Environment 已泛化 | 无 Runtime Dependency |
+| `docs/devlog/G9-persistence-foundation.md` 至 `docs/devlog/G11-fb-ledger-foundation.md` | Fractal Legend 项目自有 Devlog | 双语技术结果；已删除或泛化 Private Link 与 Path | 无 Runtime Dependency |
 | `docs/interactions/` | Fractal Legend 整理后的 Engineering Record | 双语 Decision Summary，不是完整私人对话 | 无 Runtime Dependency |
 | `docs/social/screenshots/` | Fractal Legend Technical Screenshot | 已批准并脱敏；不显示 Account、Credential 或 Local Path | 仅 Image Asset |
 | `docs/public/assets/marketing/` | 所有者批准的 Fractal Legend Marketing Asset | 已批准 Launch Poster，并记录 SHA-256 | 仅 Image Asset |
 
-`internal/persistence/postgres/migrations/` 下的两个 `.sql` 文件是项目自有 Schema Migration，只包含 DDL，不是 Database Dump 或 Player Data。
+`internal/persistence/postgres/migrations/` 下的三个 `.sql` 文件是项目自有 Schema Migration，只包含 DDL，不是 Database Dump 或 Player Data。
 
 ### Go Dependency Audit
 

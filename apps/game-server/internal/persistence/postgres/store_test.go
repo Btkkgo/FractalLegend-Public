@@ -77,6 +77,9 @@ func TestPostgresMigrationIsRepeatableAndRejectsFailedVersion(t *testing.T) {
 	if _, err := fs.Stat(migrations, "migrations/0002_trade_foundation.sql"); err != nil {
 		t.Fatalf("trade migration missing: %v", err)
 	}
+	if _, err := fs.Stat(migrations, "migrations/0003_fb_ledger.sql"); err != nil {
+		t.Fatalf("FB ledger migration missing: %v", err)
+	}
 }
 
 func TestPostgresRoundTripsAggregateAndRejectsStaleSave(t *testing.T) {

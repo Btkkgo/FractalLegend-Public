@@ -12,7 +12,7 @@
 
 Fractal Legend is a browser-native Legend-style MMORPG being built for the Fractal / Bitcoin ecosystem. Its direction combines classic combat, player-driven economies, digital ownership, Ordinals assets, and a modular social game world.
 
-Development is milestone-driven. The accepted server-authoritative G1–G10 foundation covers world movement, browser rendering, living entities, combat, monster AI, one Warrior skill, loot, inventory, equipment, character stats, PostgreSQL persistence, and secure item trading. This is an engineering foundation, not a public game release.
+Development is milestone-driven. The accepted server-authoritative G1–G11 foundation covers world movement, browser rendering, living entities, combat, monster AI, one Warrior skill, loot, inventory, equipment, character stats, PostgreSQL persistence, secure item trading, and an internal FB ledger. This is an engineering foundation, not a public game release.
 
 ### Repository role
 
@@ -31,7 +31,7 @@ The long-term design treats Fractal and Bitcoin as more than branding. Ownership
 | G1–G8 gameplay foundations | **FOUNDATION COMPLETE** | World, rendering, entities, combat, AI, one Warrior skill, loot, inventory, equipment, and runtime stats |
 | G9 Persistence Foundation | **FOUNDATION COMPLETE** | PostgreSQL Character Aggregate, reconnect, and full Game Server restart restore |
 | G10 Trade Foundation | **FOUNDATION COMPLETE** | Item-only secure trade domain; no Trade UI or FB settlement |
-| G11 FB Ledger Foundation | **NEXT** | Next public milestone; no G11 implementation is included in this mirror |
+| G11 FB Ledger Foundation | **FOUNDATION COMPLETE** | Internal server-authoritative ledger; no blockchain, deposit, withdrawal, wallet, or Trade-to-FB settlement |
 | Complete browser MMORPG | **IN DEVELOPMENT** | Accepted technical slices do not form a public release |
 | Wallet / blockchain deposit and withdrawal | **PLANNED** | Not live |
 | Ordinals activation | **PLANNED** | No production activation exists |
@@ -39,17 +39,18 @@ The long-term design treats Fractal and Bitcoin as more than branding. Ownership
 
 ### Latest accepted milestone
 
-**G10 — Trade Foundation: CLOSED / PASS**
+**G11 — FB Ledger Foundation: CLOSED / PASS**
 
-- Historical Node: **224/224 PASS**
-- Trade: **29/29 PASS**
-- Go: **290/290 PASS**
-- Windows process fixtures: **2/2 PASS**
-- Private canonical archive reference: `b47f7db006bf121f194bfb82808c3864c1c5f90e`
+- G11 tests: **44/44 PASS**
+- PostgreSQL Ledger integration: **11/11 PASS**
+- Full Go regression: **334/334 PASS**, 0 failures, 0 skips
+- Go Race: **PASS** across 14 packages
+- Node: **95/96 — KNOWN G2 ENVIRONMENT LIMITATION** caused only by the unavailable restricted Legacy Archive
+- Private canonical archive reference: `5e7eaf607fdfe238c3c135d10d9d28762be5515c`
 
 ### Public source snapshot
 
-The initial mirror publishes audited project-owned Go domains for AI, Character Stats, Combat Rules, Navigation, registries, PostgreSQL Persistence, and the G10 Trade Foundation. It includes unit tests and versioned schema migrations. It intentionally excludes Legacy seller source, private fixtures, Canonical exports, import tools, protected assets, local-environment integrations, and the complete private runtime assembly.
+The mirror publishes audited project-owned Go domains for AI, Character Stats, Combat Rules, Navigation, registries, PostgreSQL Persistence, the G10 Trade Foundation, and the G11 FB Ledger Foundation. It includes unit tests and versioned schema migrations. It intentionally excludes Legacy seller source, private fixtures, Canonical exports, import tools, protected assets, local-environment integrations, and the complete private runtime assembly.
 
 Run the public Go checks:
 
@@ -75,9 +76,10 @@ See [Public Code Provenance](PUBLIC-CODE-PROVENANCE.md) for the exact publicatio
 - [Media](docs/public/MEDIA.md)
 - [Technical Screenshots](docs/public/SCREENSHOTS.md)
 - [FAQ](docs/public/FAQ.md)
-- [G9–G10 Devlogs](docs/devlog/)
+- [G9–G11 Devlogs](docs/devlog/)
 - [Curated Interaction Records](docs/interactions/)
-- [Architecture Decision Record](docs/adr/0009-g10-trade-foundation.md)
+- [G10 Trade ADR](docs/adr/0009-g10-trade-foundation.md)
+- [G11 FB Ledger ADR](docs/adr/0010-g11-fb-ledger-foundation.md)
 - [Public Mirror Policy](PUBLIC-MIRROR-POLICY.md)
 - [Security Policy](SECURITY.md)
 
@@ -97,7 +99,7 @@ Fractal Legend has no announced public launch date. It is not a production servi
 
 Fractal Legend / 分形传奇是一款正在为 Fractal / Bitcoin 生态构建的浏览器原生传奇风格 MMORPG。项目方向结合经典战斗、玩家驱动经济、数字所有权、Ordinals 资产，以及模块化的社交游戏世界。
 
-开发按里程碑推进。已验收的 Server-authoritative G1–G10 Foundation 覆盖 World Movement、Browser Rendering、Living Entity、Combat、Monster AI、一项 Warrior Skill、Loot、Inventory、Equipment、Character Stats、PostgreSQL Persistence 和安全的 Item Trade。这是一套工程基础，并不代表游戏已经公开上线。
+开发按里程碑推进。已验收的 Server-authoritative G1–G11 Foundation 覆盖 World Movement、Browser Rendering、Living Entity、Combat、Monster AI、一项 Warrior Skill、Loot、Inventory、Equipment、Character Stats、PostgreSQL Persistence、安全的 Item Trade 和内部 FB Ledger。这是一套工程基础，并不代表游戏已经公开上线。
 
 ### 仓库定位
 
@@ -116,7 +118,7 @@ Public Mirror 不复制或重建 Private Repository History。更早里程碑 SH
 | G1–G8 Gameplay Foundation | **FOUNDATION COMPLETE** | World、Rendering、Entity、Combat、AI、一项 Warrior Skill、Loot、Inventory、Equipment 与 Runtime Stats |
 | G9 Persistence Foundation | **FOUNDATION COMPLETE** | PostgreSQL Character Aggregate、Reconnect 与完整 Game Server Restart Restore |
 | G10 Trade Foundation | **FOUNDATION COMPLETE** | 仅 Item 的安全 Trade Domain；不含 Trade UI 或 FB Settlement |
-| G11 FB Ledger Foundation | **NEXT** | 下一个公开里程碑；本镜像不包含 G11 Implementation |
+| G11 FB Ledger Foundation | **FOUNDATION COMPLETE** | 内部 Server-authoritative Ledger；不含 Blockchain、Deposit、Withdrawal、Wallet 或 Trade-to-FB Settlement |
 | 完整 Browser MMORPG | **IN DEVELOPMENT** | 已验收 Technical Slice 尚未组成公开 Release |
 | Wallet / Blockchain Deposit 与 Withdrawal | **PLANNED** | 尚未上线 |
 | Ordinals Activation | **PLANNED** | 不存在 Production Activation |
@@ -124,17 +126,18 @@ Public Mirror 不复制或重建 Private Repository History。更早里程碑 SH
 
 ### 最新已验收里程碑
 
-**G10 — Trade Foundation：CLOSED / PASS**
+**G11 — FB Ledger Foundation：CLOSED / PASS**
 
-- Historical Node：**224/224 PASS**
-- Trade：**29/29 PASS**
-- Go：**290/290 PASS**
-- Windows Process Fixture：**2/2 PASS**
-- Private Canonical Archive Reference：`b47f7db006bf121f194bfb82808c3864c1c5f90e`
+- G11 Test：**44/44 PASS**
+- PostgreSQL Ledger Integration：**11/11 PASS**
+- Go 完整回归：**334/334 PASS**、0 Fail、0 Skip
+- Go Race：14 个 Package **PASS**
+- Node：**95/96 — KNOWN G2 ENVIRONMENT LIMITATION**，唯一原因是受限制 Legacy Archive 不可用
+- Private Canonical Archive Reference：`5e7eaf607fdfe238c3c135d10d9d28762be5515c`
 
 ### 公开源码快照
 
-初始镜像公开经过审计、属于项目自有的 Go Domain，包括 AI、Character Stats、Combat Rules、Navigation、Registry、PostgreSQL Persistence 和 G10 Trade Foundation，并包含 Unit Test 与 Versioned Schema Migration。镜像明确排除 Legacy Seller Source、Private Fixture、Canonical Export、Import Tool、受保护 Asset、本地环境 Integration 和完整 Private Runtime Assembly。
+本镜像公开经过审计、属于项目自有的 Go Domain，包括 AI、Character Stats、Combat Rules、Navigation、Registry、PostgreSQL Persistence、G10 Trade Foundation 和 G11 FB Ledger Foundation，并包含 Unit Test 与 Versioned Schema Migration。镜像明确排除 Legacy Seller Source、Private Fixture、Canonical Export、Import Tool、受保护 Asset、本地环境 Integration 和完整 Private Runtime Assembly。
 
 运行公开 Go 检查：
 
@@ -160,9 +163,10 @@ go test ./...
 - [Media](docs/public/MEDIA.md)
 - [Technical Screenshot](docs/public/SCREENSHOTS.md)
 - [FAQ](docs/public/FAQ.md)
-- [G9–G10 Devlog](docs/devlog/)
+- [G9–G11 Devlog](docs/devlog/)
 - [整理后的 Interaction Record](docs/interactions/)
-- [Architecture Decision Record](docs/adr/0009-g10-trade-foundation.md)
+- [G10 Trade ADR](docs/adr/0009-g10-trade-foundation.md)
+- [G11 FB Ledger ADR](docs/adr/0010-g11-fb-ledger-foundation.md)
 - [Public Mirror Policy](PUBLIC-MIRROR-POLICY.md)
 - [Security Policy](SECURITY.md)
 

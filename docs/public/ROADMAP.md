@@ -9,10 +9,11 @@ The roadmap is milestone-driven. It does not promise dates.
 - G1–G8: world, rendering, living entities, combat, AI, one Warrior skill, loot, inventory, equipment, and runtime stats.
 - G9: PostgreSQL Character Aggregate persistence and restart restore.
 - G10: secure item Trade Foundation.
+- G11: server-authoritative internal FB Ledger Foundation with double-entry conservation, immutable history, idempotency, concurrency protection, reversal, reconciliation, and restart persistence.
 
 ### Next
 
-- G11 FB Ledger Foundation: define a server-authoritative internal ledger, conservation, immutable history, idempotency, concurrent-spend protection, and reconciliation.
+- Plan later economy and blockchain adapters as separately reviewed milestones; none are implemented by G11.
 - Continue the browser product experience using accepted server authority.
 - Define contribution and manufacturing boundaries without inventing live currency behavior.
 
@@ -42,10 +43,11 @@ Roadmap 按里程碑推进，不承诺日期。
 - G1–G8：World、Rendering、Living Entity、Combat、AI、一项 Warrior Skill、Loot、Inventory、Equipment 与 Runtime Stats。
 - G9：PostgreSQL Character Aggregate Persistence 与 Restart Restore。
 - G10：安全 Item Trade Foundation。
+- G11：Server-authoritative Internal FB Ledger Foundation，包含 Double-entry Conservation、Immutable History、Idempotency、Concurrency Protection、Reversal、Reconciliation 与 Restart Persistence。
 
 ### 下一步
 
-- G11 FB Ledger Foundation：定义 Server-authoritative Internal Ledger、Conservation、Immutable History、Idempotency、Concurrent-spend Protection 与 Reconciliation。
+- 把后续 Economy 与 Blockchain Adapter 作为独立审核阶段规划；G11 尚未实现这些能力。
 - 继续以已验收 Server Authority 扩展 Browser Product Experience。
 - 定义 Contribution 与 Manufacturing Boundary，不虚构 Live Currency Behavior。
 
