@@ -101,6 +101,9 @@ See [Public Code Provenance](PUBLIC-CODE-PROVENANCE.md) for the exact publicatio
 - [G16 Devlog](docs/devlog/G16-recycle-migration-foundation.md)
 - [G16 Interaction Record](docs/interactions/G16-recycle-migration-foundation.md)
 - [G16 Public Sync Allowlist](docs/public-sync/G16-PUBLIC-SYNC-CANDIDATE.md)
+- [G13–G15 Timestamp Hardening Devlog](docs/devlog/G13-G15-postgres-timestamp-hardening.md)
+- [G13–G15 Timestamp Hardening Interaction Record](docs/interactions/G13-G15-postgres-timestamp-hardening.md)
+- [G13–G15 Timestamp Hardening Public Sync Allowlist](docs/public-sync/G13-G15-TIMESTAMP-PUBLIC-SYNC-CANDIDATE.md)
 - [Public Mirror Policy](PUBLIC-MIRROR-POLICY.md)
 - [Security Policy](SECURITY.md)
 
@@ -209,6 +212,9 @@ go test ./...
 - [G16 Devlog](docs/devlog/G16-recycle-migration-foundation.md)
 - [G16 Interaction Record](docs/interactions/G16-recycle-migration-foundation.md)
 - [G16 Public Sync Allowlist](docs/public-sync/G16-PUBLIC-SYNC-CANDIDATE.md)
+- [G13–G15 时间持久化硬化 Devlog](docs/devlog/G13-G15-postgres-timestamp-hardening.md)
+- [G13–G15 时间持久化硬化 Interaction Record](docs/interactions/G13-G15-postgres-timestamp-hardening.md)
+- [G13–G15 时间持久化硬化公开同步清单](docs/public-sync/G13-G15-TIMESTAMP-PUBLIC-SYNC-CANDIDATE.md)
 - [Public Mirror Policy](PUBLIC-MIRROR-POLICY.md)
 - [Security Policy](SECURITY.md)
 

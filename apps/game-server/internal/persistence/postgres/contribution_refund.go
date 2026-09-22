@@ -131,7 +131,7 @@ func (s *Store) refundContributionSystemSpendTx(ctx context.Context, tx pgx.Tx, 
 	if playerFB.OwnerID != request.PlayerID || playerFB.OwnerType != ledger.OwnerPlayer || systemFB.OwnerType != ledger.OwnerSystem {
 		return contribution.RefundResult{}, contribution.ErrInvalidRefund
 	}
-	now := time.Now().UTC()
+	now := time.Now().UTC().Truncate(time.Microsecond)
 	draft := ledger.PostDraft{ID: newContributionID("fb-transaction"), Type: refundKind(request), Reference: ledger.LedgerReference{Type: "CONTRIBUTION_REFUND", ID: request.ReferenceID}, OriginalTransactionID: original.FBTransactionID, SpendClassification: ledger.SpendEligible, CreatedAt: now, Entries: []ledger.EntryDraft{{ID: newContributionID("fb-entry"), AccountID: original.PlayerFBAccountID, Amount: request.Amount}, {ID: newContributionID("fb-entry"), AccountID: original.SystemFBAccountID, Amount: -request.Amount}}}
 	if request.Reversal {
 		draft.Reason = "G14 contribution spend reversal"
@@ -175,7 +175,8 @@ func (s *Store) refundContributionSystemSpendTx(ctx context.Context, tx pgx.Tx, 
 	if err != nil {
 		return contribution.RefundResult{}, classifyContributionError(err)
 	}
-	return contribution.RefundResult{Compensation: comp, FBTransaction: posted, TotalRefunded: refunded + request.Amount, RemainingRefundable: original.EligibleSpend - refunded - request.Amount}, nil
+	// Return the persisted record so the first response and reference replay agree.
+	return loadContributionRefundByReferenceTx(ctx, tx, request.ReferenceID)
 }
 
 func refundKind(request contribution.RefundRequest) ledger.TransactionType {
@@ -200,6 +201,7 @@ func (s *Store) ContributionCompensations(ctx context.Context, playerID string) 
 		if err = rows.Scan(&c.ID, &c.OriginalEntryID, &c.OriginalFBTransactionID, &c.FBTransactionID, &c.PlayerID, &c.ReferenceID, &c.Amount, &c.AvailableReversed, &c.DebtCreated, &c.BalanceBefore, &c.BalanceAfter, &c.DebtBefore, &c.DebtAfter, &c.RuleVersion, &c.CreatedAt); err != nil {
 			return nil, classifyContributionError(err)
 		}
+		c.CreatedAt = c.CreatedAt.UTC()
 		result = append(result, c)
 	}
 	return result, classifyContributionError(rows.Err())
@@ -211,6 +213,7 @@ func loadContributionRefundByReferenceTx(ctx context.Context, tx pgx.Tx, referen
 	if err != nil {
 		return contribution.RefundResult{}, classifyContributionError(err)
 	}
+	c.CreatedAt = c.CreatedAt.UTC()
 	posted, err := loadLedgerTransactionTx(ctx, tx, "transaction_id=$1", c.FBTransactionID)
 	if err != nil {
 		return contribution.RefundResult{}, err

@@ -114,6 +114,7 @@ func (s *Store) LedgerAuditEvents(ctx context.Context, transactionID string) ([]
 		if err = rows.Scan(&event.Sequence, &event.TransactionID, &event.Reference.Type, &event.Reference.ID, &event.AccountIDs, &event.Amount, &event.Type, &event.Result, &event.OccurredAt); err != nil {
 			return nil, classifyLedgerError(err)
 		}
+		event.OccurredAt = event.OccurredAt.UTC()
 		result = append(result, event)
 	}
 	if err = rows.Err(); err != nil {
@@ -158,6 +159,7 @@ func loadLedgerTransactionTx(ctx context.Context, tx pgx.Tx, predicate string, a
 	if err != nil {
 		return ledger.LedgerTransaction{}, classifyLedgerError(err)
 	}
+	value.CreatedAt = value.CreatedAt.UTC()
 	rows, err := tx.Query(ctx, `SELECT entry_id,transaction_id,account_id,entry_type,amount,direction,balance_before,balance_after,created_at FROM fb_ledger_entries WHERE transaction_id=$1 ORDER BY entry_order`, value.ID)
 	if err != nil {
 		return ledger.LedgerTransaction{}, classifyLedgerError(err)
@@ -168,6 +170,7 @@ func loadLedgerTransactionTx(ctx context.Context, tx pgx.Tx, predicate string, a
 		if err = rows.Scan(&entry.ID, &entry.TransactionID, &entry.AccountID, &entry.EntryType, &entry.Amount, &entry.Direction, &entry.BalanceBefore, &entry.BalanceAfter, &entry.CreatedAt); err != nil {
 			return ledger.LedgerTransaction{}, classifyLedgerError(err)
 		}
+		entry.CreatedAt = entry.CreatedAt.UTC()
 		value.Entries = append(value.Entries, entry)
 	}
 	return value, classifyLedgerError(rows.Err())

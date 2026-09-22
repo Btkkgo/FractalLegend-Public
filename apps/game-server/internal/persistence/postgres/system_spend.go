@@ -99,7 +99,7 @@ func (s *Store) postSystemSpendTx(ctx context.Context, tx pgx.Tx, intent systems
 		ContributionAmount: intent.ContributionAmount, RefundStatus: systemspend.RefundNone,
 		Refundable: intent.Refundable, PartialRefundAllowed: intent.PartialRefundAllowed,
 		Status: "COMPLETED", Metadata: normalizeMetadata(intent.Metadata),
-		CreatedAt: time.Now().UTC(), CompletedAt: time.Now().UTC(),
+		CreatedAt: time.Now().UTC().Truncate(time.Microsecond), CompletedAt: time.Now().UTC().Truncate(time.Microsecond),
 	}
 	if intent.Eligible {
 		var preexisting bool
@@ -173,7 +173,8 @@ func (s *Store) postSystemSpendTx(ctx context.Context, tx pgx.Tx, intent systems
 			return systemspend.SystemSpend{}, err
 		}
 	}
-	return value, nil
+	// Return PostgreSQL's stored value, as the replay and snapshot paths do.
+	return loadSystemSpendTx(ctx, tx, intent.OperationID)
 }
 
 func sameSystemSpendIntent(value systemspend.SystemSpend, intent systemspend.ResolvedIntent) bool {
@@ -211,6 +212,8 @@ func loadSystemSpendTx(ctx context.Context, tx pgx.Tx, operationID string) (syst
 	if err != nil {
 		return systemspend.SystemSpend{}, err
 	}
+	value.CreatedAt = value.CreatedAt.UTC()
+	value.CompletedAt = value.CompletedAt.UTC()
 	if contributionID != nil {
 		value.ContributionEntryID = *contributionID
 	}

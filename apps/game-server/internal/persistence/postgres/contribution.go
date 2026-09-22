@@ -18,15 +18,25 @@ func (s *Store) CreateContributionAccount(ctx context.Context, playerID string) 
 	if s == nil || s.pool == nil || playerID == "" || len(playerID) > 128 {
 		return contribution.Account{}, contribution.ErrInvalidAccount
 	}
-	now := time.Now().UTC()
-	value := contribution.Account{PlayerID: playerID, Revision: 1, CreatedAt: now, UpdatedAt: now}
-	_, err := s.pool.Exec(ctx, `INSERT INTO contribution_accounts(player_id,balance,revision,created_at,updated_at) VALUES($1,0,1,$2,$2)`, playerID, now)
-	return value, classifyContributionError(err)
+	now := time.Now().UTC().Truncate(time.Microsecond)
+	var value contribution.Account
+	err := s.pool.QueryRow(ctx, `INSERT INTO contribution_accounts(player_id,balance,revision,created_at,updated_at) VALUES($1,0,1,$2,$2) RETURNING player_id,balance,recovery_debt,review_required,revision,created_at,updated_at`, playerID, now).
+		Scan(&value.PlayerID, &value.Balance, &value.RecoveryDebt, &value.ReviewRequired, &value.Revision, &value.CreatedAt, &value.UpdatedAt)
+	if err != nil {
+		return contribution.Account{}, classifyContributionError(err)
+	}
+	value.CreatedAt = value.CreatedAt.UTC()
+	value.UpdatedAt = value.UpdatedAt.UTC()
+	return value, nil
 }
 
 func (s *Store) LoadContributionAccount(ctx context.Context, playerID string) (contribution.Account, error) {
 	var value contribution.Account
 	err := s.pool.QueryRow(ctx, `SELECT player_id,balance,recovery_debt,review_required,revision,created_at,updated_at FROM contribution_accounts WHERE player_id=$1`, playerID).Scan(&value.PlayerID, &value.Balance, &value.RecoveryDebt, &value.ReviewRequired, &value.Revision, &value.CreatedAt, &value.UpdatedAt)
+	if err == nil {
+		value.CreatedAt = value.CreatedAt.UTC()
+		value.UpdatedAt = value.UpdatedAt.UTC()
+	}
 	return value, classifyContributionError(err)
 }
 
@@ -115,7 +125,7 @@ func (s *Store) postContributionSystemSpendTx(ctx context.Context, tx pgx.Tx, re
 	if err = s.checkContributionFailure(contribution.FailureBeforeFBDebit); err != nil {
 		return contribution.PostingResult{}, err
 	}
-	now := time.Now().UTC()
+	now := time.Now().UTC().Truncate(time.Microsecond)
 	draft := ledger.PostDraft{
 		ID: newContributionID("fb-transaction"), Type: ledger.TransactionSystemSpend,
 		Reference:           ledger.LedgerReference{Type: "CONTRIBUTION_SYSTEM_SPEND", ID: key},
@@ -186,12 +196,25 @@ func (s *Store) postContributionSystemSpendTx(ctx context.Context, tx pgx.Tx, re
 	if err = s.checkContributionFailure(contribution.FailureBeforeFinalState); err != nil {
 		return contribution.PostingResult{}, err
 	}
-	return contribution.PostingResult{Entry: entry, FBTransaction: posted}, nil
+	// Read the persisted shape from PostgreSQL while still in the transaction.
+	// The first response then has the same timestamp representation as replay.
+	persisted, err := loadContributionBySourceTx(ctx, tx, request)
+	if err != nil {
+		return contribution.PostingResult{}, err
+	}
+	posted, err = loadLedgerTransactionTx(ctx, tx, "transaction_id=$1", persisted.FBTransactionID)
+	if err != nil {
+		return contribution.PostingResult{}, err
+	}
+	return contribution.PostingResult{Entry: persisted, FBTransaction: posted}, nil
 }
 
 func loadContributionBySourceTx(ctx context.Context, tx pgx.Tx, request contribution.SpendRequest) (contribution.Entry, error) {
 	var value contribution.Entry
 	err := tx.QueryRow(ctx, `SELECT entry_id,player_id,player_fb_account_id,system_fb_account_id,source,source_id,eligible_spend,amount,debt_settled,balance_before,balance_after,rule_version,fb_transaction_id,created_at FROM contribution_entries WHERE source=$1 AND source_id=$2 AND rule_version=$3`, request.Source, request.SourceID, request.RuleVersion).Scan(&value.ID, &value.PlayerID, &value.PlayerFBAccountID, &value.SystemFBAccountID, &value.Source, &value.SourceID, &value.EligibleSpend, &value.Amount, &value.DebtSettled, &value.BalanceBefore, &value.BalanceAfter, &value.RuleVersion, &value.FBTransactionID, &value.CreatedAt)
+	if err == nil {
+		value.CreatedAt = value.CreatedAt.UTC()
+	}
 	return value, classifyContributionError(err)
 }
 
@@ -207,6 +230,7 @@ func (s *Store) ContributionEntries(ctx context.Context, playerID string) ([]con
 		if err = rows.Scan(&value.ID, &value.PlayerID, &value.PlayerFBAccountID, &value.SystemFBAccountID, &value.Source, &value.SourceID, &value.EligibleSpend, &value.Amount, &value.DebtSettled, &value.BalanceBefore, &value.BalanceAfter, &value.RuleVersion, &value.FBTransactionID, &value.CreatedAt); err != nil {
 			return nil, classifyContributionError(err)
 		}
+		value.CreatedAt = value.CreatedAt.UTC()
 		result = append(result, value)
 	}
 	return result, classifyContributionError(rows.Err())
@@ -224,6 +248,7 @@ func (s *Store) ContributionAuditEvents(ctx context.Context, playerID string) ([
 		if err = rows.Scan(&value.Sequence, &value.EntryID, &value.PlayerID, &value.Source, &value.SourceID, &value.RuleVersion, &value.Amount, &value.FBTransactionID, &value.CreatedAt); err != nil {
 			return nil, classifyContributionError(err)
 		}
+		value.CreatedAt = value.CreatedAt.UTC()
 		result = append(result, value)
 	}
 	return result, classifyContributionError(rows.Err())
