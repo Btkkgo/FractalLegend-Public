@@ -8,9 +8,9 @@ Fractal Legend separates monetary assets, progression values, reputation, and ma
 |---|---|---|---|
 | FB | Long-term primary economic asset for trading, transfers, deposits and withdrawals | Internal player-Trade settlement is implemented | Internal Ledger and direct player-Trade settlement are **FOUNDATION COMPLETE**; real deposits and withdrawals are **NOT LIVE** |
 | Contribution Points | Future activation, manufacturing, advanced requirements and system progression | Non-transferable | Internal G13–G14 Ledger and refund recovery **FOUNDATION COMPLETE**; production consumption and live issuance absent |
-| Reputation | Participation, guilds, activities and long-term behavior | Not a withdrawable currency | **PLANNED** |
+| Reputation | Participation, guilds, activities and long-term behavior | Non-transferable and not withdrawable | Internal G16 account and recycle output **FOUNDATION COMPLETE**; production rules and final caps absent |
 | Black Iron Ore | Game material for mining, crafting and possible activation/economy rules | Material rules not finalized | **PLANNED** |
-| Other materials | Crafting and progression inputs | Defined per future system | **PLANNED** |
+| Other materials | Crafting and progression inputs | Defined per system | G16 synthetic recycle material foundation complete; production material economy pending |
 
 ### FB
 
@@ -26,7 +26,7 @@ G13 established a non-transferable, credit-only Contribution Ledger. `CONTRIBUTI
 
 ### Reputation
 
-Reputation is intended to represent participation, guild activity, events, and sustained behavior. It is not a withdrawable currency.
+Reputation is intended to represent participation, guild activity, events, and sustained behavior. G16 added a non-transferable internal account and immutable recycle credit, with production rules disabled. Final caps and diminishing returns remain undecided. Recycle creates no FB, Contribution, or Black Iron Ore and returns no more than 50% of verified same-material input in the internal rule boundary.
 
 ### Black Iron Ore and mining
 
@@ -50,9 +50,9 @@ Fractal Legend 将货币资产、成长数值、Reputation 和 Material 分开�
 |---|---|---|---|
 | FB | 长期主要经济资产，用于交易、转账、充值和提现 | 已实现内部玩家 Trade Settlement | Internal Ledger 与 Direct Player Trade Settlement 已达到 **FOUNDATION COMPLETE**；真实充值与提现 **NOT LIVE** |
 | Contribution Points | 未来的 Asset Activation、Manufacturing、Advanced Requirement 与 System Progression | 不可转账 | 内部 G13–G14 Ledger 与 Refund Recovery **FOUNDATION COMPLETE**；尚无生产用消耗与真实发放入口 |
-| Reputation | Participation、Guild、活动与长期行为 | 不是可提现货币 | **PLANNED** |
+| Reputation | Participation、Guild、活动与长期行为 | 不可转账、不可提现 | G16 内部账户与回收产出已达 **FOUNDATION COMPLETE**；没有生产规则与最终上限 |
 | Black Iron Ore | 用于 Mining、Crafting 和可能的 Activation / Economy Rule 的游戏材料 | Material Rule 尚未确定 | **PLANNED** |
-| Other Materials | Crafting 与 Progression Input | 由未来系统分别定义 | **PLANNED** |
+| Other Materials | Crafting 与 Progression Input | 由各系统定义 | G16 合成测试材料回收基础已完成；生产材料经济仍待确定 |
 
 ### FB
 
@@ -68,7 +68,7 @@ G13 建立不可转账、仅 Credit 的 Contribution Ledger。`CONTRIBUTION_RULE
 
 ### Reputation
 
-Reputation 计划表达 Participation、Guild Activity、Event 和长期行为。它不是可提现货币。
+Reputation 计划表达 Participation、Guild Activity、Event 和长期行为。G16 新增不可转账的内部账户及不可变回收 Credit，生产规则保持禁用。最终上限与递减收益尚未决定。回收不创建 FB、Contribution 或黑铁矿石；内部规则边界中，同种材料返还不超过可核验投入的 50%。
 
 ### Black Iron Ore 与 Mining
 

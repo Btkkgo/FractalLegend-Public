@@ -28,14 +28,16 @@ This mirror was assembled from an explicit allowlist into a new Git repository. 
 | `apps/game-server/internal/persistence/postgres/trade.go`, `ledger_transaction.go`, `g12_trade_settlement_test.go`, and `migrations/0004_fb_trade_settlement.sql` | Fractal Legend project-owned G12 implementation | Shared-transaction Trade/Ledger adapter, synthetic integration tests, and DDL; no database content | Uses audited Go modules listed below |
 | `apps/game-server/internal/persistence/postgres/contribution*.go`, G13 update to `ledger_transaction.go` and `store.go`, and `migrations/0005_contribution_ledger.sql` | Fractal Legend project-owned G13 implementation | Atomic FB/Contribution coordinator, refund fail-closed guard, real PostgreSQL synthetic integration tests, and schema constraints; no database content | Uses audited Go modules listed below |
 | `apps/game-server/internal/contribution/recovery*.go`, `internal/persistence/postgres/contribution_refund*.go`, G14 update to `ledger_transaction.go`, and `migrations/0006_contribution_refund.sql` | Fractal Legend project-owned G14 implementation | Atomic refund recovery, synthetic tests, and DDL; no live producer, database content, or restricted asset | Uses audited Go modules listed below |
+| `apps/game-server/internal/systemspend/`, `internal/persistence/postgres/system_spend*.go`, and `migrations/0007_system_spend.sql` | Fractal Legend project-owned G15 implementation | Internal eligible-spend orchestration, synthetic tests, and DDL; no live producer or database content | Uses audited Go modules listed below |
+| `apps/game-server/internal/recycle/`, `internal/persistence/postgres/recycle*.go`, and `migrations/0008_recycle_foundation.sql` | Fractal Legend project-owned G16 implementation | Internal recycle domain, atomic PostgreSQL settlement, synthetic tests, immutable receipt, and DDL; no live gameplay entry or restricted asset | Uses audited Go modules listed below |
 | `docs/public/` | Fractal Legend public documentation | Sanitized bilingual project overview, status, roadmap, architecture, history, and approved media | No runtime dependency |
-| `docs/adr/0009-g10-trade-foundation.md` through `docs/adr/0013-g14-contribution-refund-reversal.md` | Fractal Legend project-owned ADRs | Bilingual accepted decision records with private environment generalized | No runtime dependency |
-| `docs/devlog/G9-persistence-foundation.md` through `docs/devlog/G14-contribution-refund-reversal.md` | Fractal Legend project-owned Devlogs | Bilingual technical results; private links and paths removed or generalized | No runtime dependency |
+| `docs/adr/0009-g10-trade-foundation.md` through `docs/adr/0015-g16-recycle-migration-foundation.md` | Fractal Legend project-owned ADRs | Bilingual accepted decision records with private environment generalized | No runtime dependency |
+| `docs/devlog/G9-persistence-foundation.md` through `docs/devlog/G16-recycle-migration-foundation.md` | Fractal Legend project-owned Devlogs | Bilingual technical results, including the G16 CI failure and repair; private links and paths removed or generalized | No runtime dependency |
 | `docs/interactions/` | Fractal Legend curated engineering records | Bilingual decision summaries, not raw private conversations | No runtime dependency |
 | `docs/social/screenshots/` | Fractal Legend technical screenshots | Approved, sanitized validation screenshots; no account, credential, or local path visible | Image assets only |
 | `docs/public/assets/marketing/` | Owner-approved Fractal Legend marketing asset | Approved launch poster with recorded SHA-256 | Image asset only |
 
-The six `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL only and are not database dumps or player data.
+The eight `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL only and are not database dumps or player data.
 
 ### Go dependency audit
 
@@ -86,14 +88,16 @@ The initial mirror excludes the complete private runtime assembly, `foundation/`
 | `apps/game-server/internal/persistence/postgres/trade.go`、`ledger_transaction.go`、`g12_trade_settlement_test.go` 与 `migrations/0004_fb_trade_settlement.sql` | Fractal Legend 项目自有 G12 实现 | 共用 Transaction 的 Trade/Ledger Adapter、Synthetic Integration Test 与 DDL；不含 Database Content | 使用下方已审计 Go Module |
 | `apps/game-server/internal/persistence/postgres/contribution*.go`、G13 对 `ledger_transaction.go` 与 `store.go` 的更新，以及 `migrations/0005_contribution_ledger.sql` | Fractal Legend 项目自有 G13 实现 | 原子 FB/Contribution Coordinator、Refund Fail-closed Guard、真实 PostgreSQL Synthetic Integration Test 与 Schema Constraint；不含 Database Content | 使用下方已审计 Go Module |
 | `apps/game-server/internal/contribution/recovery*.go`、`internal/persistence/postgres/contribution_refund*.go`、G14 对 `ledger_transaction.go` 的更新与 `migrations/0006_contribution_refund.sql` | Fractal Legend 项目自有 G14 实现 | 原子退款恢复、Synthetic Test 与 DDL；无真实 Producer、Database Content 或受限素材 | 使用下方已审计 Go Module |
+| `apps/game-server/internal/systemspend/`、`internal/persistence/postgres/system_spend*.go` 与 `migrations/0007_system_spend.sql` | Fractal Legend 项目自有 G15 实现 | 内部合格消费编排、Synthetic Test 与 DDL；无真实 Producer 或 Database Content | 使用下方已审计 Go Module |
+| `apps/game-server/internal/recycle/`、`internal/persistence/postgres/recycle*.go` 与 `migrations/0008_recycle_foundation.sql` | Fractal Legend 项目自有 G16 实现 | 内部回收 Domain、PostgreSQL 原子结算、Synthetic Test、不可变 Receipt 与 DDL；无真实玩法入口或受限素材 | 使用下方已审计 Go Module |
 | `docs/public/` | Fractal Legend 公开文档 | 已脱敏的双语 Project Overview、Status、Roadmap、Architecture、History 与已批准 Media | 无 Runtime Dependency |
-| `docs/adr/0009-g10-trade-foundation.md` 至 `docs/adr/0013-g14-contribution-refund-reversal.md` | Fractal Legend 项目自有 ADR | 双语已验收 Decision Record，Private Environment 已泛化 | 无 Runtime Dependency |
-| `docs/devlog/G9-persistence-foundation.md` 至 `docs/devlog/G14-contribution-refund-reversal.md` | Fractal Legend 项目自有 Devlog | 双语技术结果；已删除或泛化 Private Link 与 Path | 无 Runtime Dependency |
+| `docs/adr/0009-g10-trade-foundation.md` 至 `docs/adr/0015-g16-recycle-migration-foundation.md` | Fractal Legend 项目自有 ADR | 双语已验收 Decision Record，Private Environment 已泛化 | 无 Runtime Dependency |
+| `docs/devlog/G9-persistence-foundation.md` 至 `docs/devlog/G16-recycle-migration-foundation.md` | Fractal Legend 项目自有 Devlog | 双语技术结果，包括 G16 CI 故障及修复；已删除或泛化 Private Link 与 Path | 无 Runtime Dependency |
 | `docs/interactions/` | Fractal Legend 整理后的 Engineering Record | 双语 Decision Summary，不是完整私人对话 | 无 Runtime Dependency |
 | `docs/social/screenshots/` | Fractal Legend Technical Screenshot | 已批准并脱敏；不显示 Account、Credential 或 Local Path | 仅 Image Asset |
 | `docs/public/assets/marketing/` | 所有者批准的 Fractal Legend Marketing Asset | 已批准 Launch Poster，并记录 SHA-256 | 仅 Image Asset |
 
-`internal/persistence/postgres/migrations/` 下的六个 `.sql` 文件是项目自有 Schema Migration，只包含 DDL，不是 Database Dump 或 Player Data。
+`internal/persistence/postgres/migrations/` 下的八个 `.sql` 文件是项目自有 Schema Migration，只包含 DDL，不是 Database Dump 或 Player Data。
 
 ### Go Dependency Audit
 

@@ -412,12 +412,13 @@ func TestG15MigrationUpgradesG14SchemaWithoutLosingAccounts(t *testing.T) {
 	store := integrationStore(t)
 	ctx := context.Background()
 	old := fstest.MapFS{}
+	g15 := fstest.MapFS{}
 	entries, err := fs.ReadDir(migrations, "migrations")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, entry := range entries {
-		if len(entry.Name()) < 5 || entry.Name()[:4] > "0006" {
+		if len(entry.Name()) < 5 || entry.Name()[:4] > "0007" {
 			continue
 		}
 		name := "migrations/" + entry.Name()
@@ -425,7 +426,10 @@ func TestG15MigrationUpgradesG14SchemaWithoutLosingAccounts(t *testing.T) {
 		if readErr != nil {
 			t.Fatal(readErr)
 		}
-		old[name] = &fstest.MapFile{Data: contents}
+		g15[name] = &fstest.MapFile{Data: contents}
+		if entry.Name()[:4] <= "0006" {
+			old[name] = &fstest.MapFile{Data: contents}
+		}
 	}
 	if len(old) != 6 {
 		t.Fatalf("historical migration count=%d", len(old))
@@ -436,10 +440,10 @@ func TestG15MigrationUpgradesG14SchemaWithoutLosingAccounts(t *testing.T) {
 	if _, err = store.pool.Exec(ctx, `INSERT INTO contribution_accounts(player_id,balance,recovery_debt,revision,created_at,updated_at) VALUES('g15-upgrade-player',0,0,1,now(),now())`); err != nil {
 		t.Fatal(err)
 	}
-	if err = store.Migrate(ctx); err != nil {
+	if err = store.MigrateFS(ctx, g15); err != nil {
 		t.Fatal(err)
 	}
-	if err = store.Migrate(ctx); err != nil {
+	if err = store.MigrateFS(ctx, g15); err != nil {
 		t.Fatal(err)
 	}
 	var versions, accounts, spends int

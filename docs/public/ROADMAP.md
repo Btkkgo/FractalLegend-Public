@@ -13,12 +13,15 @@ The roadmap is milestone-driven. It does not promise dates.
 - G12: atomic item + FB player Trade settlement with revision-bound offers, Gross postings, 0% fee, rollback, and restart replay.
 - G13: internal non-transferable Contribution Ledger with versioned 1:1 eligible-system-spend rule, atomic FB linkage, idempotency, rollback, reconciliation, and no live producer.
 - G14: atomic linked FB refund/reversal and Contribution compensation with bounded partial refunds, recovery debt, future-credit debt repayment, and review hold; no live producer.
+- G15: internal Eligible System Spend orchestration over the existing ledgers; no live gameplay producer.
+- G16: internal Recycle Migration Foundation with atomic item consumption, allowed material and non-transferable Reputation output, immutable canonical receipt, and no production rule or gameplay entry.
 
 ### Next
 
-- Plan later economy and blockchain adapters as separately reviewed milestones; G13 adds no live deposit, withdrawal, wallet, or chain feature.
+- Plan later economy and blockchain adapters as separately reviewed milestones; no live deposit, withdrawal, wallet, or chain feature exists.
 - Continue the browser product experience using accepted server authority.
 - The G14 refund/compensation hard gate is closed. A real eligible system-spend producer, production Contribution spending, and manufacturing use remain separate future work.
+- G16 completed only the internal recycle foundation. Production recycle rules, Reputation caps, gameplay integration, and Mining require separate review.
 
 ### Future
 
@@ -50,12 +53,15 @@ Roadmap 按里程碑推进，不承诺日期。
 - G12：原子 Item + FB 玩家 Trade Settlement，包含 Revision-bound Offer、Gross Posting、0% Fee、Rollback 与 Restart Replay。
 - G13：内部不可转账的 Contribution Ledger，包含版本化 1:1 合格 System Spend Rule、原子 FB 关联、Idempotency、Rollback 与 Reconciliation；尚无真实 Producer。
 - G14：原子关联 FB Refund/Reversal 与 Contribution Compensation，支持有上限的部分退款、Recovery Debt、未来 Credit 先偿债与 Review Hold；尚无真实 Producer。
+- G15：在现有账本上建立内部 Eligible System Spend 编排；尚无真实玩法 Producer。
+- G16：内部 Recycle Migration Foundation，包括原子物品消费、允许材料与不可转让 Reputation 产出、不可变规范 Receipt；没有生产规则或玩法入口。
 
 ### 下一步
 
-- 把后续 Economy 与 Blockchain Adapter 作为独立审核阶段规划；G13 没有新增真实 Deposit、Withdrawal、Wallet 或 Chain 功能。
+- 把后续 Economy 与 Blockchain Adapter 作为独立审核阶段规划；目前没有真实 Deposit、Withdrawal、Wallet 或 Chain 功能。
 - 继续以已验收 Server Authority 扩展 Browser Product Experience。
 - G14 Refund/Compensation 硬门已关闭。真实合格 System Spend Producer、生产用 Contribution 消费与 Manufacturing 用途仍须作为独立未来工作。
+- G16 只完成内部回收基础。生产回收规则、Reputation 上限、玩法集成及 Mining 都需要分别审查。
 
 ### 未来
 

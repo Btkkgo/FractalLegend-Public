@@ -27,6 +27,7 @@ type Store struct {
 	ledgerFailureInjector       func(string) error
 	contributionFailureInjector func(string) error
 	systemSpendFailureInjector  func(string) error
+	recycleFailureInjector      func(string) error
 }
 
 func Open(ctx context.Context, databaseURL string) (*Store, error) {
