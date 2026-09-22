@@ -106,6 +106,16 @@ func (s *Store) refundContributionSystemSpendTx(ctx context.Context, tx pgx.Tx, 
 	if refunded != compensated || refunded < 0 || refunded > original.EligibleSpend {
 		return contribution.RefundResult{}, contribution.ErrManualReview
 	}
+	// G15 snapshots refund permissions on the immutable spend. Historical G13
+	// postings have no SystemSpend row and retain their G14 behavior.
+	var refundable, partialAllowed bool
+	policyErr := tx.QueryRow(ctx, `SELECT refundable,partial_refund_allowed FROM system_spends WHERE fb_transaction_id=$1`, original.FBTransactionID).Scan(&refundable, &partialAllowed)
+	if policyErr != nil && !errors.Is(policyErr, pgx.ErrNoRows) {
+		return contribution.RefundResult{}, policyErr
+	}
+	if policyErr == nil && (!refundable || (!partialAllowed && request.Amount != original.EligibleSpend-refunded)) {
+		return contribution.RefundResult{}, contribution.ErrInvalidRefund
+	}
 	if request.Amount > original.EligibleSpend-refunded {
 		return contribution.RefundResult{}, contribution.ErrOverRefund
 	}
