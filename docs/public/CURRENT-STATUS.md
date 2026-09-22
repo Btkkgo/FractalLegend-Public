@@ -23,13 +23,14 @@ Updated for the sanitized public mirror on 2026-09-22. “Foundation Complete”
 | G15 Eligible System Spend | **FOUNDATION COMPLETE** | Internal orchestration; no live gameplay producer |
 | G16 Recycle Migration | **FOUNDATION COMPLETE** | Internal material + Reputation settlement with immutable receipt; production rules and gameplay entry disabled |
 | G17 Black Iron Emission Pool | **FOUNDATION COMPLETE** | Versioned immutable global capacity; no player ore or production ratio |
+| G18 Mining Block Reservation | **FOUNDATION COMPLETE** | Atomic block reward reservation, recovery debt, immutable replay; no distribution |
 | Complete browser MMORPG | **IN DEVELOPMENT** | Accepted slices do not form a public release |
 | Multi-class gameplay | **PLANNED** | Warrior is the only confirmed Web runtime class |
 | Boss / Party / Team Dungeon | **PLANNED** | No accepted implementation |
 | Guild / Siege | **PLANNED** | No accepted implementation |
 | Wallet / blockchain | **PLANNED** | No live deposit, withdrawal, or chain adapter |
 | Ordinals activation | **PLANNED** | No production verification or activation |
-| Mining | **PLANNED** | G17 has capacity accounting only; no mining block, power, tool, reward, or player ore |
+| Player mining and reward distribution | **PLANNED** | G18 reserves block capacity only; no miners, power, tools, maps, or player ore |
 | Social / voice / video / feed | **PLANNED / RESEARCH** | No accepted implementation |
 
 ### Repository topology
@@ -38,7 +39,7 @@ The private canonical repository preserves complete internal development and acc
 
 ### Latest closed milestone
 
-G17 technical and manual acceptance are PASS. The accepted private PR and post-merge canonical CI each passed 6/6 jobs: Go Test 511/511, Go Race 511/511, zero skipped, Vet, and Linux/Windows/macOS builds. An eligible G15 system spend can create versioned immutable capacity entries and receipts in one PostgreSQL global pool; negative entries compensate G14 refunds/reversals. Reconciliation checks conservation and authoritative source links. **Emission capacity is not player ore.** `DEV_G17_1_TO_1` is test/development only; the production emission ratio is NOT FINALIZED. No player ore, Mining Block, Power, Tool, reward distribution, or Bun migration exists. The G16 recycle boundary remains unchanged.
+G18 technical and manual acceptance are PASS. The accepted private PR and post-merge canonical CI each passed 6/6 jobs: Go Test 556/556, Go Race 556/556, zero skipped, Vet, Linux/Windows/macOS builds, and real independent-process Crash A–E. G18 reserves block rewards against the G17 authoritative pool. Upstream refund shortfalls create Recovery Debt; future emission and cancellation repay it first. Reconciliation checks `Net Emission Capacity = Reserved + Distributed + Remaining - RecoveryDebt`. **Distributed is zero; capacity and reservation are not player ore.** The development block rule is not a production reward or duration. No miners, mining power, tools, maps, reward allocation, player ore, or Bun migration exist.
 
 ### Release status
 
@@ -69,13 +70,14 @@ There is no public launch date, production deployment, mainnet economy, public T
 | G15 Eligible System Spend | **FOUNDATION COMPLETE** | 内部消费编排；尚无真实玩法 Producer |
 | G16 Recycle Migration | **FOUNDATION COMPLETE** | 内部材料与 Reputation 结算及不可变 Receipt；生产规则和玩法入口禁用 |
 | G17 Black Iron Emission Pool | **FOUNDATION COMPLETE** | 版本化、不可变的全服额度；不发放玩家矿石，正式比例未定 |
+| G18 Mining Block Reservation | **FOUNDATION COMPLETE** | 原子区块奖励预留、恢复债务及不可变重放；没有分发 |
 | 完整 Browser MMORPG | **IN DEVELOPMENT** | 已验收 Slice 尚未组成公开 Release |
 | Multi-class Gameplay | **PLANNED** | Warrior 是唯一确认的 Web Runtime Class |
 | Boss / Party / Team Dungeon | **PLANNED** | 没有已验收实现 |
 | Guild / Siege | **PLANNED** | 没有已验收实现 |
 | Wallet / Blockchain | **PLANNED** | 没有 Live Deposit、Withdrawal 或 Chain Adapter |
 | Ordinals Activation | **PLANNED** | 没有 Production Verification 或 Activation |
-| Mining | **PLANNED** | G17 只有额度记账；没有 Mining Block、Power、Tool、奖励或玩家矿石 |
+| 玩家挖矿与奖励分配 | **PLANNED** | G18 只预留区块容量；没有矿工、算力、工具、地图或玩家矿石 |
 | Social / Voice / Video / Feed | **PLANNED / RESEARCH** | 没有已验收实现 |
 
 ### Repository Topology
@@ -84,7 +86,7 @@ Private Canonical Repository 保留完整内部开发与验收历史。本 Sanit
 
 ### 最新关闭里程碑
 
-G17 技术与人工验收均为 PASS。获批的私有 PR 和合并后的 canonical CI 各有 6/6 作业通过：Go Test 511/511、Go Race 511/511、跳过 0、Vet 及 Linux/Windows/macOS 构建。合格 G15 系统消费可以在 PostgreSQL 全局发行池中创建版本化、不可变的额度流水和回执；G14 退款／冲正由负数流水补偿。对账检查守恒与权威来源绑定。**发行额度不等于玩家矿石。** `DEV_G17_1_TO_1` 仅用于测试／开发，正式生产发行比例尚未确定。没有玩家矿石、Mining Block、Power、Tool、奖励分配或馒头迁移。G16 回收边界保持不变。
+G18 技术与人工验收均为 PASS。获批的私有 PR 和合并后的 canonical CI 各有 6/6 作业通过：Go Test 556/556、Go Race 556/556、跳过 0、Vet、Linux/Windows/macOS 构建和真实独立进程 Crash A–E。G18 从 G17 权威池预留区块奖励；上游退款的缺口形成恢复债务，未来发行和取消释放先偿债。对账检查 `净发行额度 = 已预留 + 已分发 + 剩余 - 恢复债务`。**已分发为零；额度和预留均不是玩家矿石。**开发区块规则不代表正式奖励或时长。没有矿工、挖矿算力、工具、地图、奖励分配、玩家矿石或馒头迁移。
 
 ### Release 状态
 

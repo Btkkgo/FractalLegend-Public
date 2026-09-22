@@ -10,12 +10,12 @@ import (
 )
 
 func loadEmissionPoolTx(ctx context.Context, tx pgx.Tx, lock bool) (emission.Pool, error) {
-	query := `SELECT pool_id,total_eligible_spend_observed,total_refunded_spend,total_emission_capacity,total_reserved,total_distributed,remaining_capacity,rule_version,revision,created_at,updated_at FROM black_iron_emission_pools WHERE pool_id='GLOBAL'`
+	query := `SELECT pool_id,total_eligible_spend_observed,total_refunded_spend,total_emission_capacity,total_reserved,total_distributed,remaining_capacity,recovery_debt,rule_version,revision,created_at,updated_at FROM black_iron_emission_pools WHERE pool_id='GLOBAL'`
 	if lock {
 		query += ` FOR UPDATE`
 	}
 	var value emission.Pool
-	err := tx.QueryRow(ctx, query).Scan(&value.ID, &value.TotalEligibleSpendObserved, &value.TotalRefundedSpend, &value.TotalEmissionCapacity, &value.TotalReserved, &value.TotalDistributed, &value.RemainingCapacity, &value.RuleVersion, &value.Revision, &value.CreatedAt, &value.UpdatedAt)
+	err := tx.QueryRow(ctx, query).Scan(&value.ID, &value.TotalEligibleSpendObserved, &value.TotalRefundedSpend, &value.TotalEmissionCapacity, &value.TotalReserved, &value.TotalDistributed, &value.RemainingCapacity, &value.RecoveryDebt, &value.RuleVersion, &value.Revision, &value.CreatedAt, &value.UpdatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return emission.Pool{}, emission.ErrInvariant
 	}
@@ -68,7 +68,7 @@ func snapshotEmissionTx(ctx context.Context, tx pgx.Tx) (emission.Snapshot, erro
 	if err != nil {
 		return emission.Snapshot{}, err
 	}
-	result := emission.Snapshot{Pool: pool, Entries: []emission.Entry{}, Receipts: []emission.Receipt{}}
+	result := emission.Snapshot{Pool: pool, Entries: []emission.Entry{}, Receipts: []emission.Receipt{}, RecoveryEntries: []emission.RecoveryEntry{}}
 	rows, err := tx.Query(ctx, `SELECT entry_id,source_type,source_id,spend_id,eligible_spend_amount,emission_amount,rule_version,created_at,pool_revision FROM black_iron_emission_entries ORDER BY pool_revision`)
 	if err != nil {
 		return emission.Snapshot{}, err
@@ -100,6 +100,24 @@ func snapshotEmissionTx(ctx context.Context, tx pgx.Tx) (emission.Snapshot, erro
 		}
 		r.CreatedAt = r.CreatedAt.UTC()
 		result.Receipts = append(result.Receipts, r)
+	}
+	if err = rows.Err(); err != nil {
+		rows.Close()
+		return emission.Snapshot{}, err
+	}
+	rows.Close()
+	rows, err = tx.Query(ctx, `SELECT recovery_entry_id,source_type,source_id,emission_entry_id,block_entry_id,net_emission_delta,reserved_delta,remaining_before,remaining_after,debt_before,debt_after,pool_revision,created_at FROM black_iron_emission_recovery_entries ORDER BY pool_revision`)
+	if err != nil {
+		return emission.Snapshot{}, err
+	}
+	for rows.Next() {
+		var r emission.RecoveryEntry
+		if err = rows.Scan(&r.ID, &r.SourceType, &r.SourceID, &r.EmissionEntryID, &r.BlockEntryID, &r.NetEmissionDelta, &r.ReservedDelta, &r.RemainingBefore, &r.RemainingAfter, &r.DebtBefore, &r.DebtAfter, &r.PoolRevision, &r.CreatedAt); err != nil {
+			rows.Close()
+			return emission.Snapshot{}, err
+		}
+		r.CreatedAt = r.CreatedAt.UTC()
+		result.RecoveryEntries = append(result.RecoveryEntries, r)
 	}
 	if err = rows.Err(); err != nil {
 		rows.Close()
@@ -146,17 +164,21 @@ func (s *Store) ReconcileBlackIronEmission(ctx context.Context) (emission.Reconc
 	spendRefunded := make(map[string]int64)
 	spendRule := make(map[string]string)
 	var previousPoolAfter int64
-	if pool.TotalReserved != 0 || pool.TotalDistributed != 0 || pool.RemainingCapacity != pool.TotalEmissionCapacity {
+	if !emissionRecoveryConserved(pool) {
 		bad("pool conservation")
 	}
-	if pool.Revision != int64(len(snapshot.Entries)) {
+	var blockPoolMutations int64
+	if err = tx.QueryRow(ctx, `SELECT count(*) FROM mining_block_entries WHERE action IN ('OPEN','CANCEL')`).Scan(&blockPoolMutations); err != nil {
+		return emission.ReconciliationReport{}, err
+	}
+	if pool.Revision != int64(len(snapshot.Entries))+blockPoolMutations {
 		bad("pool revision differs from journal")
 	}
 	if len(snapshot.Receipts) != len(snapshot.Entries) {
 		bad("entry/receipt cardinality mismatch")
 	}
 	for i, entry := range snapshot.Entries {
-		if entry.PoolRevision != int64(i+1) {
+		if entry.PoolRevision <= 0 || (i > 0 && entry.PoolRevision <= snapshot.Entries[i-1].PoolRevision) {
 			bad(fmt.Sprintf("entry %s has discontinuous revision", entry.ID))
 		}
 		if entry.SourceType == emissionSpendSource {
@@ -218,7 +240,7 @@ func (s *Store) ReconcileBlackIronEmission(ctx context.Context) (emission.Reconc
 		}
 		if i < len(snapshot.Receipts) {
 			r := snapshot.Receipts[i]
-			if r.EntryID != entry.ID || r.SourceID != entry.SourceID || r.EligibleSpend != entry.EligibleSpendAmount || r.EmissionAdded != entry.EmissionAmount || r.RuleVersion != entry.RuleVersion || r.PoolBefore != previousPoolAfter || r.PoolAfter != r.RemainingCapacity || r.PoolAfter-r.PoolBefore != r.EmissionAdded {
+			if r.EntryID != entry.ID || r.SourceID != entry.SourceID || r.EligibleSpend != entry.EligibleSpendAmount || r.EmissionAdded != entry.EmissionAmount || r.RuleVersion != entry.RuleVersion || r.PoolBefore != previousPoolAfter || r.RemainingCapacity > r.PoolAfter || r.PoolAfter-r.PoolBefore != r.EmissionAdded {
 				bad(fmt.Sprintf("entry %s receipt mismatch", entry.ID))
 			}
 			previousPoolAfter = r.PoolAfter
@@ -236,6 +258,9 @@ func (s *Store) ReconcileBlackIronEmission(ctx context.Context) (emission.Reconc
 	}
 	if missing != 0 {
 		bad(fmt.Sprintf("%d eligible G15 spends lack emission consequence", missing))
+	}
+	for _, mismatch := range reconcileRecoveryTx(ctx, tx, pool, snapshot.RecoveryEntries) {
+		bad(mismatch)
 	}
 	if err = tx.Commit(ctx); err != nil {
 		return emission.ReconciliationReport{}, err

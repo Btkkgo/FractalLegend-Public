@@ -11,6 +11,7 @@ Fractal Legend separates monetary assets, progression values, reputation, and ma
 | Reputation | Participation, guilds, activities and long-term behavior | Non-transferable and not withdrawable | Internal G16 account and recycle output **FOUNDATION COMPLETE**; production rules and final caps absent |
 | Black Iron Ore | Game material for mining, crafting and possible activation/economy rules | Material rules not finalized | **PLANNED** |
 | Black Iron emission capacity | Global ceiling derived from eligible system spending | Not a player asset or transferable balance | G17 internal PostgreSQL foundation complete; no ore issued |
+| Mining Block reward reservation | Capacity committed to a server-owned block | Not distributed reward or player ore | G18 internal foundation complete; production parameters undecided |
 | Other materials | Crafting and progression inputs | Defined per system | G16 synthetic recycle material foundation complete; production material economy pending |
 
 ### FB
@@ -33,11 +34,11 @@ Reputation is intended to represent participation, guild activity, events, and s
 
 Black Iron Ore is a game material, not a currency. The planned mining model is:
 
-G17 now records a global **emission capacity**, not Black Iron Ore held by players. An authoritative G15 eligible system spend passes an explicit versioned rule, creates an immutable entry, updates the global pool atomically, and returns an immutable receipt; reconciliation checks conservation. G14 refunds and reversals append negative capacity compensation. `DEV_G17_1_TO_1` is test/development only. The production emission ratio remains **NOT FINALIZED**.
+G17 records global **emission capacity**, not Black Iron Ore held by players. G18 atomically reserves some capacity for a server-owned Mining Block, retaining it on finalization or releasing it on cancellation. An upstream refund consumes Remaining and records a shortfall as Recovery Debt; future emission and cancellation repay debt first. Reconciliation enforces `Net Emission Capacity = Reserved + Distributed + Remaining - RecoveryDebt`; G18 Distributed remains zero. `DEV_G17_1_TO_1` and `DEV_G18_FIXED_BLOCK_REWARD` are only test/development rules. Production emission ratio, block reward, and duration remain **NOT FINALIZED**.
 
 **Global Black Iron Emission Pool → Mining Block / Round → Validated Mining Power → Weighted Reward Distribution**
 
-Higher-level mining tools may increase a player's Mining Power, but they must not increase total server issuance. Parameters and production implementation remain planned.
+Future mining tools and player power require separate design; no player mining or reward allocation is implemented in G18.
 
 ### Trade boundary
 
@@ -56,6 +57,7 @@ Fractal Legend 将货币资产、成长数值、Reputation 和 Material 分开�
 | Reputation | Participation、Guild、活动与长期行为 | 不可转账、不可提现 | G16 内部账户与回收产出已达 **FOUNDATION COMPLETE**；没有生产规则与最终上限 |
 | Black Iron Ore | 用于 Mining、Crafting 和可能的 Activation / Economy Rule 的游戏材料 | Material Rule 尚未确定 | **PLANNED** |
 | 黑铁矿石发行额度 | 由合格系统消费决定的全服上限 | 不是玩家资产或可转移余额 | G17 内部 PostgreSQL 基础已完成；未发放矿石 |
+| Mining Block 奖励预留 | 服务器区块所承诺的容量 | 不是已分发奖励或玩家矿石 | G18 内部基础已完成；正式参数未定 |
 | Other Materials | Crafting 与 Progression Input | 由各系统定义 | G16 合成测试材料回收基础已完成；生产材料经济仍待确定 |
 
 ### FB
@@ -78,11 +80,11 @@ Reputation 计划表达 Participation、Guild Activity、Event 和长期行为�
 
 Black Iron Ore 是游戏材料，不是 Currency。规划中的 Mining Model 为：
 
-G17 现在记录全服**发行额度**，而不是玩家持有的黑铁矿石。服务器权威的 G15 合格系统消费经过显式版本化规则后，创建不可变流水、原子更新全局发行池并返回不可变回执；对账检查守恒。G14 退款与冲正追加负数额度补偿。`DEV_G17_1_TO_1` 仅用于测试／开发。正式生产发行比例**尚未确定**。
+G17 记录全服**发行额度**，而不是玩家持有的黑铁矿石。G18 从中为服务器区块原子预留容量，完成时保留、取消时释放。上游退款先消耗 Remaining，缺口记为 Recovery Debt；未来发行和取消释放先还债。对账执行 `净发行额度 = 已预留 + 已分发 + 剩余 - 恢复债务`；G18 的已分发为零。`DEV_G17_1_TO_1` 和 `DEV_G18_FIXED_BLOCK_REWARD` 只用于测试／开发，正式发行比例、区块奖励及时长均**尚未确定**。
 
 **Global Black Iron Emission Pool → Mining Block / Round → Validated Mining Power → Weighted Reward Distribution**
 
-高级 Mining Tool 可以提高玩家 Mining Power，但不能增加全服总发行量。Parameter 与 Production Implementation 仍处于规划阶段。
+未来挖矿工具和玩家算力需要单独设计；G18 不实现玩家挖矿或奖励分配。
 
 ### Trade Boundary
 

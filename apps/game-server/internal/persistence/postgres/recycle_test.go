@@ -503,8 +503,8 @@ func TestG16MigrationUpgradesG15Schema(t *testing.T) {
 	if err := store.Migrate(ctx); err != nil {
 		t.Fatal(err)
 	}
-	if err := store.pool.QueryRow(ctx, `SELECT max(version) FROM schema_migrations`).Scan(&after); err != nil || after != 9 {
-		t.Fatalf("G17 version=%d err=%v", after, err)
+	if err := store.pool.QueryRow(ctx, `SELECT max(version) FROM schema_migrations`).Scan(&after); err != nil || after != 10 {
+		t.Fatalf("G18 version=%d err=%v", after, err)
 	}
 	var balance int64
 	var reason string

@@ -16,6 +16,7 @@ The roadmap is milestone-driven. It does not promise dates.
 - G15: internal Eligible System Spend orchestration over the existing ledgers; no live gameplay producer.
 - G16: internal Recycle Migration Foundation with atomic item consumption, allowed material and non-transferable Reputation output, immutable canonical receipt, and no production rule or gameplay entry.
 - G17: internal global Black Iron emission-capacity pool with versioned immutable entries and receipts, refund compensation, and reconciliation; no player ore or production emission ratio.
+- G18: server-authoritative Mining Blocks, atomic reservation against the G17 pool, cancellation release, immutable receipts, crash recovery, and Recovery Debt / Future Offset; no reward distribution or player ore.
 
 ### Next
 
@@ -23,14 +24,14 @@ The roadmap is milestone-driven. It does not promise dates.
 - Continue the browser product experience using accepted server authority.
 - The G14 refund/compensation hard gate is closed. A real eligible system-spend producer, production Contribution spending, and manufacturing use remain separate future work.
 - G16 completed only the internal recycle foundation. Production recycle rules, Reputation caps, gameplay integration, and Mining require separate review.
-- G17 completed capacity accounting only. Production emission ratio, mining blocks, power, tools, reward distribution, and player ore require separate review; G18 planning has not started.
+- G17 completed capacity accounting; G18 completed Mining Block reservation only. Production reward and duration, power, tools, reward distribution, and player ore require separate review; G19 has not started.
 
 ### Future
 
 - Full browser gameplay and broader class/skill progression.
 - Bosses, parties, and team dungeons.
 - Guild, guild roles, reputation, missions, wars, territory, and siege.
-- Mining using the separately accepted global capacity limit, pending future block, power, tool, and reward rules.
+- Player mining using the accepted global capacity and block reservation foundations, pending future power, tool, and distribution rules.
 - Wallet and domain identity.
 - Ordinals ownership, metadata verification, mapping, and activation.
 - Fractal / Bitcoin deposit, withdrawal, confirmation, and reorg handling.
@@ -58,6 +59,7 @@ Roadmap 按里程碑推进，不承诺日期。
 - G15：在现有账本上建立内部 Eligible System Spend 编排；尚无真实玩法 Producer。
 - G16：内部 Recycle Migration Foundation，包括原子物品消费、允许材料与不可转让 Reputation 产出、不可变规范 Receipt；没有生产规则或玩法入口。
 - G17：内部全服黑铁矿石发行额度池，包含版本化不可变流水与回执、退款补偿和对账；不发放玩家矿石，正式发行比例未定。
+- G18：服务器权威 Mining Block、针对 G17 池的原子预留、取消释放、不可变回执、崩溃恢复与 Recovery Debt / Future Offset；不分配奖励或发放玩家矿石。
 
 ### 下一步
 
@@ -65,14 +67,14 @@ Roadmap 按里程碑推进，不承诺日期。
 - 继续以已验收 Server Authority 扩展 Browser Product Experience。
 - G14 Refund/Compensation 硬门已关闭。真实合格 System Spend Producer、生产用 Contribution 消费与 Manufacturing 用途仍须作为独立未来工作。
 - G16 只完成内部回收基础。生产回收规则、Reputation 上限、玩法集成及 Mining 都需要分别审查。
-- G17 只完成额度记账。正式比例、Mining Block、Power、Tool、奖励分配与玩家矿石均需单独审核；尚未开始 G18 规划。
+- G17 完成额度记账；G18 只完成 Mining Block 预留。正式奖励与时长、Power、Tool、奖励分配与玩家矿石均需单独审核；尚未开始 G19。
 
 ### 未来
 
 - 完整 Browser Gameplay 与更广泛 Class / Skill Progression。
 - Boss、Party 与 Team Dungeon。
 - Guild、Guild Role、Reputation、Mission、War、Territory 与 Siege。
-- 将已验收的全服额度上限用于未来 Mining；Block、Power、Tool 与 Reward Rule 仍待规划。
+- 基于已验收的全服额度和区块预留基础规划未来玩家挖矿；Power、Tool 与分发规则仍待规划。
 - Wallet 与 Domain Identity。
 - Ordinals Ownership、Metadata Verification、Mapping 与 Activation。
 - Fractal / Bitcoin Deposit、Withdrawal、Confirmation 与 Reorg Handling。

@@ -201,7 +201,7 @@ func (s *Store) appendEmissionEntryTx(ctx context.Context, tx pgx.Tx, entry emis
 	if err != nil {
 		return emission.Receipt{}, err
 	}
-	if pool.TotalReserved != 0 || pool.TotalDistributed != 0 || pool.TotalEmissionCapacity != pool.RemainingCapacity || pool.TotalRefundedSpend > pool.TotalEligibleSpendObserved {
+	if !emissionRecoveryConserved(pool) || pool.TotalRefundedSpend > pool.TotalEligibleSpendObserved {
 		return emission.Receipt{}, emission.ErrInvariant
 	}
 	before := pool.TotalEmissionCapacity
@@ -228,6 +228,20 @@ func (s *Store) appendEmissionEntryTx(ctx context.Context, tx pgx.Tx, entry emis
 	if err != nil {
 		return emission.Receipt{}, err
 	}
+	remainingAfter, debtAfter := pool.RemainingCapacity, pool.RecoveryDebt
+	if entry.EmissionAmount > 0 {
+		repay := min(entry.EmissionAmount, debtAfter)
+		debtAfter -= repay
+		remainingAfter, err = emission.AddCapacity(remainingAfter, entry.EmissionAmount-repay)
+	} else {
+		compensation := -entry.EmissionAmount
+		available := min(remainingAfter, compensation)
+		remainingAfter -= available
+		debtAfter, err = emission.AddCapacity(debtAfter, compensation-available)
+	}
+	if err != nil {
+		return emission.Receipt{}, err
+	}
 	now := time.Now().UTC().Truncate(time.Microsecond)
 	entry.CreatedAt = now
 	entry.PoolRevision = pool.Revision + 1
@@ -245,16 +259,24 @@ func (s *Store) appendEmissionEntryTx(ctx context.Context, tx pgx.Tx, entry emis
 	if err = s.checkEmissionFailure("after_entry"); err != nil {
 		return emission.Receipt{}, err
 	}
-	_, err = tx.Exec(ctx, `UPDATE black_iron_emission_pools SET total_eligible_spend_observed=$1,total_refunded_spend=$2,total_emission_capacity=$3,remaining_capacity=$3,rule_version=$4,revision=$5,updated_at=$6 WHERE pool_id='GLOBAL'`, observed, refunded, after, entry.RuleVersion, entry.PoolRevision, now)
+	_, err = tx.Exec(ctx, `UPDATE black_iron_emission_pools SET total_eligible_spend_observed=$1,total_refunded_spend=$2,total_emission_capacity=$3,remaining_capacity=$4,recovery_debt=$5,rule_version=$6,revision=$7,updated_at=$8 WHERE pool_id='GLOBAL'`, observed, refunded, after, remainingAfter, debtAfter, entry.RuleVersion, entry.PoolRevision, now)
 	if err != nil {
 		return emission.Receipt{}, err
 	}
 	if err = s.checkEmissionFailure("after_pool"); err != nil {
 		return emission.Receipt{}, err
 	}
+	if err = appendRecoveryEntryTx(ctx, tx, emission.RecoveryEntry{
+		ID: newContributionID("emission-recovery"), SourceType: entry.SourceType, SourceID: entry.SourceID,
+		EmissionEntryID: &entry.ID, NetEmissionDelta: entry.EmissionAmount,
+		RemainingBefore: pool.RemainingCapacity, RemainingAfter: remainingAfter,
+		DebtBefore: pool.RecoveryDebt, DebtAfter: debtAfter, PoolRevision: entry.PoolRevision, CreatedAt: now,
+	}); err != nil {
+		return emission.Receipt{}, err
+	}
 	receipt := emission.Receipt{ID: newContributionID("emission-receipt"), EntryID: entry.ID, SourceID: entry.SourceID,
 		EligibleSpend: entry.EligibleSpendAmount, EmissionAdded: entry.EmissionAmount,
-		PoolBefore: before, PoolAfter: after, RemainingCapacity: after,
+		PoolBefore: before, PoolAfter: after, RemainingCapacity: remainingAfter,
 		RuleVersion: entry.RuleVersion, CreatedAt: now}
 	_, err = tx.Exec(ctx, `INSERT INTO black_iron_emission_receipts(receipt_id,entry_id,source_id,eligible_spend,emission_added,pool_before,pool_after,remaining_capacity,rule_version,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, receipt.ID, receipt.EntryID, receipt.SourceID, receipt.EligibleSpend, receipt.EmissionAdded, receipt.PoolBefore, receipt.PoolAfter, receipt.RemainingCapacity, receipt.RuleVersion, receipt.CreatedAt)
 	if err != nil {
