@@ -20,6 +20,8 @@ G10 adds a transport-independent Trade Domain. Offer revisions invalidate prior 
 
 ### Future modules
 
+The accepted G17 accounting chain is **Eligible System Spend → Versioned Emission Rule → Immutable Entry → Global Capacity Pool → Receipt → Reconciliation**. PostgreSQL verifies the G15 source, updates the pool atomically, and stores a canonical UTC microsecond receipt. G14 refunds and reversals append negative immutable entries. This pool records a maximum future emission capacity; **emission capacity is not player ore**. Production ratio, mining, reward distribution, and player ore inventory remain unimplemented.
+
 Economy, wallet, blockchain adapters, asset/Ordinals verification, mining, guilds, social, media, administration, and analytics remain separate future ownership domains. They must not bypass the Game Server or database invariants.
 
 ### Cross-platform direction
@@ -51,6 +53,8 @@ G9 Character Aggregate 保存 Character Identity、Account Ownership、Class、L
 G10 增加独立于 Transport 的 Trade Domain。Offer Revision 会让旧 Confirmation 失效。Persistent Lock 阻止同一 Item 进入两笔 Active Trade。双方 Character Aggregate 在一个 Transaction 中结算，重复 Finalize Call 返回同一个持久结果。
 
 ### 未来模块
+
+已验收的 G17 记账链为 **Eligible System Spend → Versioned Emission Rule → Immutable Entry → Global Capacity Pool → Receipt → Reconciliation**。PostgreSQL 验证 G15 来源、原子更新发行池，并保存 UTC 微秒规范回执。G14 退款和冲正追加负数不可变流水。发行池记录未来最大发行额度；**发行额度不等于玩家矿石**。正式比例、Mining、奖励分配和玩家矿石库存仍未实现。
 
 Economy、Wallet、Blockchain Adapter、Asset/Ordinals Verification、Mining、Guild、Social、Media、Administration 和 Analytics 都属于独立的未来 Ownership Domain。它们不能绕过 Game Server 或 Database Invariant。
 

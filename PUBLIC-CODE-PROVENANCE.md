@@ -30,16 +30,17 @@ This mirror was assembled from an explicit allowlist into a new Git repository. 
 | `apps/game-server/internal/contribution/recovery*.go`, `internal/persistence/postgres/contribution_refund*.go`, G14 update to `ledger_transaction.go`, and `migrations/0006_contribution_refund.sql` | Fractal Legend project-owned G14 implementation | Atomic refund recovery, synthetic tests, and DDL; no live producer, database content, or restricted asset | Uses audited Go modules listed below |
 | `apps/game-server/internal/systemspend/`, `internal/persistence/postgres/system_spend*.go`, and `migrations/0007_system_spend.sql` | Fractal Legend project-owned G15 implementation | Internal eligible-spend orchestration, synthetic tests, and DDL; no live producer or database content | Uses audited Go modules listed below |
 | `apps/game-server/internal/recycle/`, `internal/persistence/postgres/recycle*.go`, and `migrations/0008_recycle_foundation.sql` | Fractal Legend project-owned G16 implementation | Internal recycle domain, atomic PostgreSQL settlement, synthetic tests, immutable receipt, and DDL; no live gameplay entry or restricted asset | Uses audited Go modules listed below |
+| `apps/game-server/internal/emission/`, `internal/persistence/postgres/emission*.go`, G17 changes to `contribution_refund.go`, `recycle_test.go`, `store.go`, and `migrations/0009_black_iron_emission_pool.sql` | Fractal Legend project-owned G17 implementation | Versioned global capacity, immutable entries and receipts, atomic refund compensation, migration and synthetic tests; no player ore or production ratio | Uses audited Go modules listed below |
 | `apps/game-server/internal/persistence/postgres/{contribution.go,contribution_refund.go,ledger.go,system_spend.go,timestamp_replay_test.go}` | Fractal Legend project-owned G13–G15 reliability hardening | Canonical UTC microsecond persistence timestamps, exact PostgreSQL replay tests; no economic or schema change | Uses audited Go modules listed below |
 | `docs/public/` | Fractal Legend public documentation | Sanitized bilingual project overview, status, roadmap, architecture, history, and approved media | No runtime dependency |
-| `docs/adr/0009-g10-trade-foundation.md` through `docs/adr/0015-g16-recycle-migration-foundation.md` | Fractal Legend project-owned ADRs | Bilingual accepted decision records with private environment generalized | No runtime dependency |
-| `docs/devlog/G9-persistence-foundation.md` through `docs/devlog/G16-recycle-migration-foundation.md` | Fractal Legend project-owned Devlogs | Bilingual technical results, including the G16 CI failure and repair; private links and paths removed or generalized | No runtime dependency |
+| `docs/adr/0009-g10-trade-foundation.md` through `docs/adr/0016-g17-black-iron-emission-pool.md` | Fractal Legend project-owned ADRs | Bilingual accepted decision records with private environment generalized | No runtime dependency |
+| `docs/devlog/G9-persistence-foundation.md` through `docs/devlog/G17-black-iron-emission-pool.md` | Fractal Legend project-owned Devlogs | Bilingual technical results, including the G16 CI failure and repair; private links and paths removed or generalized | No runtime dependency |
 | `docs/interactions/` | Fractal Legend curated engineering records | Bilingual decision summaries, not raw private conversations | No runtime dependency |
 | `docs/devlog/G13-G15-postgres-timestamp-hardening.md`, `docs/interactions/G13-G15-postgres-timestamp-hardening.md`, and `docs/public-sync/G13-G15-TIMESTAMP-PUBLIC-SYNC-CANDIDATE.md` | Fractal Legend project-owned Issue #18 records | Bilingual accepted results, curated interaction summary, and explicit export allowlist | No runtime dependency |
 | `docs/social/screenshots/` | Fractal Legend technical screenshots | Approved, sanitized validation screenshots; no account, credential, or local path visible | Image assets only |
 | `docs/public/assets/marketing/` | Owner-approved Fractal Legend marketing asset | Approved launch poster with recorded SHA-256 | Image asset only |
 
-The eight `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL only and are not database dumps or player data.
+The nine `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL only and are not database dumps or player data.
 
 ### Go dependency audit
 
@@ -92,16 +93,17 @@ The initial mirror excludes the complete private runtime assembly, `foundation/`
 | `apps/game-server/internal/contribution/recovery*.go`、`internal/persistence/postgres/contribution_refund*.go`、G14 对 `ledger_transaction.go` 的更新与 `migrations/0006_contribution_refund.sql` | Fractal Legend 项目自有 G14 实现 | 原子退款恢复、Synthetic Test 与 DDL；无真实 Producer、Database Content 或受限素材 | 使用下方已审计 Go Module |
 | `apps/game-server/internal/systemspend/`、`internal/persistence/postgres/system_spend*.go` 与 `migrations/0007_system_spend.sql` | Fractal Legend 项目自有 G15 实现 | 内部合格消费编排、Synthetic Test 与 DDL；无真实 Producer 或 Database Content | 使用下方已审计 Go Module |
 | `apps/game-server/internal/recycle/`、`internal/persistence/postgres/recycle*.go` 与 `migrations/0008_recycle_foundation.sql` | Fractal Legend 项目自有 G16 实现 | 内部回收 Domain、PostgreSQL 原子结算、Synthetic Test、不可变 Receipt 与 DDL；无真实玩法入口或受限素材 | 使用下方已审计 Go Module |
+| `apps/game-server/internal/emission/`、`internal/persistence/postgres/emission*.go`、G17 对 `contribution_refund.go`、`recycle_test.go`、`store.go` 的修改及 `migrations/0009_black_iron_emission_pool.sql` | Fractal Legend 项目自有 G17 实现 | 版本化全服额度、不可变流水和回执、原子退款补偿、迁移及合成测试；无玩家矿石或正式比例 | 使用下方已审计 Go Module |
 | `apps/game-server/internal/persistence/postgres/{contribution.go,contribution_refund.go,ledger.go,system_spend.go,timestamp_replay_test.go}` | Fractal Legend 项目自有 G13–G15 可靠性硬化 | UTC 微秒持久化时间规范化与 PostgreSQL 精确重放测试；经济及 Schema 不变 | 使用下方已审计 Go Module |
 | `docs/public/` | Fractal Legend 公开文档 | 已脱敏的双语 Project Overview、Status、Roadmap、Architecture、History 与已批准 Media | 无 Runtime Dependency |
-| `docs/adr/0009-g10-trade-foundation.md` 至 `docs/adr/0015-g16-recycle-migration-foundation.md` | Fractal Legend 项目自有 ADR | 双语已验收 Decision Record，Private Environment 已泛化 | 无 Runtime Dependency |
-| `docs/devlog/G9-persistence-foundation.md` 至 `docs/devlog/G16-recycle-migration-foundation.md` | Fractal Legend 项目自有 Devlog | 双语技术结果，包括 G16 CI 故障及修复；已删除或泛化 Private Link 与 Path | 无 Runtime Dependency |
+| `docs/adr/0009-g10-trade-foundation.md` 至 `docs/adr/0016-g17-black-iron-emission-pool.md` | Fractal Legend 项目自有 ADR | 双语已验收 Decision Record，Private Environment 已泛化 | 无 Runtime Dependency |
+| `docs/devlog/G9-persistence-foundation.md` 至 `docs/devlog/G17-black-iron-emission-pool.md` | Fractal Legend 项目自有 Devlog | 双语技术结果，包括 G16 CI 故障及修复；已删除或泛化 Private Link 与 Path | 无 Runtime Dependency |
 | `docs/interactions/` | Fractal Legend 整理后的 Engineering Record | 双语 Decision Summary，不是完整私人对话 | 无 Runtime Dependency |
 | `docs/devlog/G13-G15-postgres-timestamp-hardening.md`、`docs/interactions/G13-G15-postgres-timestamp-hardening.md` 与 `docs/public-sync/G13-G15-TIMESTAMP-PUBLIC-SYNC-CANDIDATE.md` | Fractal Legend 项目自有 Issue #18 记录 | 双语验收结果、整理后的互动摘要与明确公开清单 | 无 Runtime Dependency |
 | `docs/social/screenshots/` | Fractal Legend Technical Screenshot | 已批准并脱敏；不显示 Account、Credential 或 Local Path | 仅 Image Asset |
 | `docs/public/assets/marketing/` | 所有者批准的 Fractal Legend Marketing Asset | 已批准 Launch Poster，并记录 SHA-256 | 仅 Image Asset |
 
-`internal/persistence/postgres/migrations/` 下的八个 `.sql` 文件是项目自有 Schema Migration，只包含 DDL，不是 Database Dump 或 Player Data。
+`internal/persistence/postgres/migrations/` 下的九个 `.sql` 文件是项目自有 Schema Migration，只包含 DDL，不是 Database Dump 或 Player Data。
 
 ### Go Dependency Audit
 

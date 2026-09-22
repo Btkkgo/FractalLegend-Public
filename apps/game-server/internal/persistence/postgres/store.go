@@ -28,6 +28,7 @@ type Store struct {
 	contributionFailureInjector func(string) error
 	systemSpendFailureInjector  func(string) error
 	recycleFailureInjector      func(string) error
+	emissionFailureInjector     func(string) error
 }
 
 func Open(ctx context.Context, databaseURL string) (*Store, error) {

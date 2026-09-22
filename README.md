@@ -12,7 +12,7 @@
 
 Fractal Legend is a browser-native Legend-style MMORPG being built for the Fractal / Bitcoin ecosystem. Its direction combines classic combat, player-driven economies, digital ownership, Ordinals assets, and a modular social game world.
 
-Development is milestone-driven. The accepted server-authoritative G1–G16 foundation covers world and combat systems, inventory and equipment, PostgreSQL persistence, direct item + FB trade settlement, internal FB and Contribution ledgers, refund recovery, eligible system spend orchestration, and an internal recycle migration foundation. This is an engineering foundation, not a public game release.
+Development is milestone-driven. The accepted server-authoritative G1–G17 foundation covers world and combat systems, inventory and equipment, PostgreSQL persistence, direct item + FB trade settlement, internal FB and Contribution ledgers, refund recovery, eligible system spend orchestration, and an internal recycle migration foundation. This is an engineering foundation, not a public game release.
 
 ### Repository role
 
@@ -37,6 +37,7 @@ The long-term design treats Fractal and Bitcoin as more than branding. Ownership
 | G14 Refund / Reversal Compensation | **FOUNDATION COMPLETE** | Atomic FB + Contribution compensation, recovery debt, hold; no live spend producer |
 | G15 Eligible System Spend | **FOUNDATION COMPLETE** | Internal server-owned orchestration; no live gameplay producer |
 | G16 Recycle Migration | **FOUNDATION COMPLETE** | Internal item consumption into allowed materials and Reputation; no gameplay recycle entry or production rule |
+| G17 Black Iron Emission Pool | **FOUNDATION COMPLETE** | Global capacity only; no player ore, production ratio, mining block, or reward distribution |
 | Complete browser MMORPG | **IN DEVELOPMENT** | Accepted technical slices do not form a public release |
 | Wallet / blockchain deposit and withdrawal | **PLANNED** | Not live |
 | Ordinals activation | **PLANNED** | No production activation exists |
@@ -44,19 +45,15 @@ The long-term design treats Fractal and Bitcoin as more than branding. Ownership
 
 ### Latest accepted milestone
 
-**G16 — Recycle Migration Foundation: technical and manual acceptance PASS**
+**G17 — Black Iron Emission Pool Foundation: technical and manual acceptance PASS; Stage Close complete**
 
-- Private canonical normal Go and Race: **492/492 PASS each**, **0 skipped**; Vet and Linux/Windows/macOS builds PASS
-- GitHub Actions: **6/6 jobs PASS** after CI identified and the team fixed an exact PostgreSQL receipt timestamp replay mismatch
-- Same-item concurrency: one settlement from 100 requests; 100 distinct valid items settled
-- Receipt: first response, same-process replay, restart replay, and reload use the same persisted canonical value
-- G2 Node remains **13/14** due to the existing restricted Asset Atlas limitation; Windows runtime was **NOT_RUN**
+An authoritative eligible G15 system spend can create a versioned, immutable emission-capacity entry, update one global PostgreSQL pool atomically, and return a persisted receipt. The chain is **Eligible System Spend → Versioned Emission Rule → Immutable Entry → Global Capacity Pool → Receipt → Reconciliation**. Refunds and reversals append negative immutable compensation. Duplicate requests, concurrency, restart, and exact UTC microsecond replay are covered.
 
-G16 atomically consumes one owned item instance and records permitted material and non-transferable Reputation output with an immutable receipt and audit trail. It creates **no FB, Contribution, or Black Iron Ore**. Production recycle rules and gameplay entry remain disabled. The first Linux CI run exposed Go nanosecond versus PostgreSQL microsecond timestamp behavior; canonical UTC handling and persisted receipt replay fixed it. See the bilingual [G16 Devlog](docs/devlog/G16-recycle-migration-foundation.md) for the full failure and repair record. This is not a public game release.
+The accepted private PR and post-merge canonical CI each passed **6/6 jobs**: Go Test **511/511**, Go Race **511/511**, **0 skipped**, Vet, and Linux/Windows/macOS builds. **Emission capacity is not player ore.** `DEV_G17_1_TO_1` is a test/development rule only; the production emission ratio is **NOT FINALIZED**. There is no player ore, Mining Block, Mining Power, Mining Tool, reward distribution, or Bun migration. See the [G17 Devlog](docs/devlog/G17-black-iron-emission-pool.md).
 
 ### Public source snapshot
 
-The mirror publishes audited project-owned Go domains for AI, Character Stats, Combat Rules, Navigation, registries, PostgreSQL Persistence, G10/G12 Trade, the G11 FB Ledger, G13–G14 Contribution and refund recovery, G15 system spend, and G16 recycle. It includes unit tests and versioned schema migrations. It intentionally excludes Legacy seller source, private fixtures, Canonical exports, import tools, protected assets, local-environment integrations, and the complete private runtime assembly.
+The mirror publishes audited project-owned Go domains for AI, Character Stats, Combat Rules, Navigation, registries, PostgreSQL Persistence, G10/G12 Trade, the G11 FB Ledger, G13–G14 Contribution and refund recovery, G15 system spend, G16 recycle, and G17 emission capacity. It includes unit tests and versioned schema migrations. It intentionally excludes Legacy seller source, private fixtures, Canonical exports, import tools, protected assets, local-environment integrations, and the complete private runtime assembly.
 
 Run the public Go checks:
 
@@ -82,7 +79,7 @@ See [Public Code Provenance](PUBLIC-CODE-PROVENANCE.md) for the exact publicatio
 - [Media](docs/public/MEDIA.md)
 - [Technical Screenshots](docs/public/SCREENSHOTS.md)
 - [FAQ](docs/public/FAQ.md)
-- [G9–G16 Devlogs](docs/devlog/)
+- [G9–G17 Devlogs](docs/devlog/)
 - [Curated Interaction Records](docs/interactions/)
 - [G10 Trade ADR](docs/adr/0009-g10-trade-foundation.md)
 - [G11 FB Ledger ADR](docs/adr/0010-g11-fb-ledger-foundation.md)
@@ -101,6 +98,10 @@ See [Public Code Provenance](PUBLIC-CODE-PROVENANCE.md) for the exact publicatio
 - [G16 Devlog](docs/devlog/G16-recycle-migration-foundation.md)
 - [G16 Interaction Record](docs/interactions/G16-recycle-migration-foundation.md)
 - [G16 Public Sync Allowlist](docs/public-sync/G16-PUBLIC-SYNC-CANDIDATE.md)
+- [G17 Emission Pool ADR](docs/adr/0016-g17-black-iron-emission-pool.md)
+- [G17 Devlog](docs/devlog/G17-black-iron-emission-pool.md)
+- [G17 Interaction Record](docs/interactions/G17-black-iron-emission-pool.md)
+- [G17 Public Sync Allowlist](docs/public-sync/G17-PUBLIC-SYNC-CANDIDATE.md)
 - [G13–G15 Timestamp Hardening Devlog](docs/devlog/G13-G15-postgres-timestamp-hardening.md)
 - [G13–G15 Timestamp Hardening Interaction Record](docs/interactions/G13-G15-postgres-timestamp-hardening.md)
 - [G13–G15 Timestamp Hardening Public Sync Allowlist](docs/public-sync/G13-G15-TIMESTAMP-PUBLIC-SYNC-CANDIDATE.md)
@@ -123,7 +124,7 @@ Fractal Legend has no announced public launch date. It is not a production servi
 
 Fractal Legend / 分形传奇是一款正在为 Fractal / Bitcoin 生态构建的浏览器原生传奇风格 MMORPG。项目方向结合经典战斗、玩家驱动经济、数字所有权、Ordinals 资产，以及模块化的社交游戏世界。
 
-开发按里程碑推进。已验收的 Server-authoritative G1–G16 Foundation 覆盖 World 与 Combat 系统、Inventory 与 Equipment、PostgreSQL Persistence、直接 Item + FB Trade Settlement、内部 FB 与 Contribution Ledger、退款恢复、合格 System Spend 编排，以及内部回收迁移基础。这是一套工程基础，并不代表游戏已经公开上线。
+开发按里程碑推进。已验收的 Server-authoritative G1–G17 Foundation 覆盖 World 与 Combat 系统、Inventory 与 Equipment、PostgreSQL Persistence、直接 Item + FB Trade Settlement、内部 FB 与 Contribution Ledger、退款恢复、合格 System Spend 编排，以及内部回收迁移基础。这是一套工程基础，并不代表游戏已经公开上线。
 
 ### 仓库定位
 
@@ -148,6 +149,7 @@ Public Mirror 不复制或重建 Private Repository History。更早里程碑 SH
 | G14 Refund / Reversal Compensation | **FOUNDATION COMPLETE** | 原子 FB + Contribution 补偿、Recovery Debt 与 Hold；尚无真实消费 Producer |
 | G15 Eligible System Spend | **FOUNDATION COMPLETE** | 内部由服务器控制的编排；尚无真实玩法 Producer |
 | G16 Recycle Migration | **FOUNDATION COMPLETE** | 内部物品消费、允许材料与 Reputation 产出；没有真实玩法回收入口或生产规则 |
+| G17 Black Iron Emission Pool | **FOUNDATION COMPLETE** | 仅建立全服发行额度；不发放玩家矿石，未确定生产比例，也没有 Mining Block 或奖励分配 |
 | 完整 Browser MMORPG | **IN DEVELOPMENT** | 已验收 Technical Slice 尚未组成公开 Release |
 | Wallet / Blockchain Deposit 与 Withdrawal | **PLANNED** | 尚未上线 |
 | Ordinals Activation | **PLANNED** | 不存在 Production Activation |
@@ -155,19 +157,15 @@ Public Mirror 不复制或重建 Private Repository History。更早里程碑 SH
 
 ### 最新已验收里程碑
 
-**G16 — Recycle Migration Foundation：技术与人工验收 PASS**
+**G17 — Black Iron Emission Pool Foundation：技术与人工验收 PASS，Stage Close 已完成**
 
-- Private Canonical 普通 Go 与 Race：各 **492/492 PASS**、**0 跳过**；Vet 及 Linux/Windows/macOS 构建通过
-- GitHub Actions：发现并修复 PostgreSQL Receipt 时间精确重放差异后，**6/6 Jobs 通过**
-- 同一物品 100 请求只结算一次；100 件不同合法物品均完成结算
-- 首次 Receipt、同进程重放、重启重放与重新读取使用相同的持久化规范值
-- G2 Node 仍因既有受限 Asset Atlas 限制为 **13/14**；Windows Runtime **NOT_RUN**
+服务器权威的 G15 合格系统消费可以生成版本化、不可变的发行额度流水，原子更新 PostgreSQL 全局发行池，并返回持久化回执。架构链为 **Eligible System Spend → Versioned Emission Rule → Immutable Entry → Global Capacity Pool → Receipt → Reconciliation**。退款与冲正追加负数不可变补偿。重复请求、并发、重启及 UTC 微秒精确重放均已覆盖。
 
-G16 原子消费一件归属玩家的物品实例，记录允许材料及不可转让的 Reputation 产出，并保存不可变 Receipt 与审计证据。它**不创建 FB、Contribution 或黑铁矿石**。生产回收规则与真实玩法入口仍禁用。首次 Linux CI 发现 Go 纳秒与 PostgreSQL 微秒时间的差异；UTC 规范化及返回持久化 Receipt 修复了重放。完整故障与修复过程见双语 [G16 Devlog](docs/devlog/G16-recycle-migration-foundation.md)。这不是公开游戏 Release。
+获批的私有 PR 与合并后 canonical CI 均为 **6/6 作业通过**：Go Test **511/511**、Go Race **511/511**、**跳过 0**、Vet 与 Linux/Windows/macOS 构建通过。**发行额度不等于玩家矿石。** `DEV_G17_1_TO_1` 仅供测试／开发，正式生产发行比例**尚未确定**。没有玩家矿石、Mining Block、Mining Power、Mining Tool、奖励分配或馒头迁移。详见 [G17 Devlog](docs/devlog/G17-black-iron-emission-pool.md)。
 
 ### 公开源码快照
 
-本镜像公开经过审计、属于项目自有的 Go Domain，包括 AI、Character Stats、Combat Rules、Navigation、Registry、PostgreSQL Persistence、G10/G12 Trade、G11 FB Ledger、G13–G14 Contribution 与 Refund Recovery、G15 System Spend，以及 G16 Recycle，并包含 Unit Test 与 Versioned Schema Migration。镜像明确排除 Legacy Seller Source、Private Fixture、Canonical Export、Import Tool、受保护 Asset、本地环境 Integration 和完整 Private Runtime Assembly。
+本镜像公开经过审计、属于项目自有的 Go Domain，包括 AI、Character Stats、Combat Rules、Navigation、Registry、PostgreSQL Persistence、G10/G12 Trade、G11 FB Ledger、G13–G14 Contribution 与 Refund Recovery、G15 System Spend，G16 Recycle 及 G17 发行额度，并包含 Unit Test 与 Versioned Schema Migration。镜像明确排除 Legacy Seller Source、Private Fixture、Canonical Export、Import Tool、受保护 Asset、本地环境 Integration 和完整 Private Runtime Assembly。
 
 运行公开 Go 检查：
 
@@ -193,7 +191,7 @@ go test ./...
 - [Media](docs/public/MEDIA.md)
 - [Technical Screenshot](docs/public/SCREENSHOTS.md)
 - [FAQ](docs/public/FAQ.md)
-- [G9–G16 Devlog](docs/devlog/)
+- [G9–G17 Devlog](docs/devlog/)
 - [整理后的 Interaction Record](docs/interactions/)
 - [G10 Trade ADR](docs/adr/0009-g10-trade-foundation.md)
 - [G11 FB Ledger ADR](docs/adr/0010-g11-fb-ledger-foundation.md)
@@ -212,6 +210,10 @@ go test ./...
 - [G16 Devlog](docs/devlog/G16-recycle-migration-foundation.md)
 - [G16 Interaction Record](docs/interactions/G16-recycle-migration-foundation.md)
 - [G16 Public Sync Allowlist](docs/public-sync/G16-PUBLIC-SYNC-CANDIDATE.md)
+- [G17 Emission Pool ADR](docs/adr/0016-g17-black-iron-emission-pool.md)
+- [G17 Devlog](docs/devlog/G17-black-iron-emission-pool.md)
+- [G17 Interaction Record](docs/interactions/G17-black-iron-emission-pool.md)
+- [G17 Public Sync Allowlist](docs/public-sync/G17-PUBLIC-SYNC-CANDIDATE.md)
 - [G13–G15 时间持久化硬化 Devlog](docs/devlog/G13-G15-postgres-timestamp-hardening.md)
 - [G13–G15 时间持久化硬化 Interaction Record](docs/interactions/G13-G15-postgres-timestamp-hardening.md)
 - [G13–G15 时间持久化硬化公开同步清单](docs/public-sync/G13-G15-TIMESTAMP-PUBLIC-SYNC-CANDIDATE.md)

@@ -15,6 +15,7 @@ The roadmap is milestone-driven. It does not promise dates.
 - G14: atomic linked FB refund/reversal and Contribution compensation with bounded partial refunds, recovery debt, future-credit debt repayment, and review hold; no live producer.
 - G15: internal Eligible System Spend orchestration over the existing ledgers; no live gameplay producer.
 - G16: internal Recycle Migration Foundation with atomic item consumption, allowed material and non-transferable Reputation output, immutable canonical receipt, and no production rule or gameplay entry.
+- G17: internal global Black Iron emission-capacity pool with versioned immutable entries and receipts, refund compensation, and reconciliation; no player ore or production emission ratio.
 
 ### Next
 
@@ -22,13 +23,14 @@ The roadmap is milestone-driven. It does not promise dates.
 - Continue the browser product experience using accepted server authority.
 - The G14 refund/compensation hard gate is closed. A real eligible system-spend producer, production Contribution spending, and manufacturing use remain separate future work.
 - G16 completed only the internal recycle foundation. Production recycle rules, Reputation caps, gameplay integration, and Mining require separate review.
+- G17 completed capacity accounting only. Production emission ratio, mining blocks, power, tools, reward distribution, and player ore require separate review; G18 planning has not started.
 
 ### Future
 
 - Full browser gameplay and broader class/skill progression.
 - Bosses, parties, and team dungeons.
 - Guild, guild roles, reputation, missions, wars, territory, and siege.
-- Mining with a capped global Black Iron emission pool.
+- Mining using the separately accepted global capacity limit, pending future block, power, tool, and reward rules.
 - Wallet and domain identity.
 - Ordinals ownership, metadata verification, mapping, and activation.
 - Fractal / Bitcoin deposit, withdrawal, confirmation, and reorg handling.
@@ -55,6 +57,7 @@ Roadmap 按里程碑推进，不承诺日期。
 - G14：原子关联 FB Refund/Reversal 与 Contribution Compensation，支持有上限的部分退款、Recovery Debt、未来 Credit 先偿债与 Review Hold；尚无真实 Producer。
 - G15：在现有账本上建立内部 Eligible System Spend 编排；尚无真实玩法 Producer。
 - G16：内部 Recycle Migration Foundation，包括原子物品消费、允许材料与不可转让 Reputation 产出、不可变规范 Receipt；没有生产规则或玩法入口。
+- G17：内部全服黑铁矿石发行额度池，包含版本化不可变流水与回执、退款补偿和对账；不发放玩家矿石，正式发行比例未定。
 
 ### 下一步
 
@@ -62,13 +65,14 @@ Roadmap 按里程碑推进，不承诺日期。
 - 继续以已验收 Server Authority 扩展 Browser Product Experience。
 - G14 Refund/Compensation 硬门已关闭。真实合格 System Spend Producer、生产用 Contribution 消费与 Manufacturing 用途仍须作为独立未来工作。
 - G16 只完成内部回收基础。生产回收规则、Reputation 上限、玩法集成及 Mining 都需要分别审查。
+- G17 只完成额度记账。正式比例、Mining Block、Power、Tool、奖励分配与玩家矿石均需单独审核；尚未开始 G18 规划。
 
 ### 未来
 
 - 完整 Browser Gameplay 与更广泛 Class / Skill Progression。
 - Boss、Party 与 Team Dungeon。
 - Guild、Guild Role、Reputation、Mission、War、Territory 与 Siege。
-- 使用有上限 Global Black Iron Emission Pool 的 Mining。
+- 将已验收的全服额度上限用于未来 Mining；Block、Power、Tool 与 Reward Rule 仍待规划。
 - Wallet 与 Domain Identity。
 - Ordinals Ownership、Metadata Verification、Mapping 与 Activation。
 - Fractal / Bitcoin Deposit、Withdrawal、Confirmation 与 Reorg Handling。

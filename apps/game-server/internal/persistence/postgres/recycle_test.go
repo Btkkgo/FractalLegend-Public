@@ -461,19 +461,22 @@ func TestG16MigrationUpgradesG15Schema(t *testing.T) {
 	store := integrationStore(t)
 	ctx := context.Background()
 	legacy := fstest.MapFS{}
+	g16 := fstest.MapFS{}
 	entries, err := fs.ReadDir(migrations, "migrations")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, entry := range entries {
-		if entry.Name() >= "0008_" {
-			continue
-		}
 		data, readErr := fs.ReadFile(migrations, "migrations/"+entry.Name())
 		if readErr != nil {
 			t.Fatal(readErr)
 		}
-		legacy["migrations/"+entry.Name()] = &fstest.MapFile{Data: data}
+		if entry.Name() < "0009_" {
+			g16["migrations/"+entry.Name()] = &fstest.MapFile{Data: data}
+		}
+		if entry.Name() < "0008_" {
+			legacy["migrations/"+entry.Name()] = &fstest.MapFile{Data: data}
+		}
 	}
 	if err := store.MigrateFS(ctx, legacy); err != nil {
 		t.Fatal(err)
@@ -482,11 +485,33 @@ func TestG16MigrationUpgradesG15Schema(t *testing.T) {
 	if err := store.pool.QueryRow(ctx, `SELECT max(version) FROM schema_migrations`).Scan(&before); err != nil || before != 7 {
 		t.Fatalf("G15 version=%d err=%v", before, err)
 	}
-	if err := store.Migrate(ctx); err != nil {
+	if err := store.MigrateFS(ctx, g16); err != nil {
 		t.Fatal(err)
 	}
 	var after int
 	if err := store.pool.QueryRow(ctx, `SELECT max(version) FROM schema_migrations`).Scan(&after); err != nil || after != 8 {
 		t.Fatalf("G16 version=%d err=%v", after, err)
+	}
+	// An existing G16 database can contain historical FB ledger records. The
+	// additive G17 migration must leave those records exactly as persisted.
+	if _, err := store.pool.Exec(ctx, `INSERT INTO fb_ledger_accounts(account_id,owner_id,owner_type,balance,created_at,updated_at) VALUES('g17-upgrade-account','g17-upgrade-owner','PLAYER',42,'2026-09-20T00:00:00Z','2026-09-20T00:00:00Z')`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.pool.Exec(ctx, `INSERT INTO fb_ledger_transactions(transaction_id,transaction_type,status,reference_type,reference_id,reason,created_at) VALUES('g17-upgrade-transaction','PLAYER_TRANSFER','POSTED','TEST_FIXTURE','g17-upgrade-reference','historical upgrade fixture','2026-09-20T00:00:00Z')`); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Migrate(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.pool.QueryRow(ctx, `SELECT max(version) FROM schema_migrations`).Scan(&after); err != nil || after != 9 {
+		t.Fatalf("G17 version=%d err=%v", after, err)
+	}
+	var balance int64
+	var reason string
+	if err := store.pool.QueryRow(ctx, `SELECT balance FROM fb_ledger_accounts WHERE account_id='g17-upgrade-account'`).Scan(&balance); err != nil || balance != 42 {
+		t.Fatalf("historical FB balance=%d err=%v", balance, err)
+	}
+	if err := store.pool.QueryRow(ctx, `SELECT reason FROM fb_ledger_transactions WHERE transaction_id='g17-upgrade-transaction'`).Scan(&reason); err != nil || reason != "historical upgrade fixture" {
+		t.Fatalf("historical FB transaction=%q err=%v", reason, err)
 	}
 }

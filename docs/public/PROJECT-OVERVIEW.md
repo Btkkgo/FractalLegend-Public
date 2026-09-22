@@ -32,7 +32,7 @@ This is product direction. Mainnet integration, wallets, deposits, withdrawals, 
 
 ### Where is development today?
 
-G1–G10 are accepted foundations from the private canonical development line and predate this mirror. G11 added the internal FB Ledger Foundation; G12 added atomic item + FB direct player Trade settlement; G13 added a non-transferable Contribution Ledger Foundation; G14 added atomic refund/reversal compensation and recovery debt; G15 added internal eligible system spend; and G16 added internal recycle migration into allowed materials and non-transferable Reputation. G16 technical and manual acceptance passed. These milestones are not a public game release. No public launch date has been announced.
+G1–G10 are accepted foundations from the private canonical development line and predate this mirror. G11–G16 added internal FB and Contribution ledgers, atomic direct player Trade settlement, refund recovery, eligible system spend, and recycle migration into allowed materials and non-transferable Reputation. G17 added a global Black Iron emission-capacity pool with immutable entries, receipts, and reconciliation. **Capacity is not player ore**; the production ratio and mining remain unimplemented. G17 technical and manual acceptance passed. These milestones are not a public game release. No public launch date has been announced.
 
 See [Current Status](CURRENT-STATUS.md), [Development Timeline](DEVELOPMENT-TIMELINE.md), and [Roadmap](ROADMAP.md).
 
@@ -70,6 +70,6 @@ Fractal Legend / 分形传奇是一款正在为 Fractal / Bitcoin 生态开发�
 
 ### 当前开发到哪里？
 
-G1–G10 是 Private Canonical Development Line 上的已验收 Foundation，且早于本镜像建立。G11 新增内部 FB Ledger Foundation；G12 新增原子 Item + FB Direct Player Trade Settlement；G13 新增不可转账的 Contribution Ledger Foundation；G14 新增原子 Refund/Reversal Compensation 与 Recovery Debt；G15 新增内部合格系统消费；G16 新增内部回收迁移，把物品转为允许材料与不可转让 Reputation。G16 技术与人工验收已通过。这些阶段都不代表游戏公开 Release。项目尚未公布公开上线日期。
+G1–G10 是 Private Canonical Development Line 上的已验收 Foundation，且早于本镜像建立。G11–G16 陆续建立内部 FB 与 Contribution Ledger、原子玩家直接交易结算、退款恢复、合格系统消费，以及将物品转为允许材料和不可转让 Reputation 的回收迁移。G17 新增全服黑铁矿石发行额度池、不可变流水、回执与对账。**额度不等于玩家矿石**；正式比例和 Mining 仍未实现。G17 技术与人工验收已通过。这些阶段都不代表游戏公开 Release。项目尚未公布公开上线日期。
 
 详见[当前状态](CURRENT-STATUS.md)、[开发时间线](DEVELOPMENT-TIMELINE.md)和[路线图](ROADMAP.md)。

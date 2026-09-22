@@ -175,6 +175,11 @@ func (s *Store) refundContributionSystemSpendTx(ctx context.Context, tx pgx.Tx, 
 	if err != nil {
 		return contribution.RefundResult{}, classifyContributionError(err)
 	}
+	// If G17 has observed this G15 spend, its immutable capacity reversal is
+	// part of the same transaction as the existing FB/Contribution refund.
+	if err = s.applyEmissionRefundForCompensationTx(ctx, tx, original.FBTransactionID, comp.ID, comp.Amount); err != nil {
+		return contribution.RefundResult{}, err
+	}
 	// Return the persisted record so the first response and reference replay agree.
 	return loadContributionRefundByReferenceTx(ctx, tx, request.ReferenceID)
 }

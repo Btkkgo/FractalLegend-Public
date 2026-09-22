@@ -22,13 +22,14 @@ Updated for the sanitized public mirror on 2026-09-22. “Foundation Complete”
 | G14 Refund / Reversal Compensation | **FOUNDATION COMPLETE** | Atomic FB + Contribution recovery, bounded partial refunds, debt and hold; no live producer |
 | G15 Eligible System Spend | **FOUNDATION COMPLETE** | Internal orchestration; no live gameplay producer |
 | G16 Recycle Migration | **FOUNDATION COMPLETE** | Internal material + Reputation settlement with immutable receipt; production rules and gameplay entry disabled |
+| G17 Black Iron Emission Pool | **FOUNDATION COMPLETE** | Versioned immutable global capacity; no player ore or production ratio |
 | Complete browser MMORPG | **IN DEVELOPMENT** | Accepted slices do not form a public release |
 | Multi-class gameplay | **PLANNED** | Warrior is the only confirmed Web runtime class |
 | Boss / Party / Team Dungeon | **PLANNED** | No accepted implementation |
 | Guild / Siege | **PLANNED** | No accepted implementation |
 | Wallet / blockchain | **PLANNED** | No live deposit, withdrawal, or chain adapter |
 | Ordinals activation | **PLANNED** | No production verification or activation |
-| Mining | **PLANNED** | No mining, pool, block, or ore emission |
+| Mining | **PLANNED** | G17 has capacity accounting only; no mining block, power, tool, reward, or player ore |
 | Social / voice / video / feed | **PLANNED / RESEARCH** | No accepted implementation |
 
 ### Repository topology
@@ -37,7 +38,7 @@ The private canonical repository preserves complete internal development and acc
 
 ### Latest closed milestone
 
-G16 technical and manual acceptance are PASS. Private canonical normal Go and Race each passed 492/492 with zero skips; Vet and Linux/Windows/macOS builds passed. GitHub Actions passed 6/6 jobs after its first executable run found a PostgreSQL receipt timestamp replay mismatch that was repaired using canonical UTC microsecond handling and the persisted receipt. The G16 internal coordinator consumes one owned item and credits allowed material plus non-transferable Reputation with immutable evidence; FB, Contribution, and Black Iron Ore awards remain zero. Production recycle rules and gameplay entry are disabled. G2 Node remains 13/14 because its Asset Atlas test needs restricted material; Windows runtime was not run.
+G17 technical and manual acceptance are PASS. The accepted private PR and post-merge canonical CI each passed 6/6 jobs: Go Test 511/511, Go Race 511/511, zero skipped, Vet, and Linux/Windows/macOS builds. An eligible G15 system spend can create versioned immutable capacity entries and receipts in one PostgreSQL global pool; negative entries compensate G14 refunds/reversals. Reconciliation checks conservation and authoritative source links. **Emission capacity is not player ore.** `DEV_G17_1_TO_1` is test/development only; the production emission ratio is NOT FINALIZED. No player ore, Mining Block, Power, Tool, reward distribution, or Bun migration exists. The G16 recycle boundary remains unchanged.
 
 ### Release status
 
@@ -67,13 +68,14 @@ There is no public launch date, production deployment, mainnet economy, public T
 | G14 Refund / Reversal Compensation | **FOUNDATION COMPLETE** | 原子 FB + Contribution 恢复、部分退款上限、债务和 Hold；尚无真实 Producer |
 | G15 Eligible System Spend | **FOUNDATION COMPLETE** | 内部消费编排；尚无真实玩法 Producer |
 | G16 Recycle Migration | **FOUNDATION COMPLETE** | 内部材料与 Reputation 结算及不可变 Receipt；生产规则和玩法入口禁用 |
+| G17 Black Iron Emission Pool | **FOUNDATION COMPLETE** | 版本化、不可变的全服额度；不发放玩家矿石，正式比例未定 |
 | 完整 Browser MMORPG | **IN DEVELOPMENT** | 已验收 Slice 尚未组成公开 Release |
 | Multi-class Gameplay | **PLANNED** | Warrior 是唯一确认的 Web Runtime Class |
 | Boss / Party / Team Dungeon | **PLANNED** | 没有已验收实现 |
 | Guild / Siege | **PLANNED** | 没有已验收实现 |
 | Wallet / Blockchain | **PLANNED** | 没有 Live Deposit、Withdrawal 或 Chain Adapter |
 | Ordinals Activation | **PLANNED** | 没有 Production Verification 或 Activation |
-| Mining | **PLANNED** | 没有 Mining、Pool、Block 或矿石发行 |
+| Mining | **PLANNED** | G17 只有额度记账；没有 Mining Block、Power、Tool、奖励或玩家矿石 |
 | Social / Voice / Video / Feed | **PLANNED / RESEARCH** | 没有已验收实现 |
 
 ### Repository Topology
@@ -82,7 +84,7 @@ Private Canonical Repository 保留完整内部开发与验收历史。本 Sanit
 
 ### 最新关闭里程碑
 
-G16 技术验收与人工验收均已 PASS。Private Canonical 普通 Go 与 Race 各为 492/492 通过、0 跳过；Vet 和 Linux/Windows/macOS 构建通过。首次真正执行的 GitHub Actions 发现 PostgreSQL Receipt 时间重放不一致，采用 UTC 微秒规范化并返回数据库持久化 Receipt 修复后，最终 6/6 Jobs 通过。G16 内部 Coordinator 消费一件归属玩家的物品并增加允许材料和不可转让 Reputation，保存不可变证据；FB、Contribution、黑铁矿石发放均为零。生产回收规则与玩法入口保持禁用。G2 Node 因 Asset Atlas 需要受限素材，仍为 13/14；Windows Runtime 未运行。
+G17 技术与人工验收均为 PASS。获批的私有 PR 和合并后的 canonical CI 各有 6/6 作业通过：Go Test 511/511、Go Race 511/511、跳过 0、Vet 及 Linux/Windows/macOS 构建。合格 G15 系统消费可以在 PostgreSQL 全局发行池中创建版本化、不可变的额度流水和回执；G14 退款／冲正由负数流水补偿。对账检查守恒与权威来源绑定。**发行额度不等于玩家矿石。** `DEV_G17_1_TO_1` 仅用于测试／开发，正式生产发行比例尚未确定。没有玩家矿石、Mining Block、Power、Tool、奖励分配或馒头迁移。G16 回收边界保持不变。
 
 ### Release 状态
 
