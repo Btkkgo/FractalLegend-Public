@@ -1,0 +1,20 @@
+metric,value,source_assertion_or_receipt
+basic_power,100,TestG20ActivityValidation
+advanced_power,250,TestG20SyntheticResolversAndLocalConstraints
+advanced_test_map_power,375,TestG20EconomyIsolation
+miners_100_total,17500,TestG20MultipleMiners/100
+miners_500_total,87500,TestG20MultipleMiners/500
+planned_scenarios,90,approved T01–T90
+native_platforms_executed,3,fix_CI_36328906092
+normal_final_pass,858,normal_final-summary.json
+normal_final_fail,0,normal_final-summary.json
+race_verified_pass,858,race_verified-summary.json
+race_verified_fail,0,race_verified-summary.json
+T50_native_platforms_PASS,3,fix_CI_36328906092
+current_scenario_PASS,90,fix_CI_36328906092
+current_scenario_FAIL,0,fix_CI_36328906092
+remote_normal_PASS,882,fix_CI_36328906092
+remote_normal_FAIL,0,fix_CI_36328906092
+remote_race_PASS,882,fix_CI_36328906092
+remote_race_FAIL,0,fix_CI_36328906092
+remote_CI_jobs_PASS,10,fix_CI_36328906092

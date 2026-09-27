@@ -385,10 +385,17 @@ func TestG19TenToElevenSchemaMigrationPreservesExistingInventoryAndHistory(t *te
 	}
 	before := g19Seed(t, s, "upgrade", 2, 8)
 	economy := g19Economy(t, s)
-	if e = s.Migrate(ctx); e != nil {
+	// This historical fixture verifies exactly 0010 -> 0011, independently of
+	// later schema additions. Keep the existing eleven-version assertion.
+	raw, e := fs.ReadFile(migrations, "migrations/0011_black_iron_inventory_migration.sql")
+	if e != nil {
 		t.Fatal(e)
 	}
-	if e = s.Migrate(ctx); e != nil {
+	old["migrations/0011_black_iron_inventory_migration.sql"] = &fstest.MapFile{Data: raw}
+	if e = s.MigrateFS(ctx, old); e != nil {
+		t.Fatal(e)
+	}
+	if e = s.MigrateFS(ctx, old); e != nil {
 		t.Fatal(e)
 	}
 	after, e := s.LoadCharacter(ctx, "upgrade")

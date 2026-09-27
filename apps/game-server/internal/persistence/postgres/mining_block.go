@@ -115,12 +115,13 @@ func (s *Store) CreateMiningBlock(ctx context.Context, commandID, ruleVersion st
 		}
 		height++
 		blockID := newContributionID("mining-block")
+		blockInstanceID := newContributionID("mining-block-instance")
 		now := time.Now().UTC().Truncate(time.Microsecond)
 		poolAfter := pool.RemainingCapacity - miningblock.DevelopmentReward
 		if err = s.checkMiningBlockFailure("before_block"); err != nil {
 			return miningblock.Receipt{}, err
 		}
-		_, err = tx.Exec(ctx, `INSERT INTO mining_blocks(block_id,block_height,create_command_id,status,rule_version,started_at,scheduled_end_at,reward_reserved,pool_revision_at_reservation,created_at,updated_at) VALUES($1,$2,$3,'OPEN',$4,$5,$6,$7,$8,$5,$5)`, blockID, height, commandID, ruleVersion, now, now.Add(miningblock.DevelopmentDuration), miningblock.DevelopmentReward, pool.Revision+1)
+		_, err = tx.Exec(ctx, `INSERT INTO mining_blocks(block_id,block_height,create_command_id,status,rule_version,started_at,scheduled_end_at,reward_reserved,pool_revision_at_reservation,created_at,updated_at,block_instance_id) VALUES($1,$2,$3,'OPEN',$4,$5,$6,$7,$8,$5,$5,$9)`, blockID, height, commandID, ruleVersion, now, now.Add(miningblock.DevelopmentDuration), miningblock.DevelopmentReward, pool.Revision+1, blockInstanceID)
 		if err != nil {
 			return miningblock.Receipt{}, err
 		}
@@ -269,12 +270,12 @@ func loadMiningReceiptTx(ctx context.Context, tx pgx.Tx, blockID, action string)
 }
 
 func loadMiningBlockTx(ctx context.Context, tx pgx.Tx, blockID string, lock bool) (miningblock.Block, error) {
-	query := `SELECT block_id,block_height,create_command_id,status,rule_version,started_at,scheduled_end_at,finalized_at,cancelled_at,reward_reserved,reward_released,reward_returned,pool_revision_at_reservation,created_at,updated_at FROM mining_blocks WHERE block_id=$1`
+	query := `SELECT block_id,block_height,create_command_id,status,rule_version,started_at,scheduled_end_at,finalized_at,cancelled_at,reward_reserved,reward_released,reward_returned,pool_revision_at_reservation,created_at,updated_at,block_instance_id FROM mining_blocks WHERE block_id=$1`
 	if lock {
 		query += ` FOR UPDATE`
 	}
 	var b miningblock.Block
-	err := tx.QueryRow(ctx, query, blockID).Scan(&b.ID, &b.Height, &b.CreateCommandID, &b.Status, &b.RuleVersion, &b.StartedAt, &b.ScheduledEndAt, &b.FinalizedAt, &b.CancelledAt, &b.RewardReserved, &b.RewardReleased, &b.RewardReturned, &b.PoolRevisionAtReservation, &b.CreatedAt, &b.UpdatedAt)
+	err := tx.QueryRow(ctx, query, blockID).Scan(&b.ID, &b.Height, &b.CreateCommandID, &b.Status, &b.RuleVersion, &b.StartedAt, &b.ScheduledEndAt, &b.FinalizedAt, &b.CancelledAt, &b.RewardReserved, &b.RewardReleased, &b.RewardReturned, &b.PoolRevisionAtReservation, &b.CreatedAt, &b.UpdatedAt, &b.BlockInstanceID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return miningblock.Block{}, miningblock.ErrNotFound
 	}

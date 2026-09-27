@@ -1,0 +1,91 @@
+ID,Scenario,Status,Evidence,Required
+T01,Valid event / 合法活动,PASS,TestG20ActivityValidation,Accepted; Basic vector=100; one fact/participant / 接受 Basic=100，恰好一条事实和汇总
+T02,No tool / 无工具,PASS,TestG20SyntheticResolversAndLocalConstraints; missing/invalid profiles fail closed at resolver/registration constraints; zero facts / 解析和注册约束拒绝缺失无效配置，无算力事实,"NOT_ELIGIBLE, zero, no rows / 无资格，新增零且不写行"
+T03,Invalid tool / 无效工具,PASS,TestG20SyntheticResolversAndLocalConstraints; missing/invalid profiles fail closed at resolver/registration constraints; zero facts / 解析和注册约束拒绝缺失无效配置，无算力事实,"Reject unknown/non-TEST tool, zero / 未知或非 TEST 工具拒绝并得零"
+T04,No map / 无地图,PASS,TestG20SyntheticResolversAndLocalConstraints; missing/invalid profiles fail closed at resolver/registration constraints; zero facts / 解析和注册约束拒绝缺失无效配置，无算力事实,"Reject, zero / 拒绝并得零"
+T05,Invalid map / 无效地图,PASS,TestG20SyntheticResolversAndLocalConstraints; missing/invalid profiles fail closed at resolver/registration constraints; zero facts / 解析和注册约束拒绝缺失无效配置，无算力事实,"Reject wrong/non-TEST map, zero / 错误或非 TEST 地图拒绝并得零"
+T06,No activity / 无活动,PASS,TestG20RejectedContext,"Missing source rejects, zero / 缺失来源拒绝并得零"
+T07,Invalid evidence / 无效活动,PASS,TestG20RejectedContext,"INVALID source, zero / 无效来源拒绝并得零"
+T08,Expired event / 活动过期,PASS,TestG20RejectedContext; boundary-probe.json / SQL exact expiry23514; unchanged rows,Equal/after expiry reject; client cannot backdate / 恰好到期和到期后拒绝，客户端不能回填时间
+T09,Wrong block / 错误区块,PASS,TestG20RejectedContext,Session/source/intent mismatch rejects / 会话、来源、意图区块不一致拒绝
+T10,Inactive block / 非活动区块,PASS,TestG20RejectedContext,FINALIZED and CANCELLED reject new event / 已完成和已取消区块拒绝新事件
+T11,Invalid player / 无效玩家,PASS,TestG20RejectedContext,Missing character or ownership rejects / 角色不存在或归属错误拒绝
+T12,Invalid session / 无效会话,PASS,TestG20RejectedContext,Unknown/CLOSED/wrong-player session rejects / 未知、已关闭或他人会话拒绝
+T13,Expired session / 会话过期,PASS,TestG20ExpiredSession,Half-open window boundary rejects / 半开窗口到期边界拒绝
+T14,Invalid identity / 无效身份,PASS,TestG20IntentValidation; TestG20StableInstanceIntent,"Empty, overlength, non-ASCII/delimiter abuse reject / 空值、超长、非 ASCII 或分隔符滥用拒绝"
+T15,Fake client power / 虚假客户端算力,PASS,TestG20IntentValidation; TestG20StableInstanceIntent,miningPower=999999999 explicitly rejects / 明确拒绝 miningPower=999999999
+T16,Extreme client power / 极端客户端算力,PASS,TestG20IntentValidation; TestG20StableInstanceIntent,"Huge decimal final power rejects, no decode overflow credit / 超大最终算力拒绝，解码溢出不能计入"
+T17,Negative client power / 负客户端输入,PASS,TestG20IntentValidation; TestG20StableInstanceIntent,"Explicit reject, no acceptance / 明确拒绝且不接受活动"
+T18,NaN/Infinity / 非有限客户端输入,PASS,TestG20IntentValidation; TestG20StableInstanceIntent,"Strings/raw invalid JSON both reject, no float path / 非有限字符串或无效 JSON 均拒绝，无浮点路径"
+T19,Final power aliases / 最终算力字段变体,PASS,TestG20IntentValidation; TestG20StableInstanceIntent,All named fields and case/underscore variants reject / 所有列明字段及大小写、下划线变体拒绝
+T20,Forged coefficients / 伪造权威输入,PASS,TestG20IntentValidation; TestG20StableInstanceIntent,B/E/A/M/rule/player/time fields reject / 客户端基础值、倍率、规则、身份和时间字段拒绝
+T21,Strict decoder / 严格解码,PASS,TestG20IntentValidation; TestG20StableInstanceIntent,Duplicate/unknown/nested/case/trailing/oversize/malformed reject / 重复、未知、嵌套、大小写、尾随、超大和非法格式拒绝
+T22,Forged principal / 伪造归属,PASS,TestG20ActivityValidation,Server ownership verification fails / 服务器归属核验失败
+T23,Another player's event / 他人活动,PASS,TestG20CrossPlayerAndVersionReplay; TestG20SameBlockIDDifferentInstance,Zero and no other-player receipt disclosure / 新增零且不泄露他人回执
+T24,Noncanonical activity key / 非规范活动身份,PASS,TestG20CrossPlayerAndVersionReplay; TestG20SameBlockIDDifferentInstance,ActivityID differs from mpa:source rejects / 活动身份不等于 mpa:来源时拒绝
+T25,Source reuse / 换身份重用来源,PASS,TestG20CrossPlayerAndVersionReplay; TestG20SameBlockIDDifferentInstance,Different activity ID cannot re-credit event / 换活动 ID 不能重用来源计入
+T26,Altered replay binding / 篡改重放绑定,PASS,TestG20CrossPlayerAndVersionReplay; TestG20SameBlockIDDifferentInstance,Changed player/block/session/version rejects without credit / 改玩家、区块、会话或版本拒绝且不增加
+T27,Network/server retries / 网络和服务重试,PASS,TestG20ActivityValidation,Original fact replay; no added count or power / 重放原事实，不增加数量或算力
+T28,Restart/version replay / 重启或换版本重放,PASS,"TestG20CrossPlayerAndVersionReplay; TestG20SameBlockIDDifferentInstance; TestG20RestartSnapshotAndReadOnly; canonical UTC/no monotonic, original strict equality unchanged, UTC and Tokyo 3/3, fresh full Normal/Race 882/882 PASS / 规范UTC且移除单调时钟，严格断言未改，两时区三项通过及新完整回归通过; fix CI 36328906092 verified PASS / 修复提交远程CI已核验通过",Global identity independent of rule; no re-credit / 身份去重与规则无关，重启不再计入
+T29,Exact vectors / 精确向量,PASS,TestG20DeterministicVectors,§8 exact B/E/A/M outputs / 第 8 节整数向量结果精确相等
+T30,Tool efficiency / 工具效率,PASS,TestG20DeterministicVectors,"E=1,250,000 at B=100,A=M=S →125 / 其余单位倍率时效率 1.25 得 125"
+T31,Activity modifier / 活动权重,PASS,TestG20DeterministicVectors,"A=500,000 at B=100,E=M=S →50 / 其余单位倍率时活动权重 0.5 得 50"
+T32,Map modifier / 地图倍率,PASS,TestG20DeterministicVectors,"M=1,500,000 at B=100,E=A=S →150 / 其余单位倍率时地图 1.5 得 150"
+T33,Advanced versus Basic / 高级和基础工具,PASS,TestG20DeterministicVectors,250>100; server-derived only / 高级工具 250 大于基础工具 100，结果只来自服务器
+T34,Single floor / 单次截断,PASS,TestG20DeterministicVectors,93.75→93 and 6.75→6; no intermediate division / 93.75 得 93、6.75 得 6，不做中间除法
+T35,Zero activity weight / 零活动权重,PASS,TestG20RejectedContext,"Reject no valid activity, zero / 无有效活动拒绝，新增零"
+T36,Zero synthetic base / 零合成基础值,PASS,TestG20DeterministicVectors; TestG20ExpiredCommittedReplayAndWindows,"Valid audited zero, counted once / 合法零结果保留审计且只计数一次"
+T37,Fractional under-one / 小于一的正数,PASS,TestG20DeterministicVectors; TestG20ExpiredCommittedReplayAndWindows,"Floor to zero, no minimum-one or carry / 向零截断，无最少一或小数结转"
+T38,Negative trusted inputs / 负权威输入,PASS,TestG20CalculatorBounds,B/E/A/M rejects before arithmetic / 负基础值或倍率在运算前拒绝
+T39,Invalid multipliers / 无效倍率,PASS,TestG20CalculatorBounds,E/M zero or >max; A invalid reject / 效率、地图零值或超限及非法权重拒绝
+T40,Unknown rule / 未知规则,PASS,TestG20RejectedContext,New event fails closed / 新活动遇未知规则失败关闭
+T41,Input max boundaries / 输入上限,PASS,TestG20CalculatorBounds,Values at max handled; max+1 rejected / 上限合法处理，上限加一拒绝
+T42,Output overflow / 输出溢出,PASS,TestG20DeterministicVectors,MaxInt64×1.000001 rejects / MaxInt64 乘 1.000001 拒绝
+T43,Wide intermediate / 宽整数中间值,PASS,TestG20DeterministicVectors,>64-bit numerator and fitting output succeeds / 分子超过 64 位但结果可容纳时成功
+T44,MaxInt64 output / 最大结果,PASS,TestG20DeterministicVectors,Exact MaxInt64 with unity multipliers / 单位倍率下精确得到 MaxInt64
+T45,Participant/count overflow / 汇总溢出,PASS,TestG20AggregateBounds,No activity leak or partial row update / 无事实泄漏或部分汇总更新
+T46,Block-total overflow / 区块总和溢出,PASS,TestG20ExpiredCommittedReplayAndWindows,Explicit error; no wrap or writes / 明确报错，无回绕或写入
+T47,Deterministic inputs / 确定性输入,PASS,TestG20DeterministicVectors,Same snapshot inputs produce identical P / 相同权威快照输入产生相同算力
+T48,Shuffled acceptance / 打乱提交顺序,PASS,TestG20OrderTimezoneAndAudit,Fixed accepted set sums/counts invariant / 固定已接受集合的总和和数量不受顺序影响
+T49,Timezone independence / 时区无关,PASS,TestG20OrderTimezoneAndAudit,UTC server windows; varied local TZ cannot change P / 服务器 UTC 窗口，本地时区不改变算力
+T50,Native cross-platform vectors / 原生跨平台向量,PASS,"GitHub-hosted Windows/Linux/macOS; same existing golden/bounds suite,24cases/23events; same candidate96733d1 and result digestf5f2e54d...ceb3d60; native artifacts / 三平台同一已有向量与边界，24案例23事件，候选及结果摘要一致; TestG20DeterministicVectors; TestG20CalculatorBounds; fixed-point source and digest unchanged / 定点源码与摘要未改; fix CI 36328906092 verified PASS / 修复提交远程CI已核验通过",Windows/Linux/macOS vector tests execute and agree / 三个原生平台执行相同向量且结果一致
+T51,Serial duplicate / 顺序重复,PASS,TestG20ActivityValidation,"ACCEPTED once, then DUPLICATE and AppliedPower=0 / 首次接受，之后重复且 AppliedPower 为零"
+T52,Concurrent duplicate / 并发重复,PASS,TestG20ConcurrentValidation,100 simultaneous same-source submissions yield one credit / 一百个同来源并发请求只有一次计入
+T53,Same-player distinct events / 同玩家不同活动,PASS,TestG20ConcurrentValidation,Atomic exact sum/count; no lost update / 精确原子总和和数量，无丢更新
+T54,Parallel different players / 多玩家并发,PASS,TestG20ParallelDifferentPlayers,Independent exact per-player rows/totals / 各玩家独立精确行和总和
+T55,Out-of-order evidence / 乱序活动,PASS,TestG20OrderTimezoneAndAudit,Eligible observations accumulate with explicit min/max times / 合法乱序观察累加，时间最小最大规则明确
+T56,Transaction retry / 事务重试,PASS,TestG20RetryPolicy; SQLSTATE injected policy tests; fresh transactions; real SSI failures retained separately / 注入重试策略与真实SSI失败分列,40001/40P01 bounded; fresh lookup; no double count / 重试有界、重新查历史、不重复计入
+T57,Rollback matrix / 回滚矩阵,PASS,TestG20TransactionRollback,Fail after activity/aggregate/before commit leaves neither partial write / 事实后、汇总后、提交前失败均无部分写
+T58,Kill before writes / 写入前崩溃,PASS,TestG20IndependentProcessCrashMatrix; real OS kill + separate verifier PID / 真实OS强杀与独立验证进程,New process sees no partial fact/aggregate / 新进程看到无部分事实或汇总
+T59,Kill after fact / 事实写入后崩溃,PASS,TestG20IndependentProcessCrashMatrix; real OS kill + separate verifier PID / 真实OS强杀与独立验证进程,Uncommitted fact rolled back / 未提交事实随事务回滚
+T60,Kill after aggregate / 汇总后崩溃,PASS,TestG20IndependentProcessCrashMatrix; real OS kill + separate verifier PID / 真实OS强杀与独立验证进程,Both uncommitted writes rolled back / 两个未提交写入一起回滚
+T61,Kill before commit / 提交前崩溃,PASS,TestG20IndependentProcessCrashMatrix; real OS kill + separate verifier PID / 真实OS强杀与独立验证进程,Restart revalidates; at most one acceptance / 重启重新验证，最多接受一次
+T62,Kill after commit/lost ACK / 提交后丢响应,PASS,TestG20IndependentProcessCrashMatrix; real OS kill + separate verifier PID / 真实OS强杀与独立验证进程,"New process sees one fact, replay adds zero / 新进程看到一条事实，重放新增零"
+T63,Reopen/replay after expiry / 重开过期重放,PASS,"TestG20ExpiredCommittedReplayAndWindows; TestG20RestartSnapshotAndReadOnly; canonical UTC/no monotonic, original strict equality unchanged, UTC and Tokyo 3/3, fresh full Normal/Race 882/882 PASS / 规范UTC且移除单调时钟，严格断言未改，两时区三项通过及新完整回归通过; fix CI 36328906092 verified PASS / 修复提交远程CI已核验通过",Existing authorized fact duplicates without new eligibility credit / 过期后已授权历史只重复返回，不再获新资格
+T64,Session close race / 会话关闭竞争,PASS,TestG20LifecycleOverlap,G20 share/update lock ordering; no stale new acceptance / G20 共享与更新锁排序，不能用过时状态接受新事件
+T65,G18 close overlap / G18 关闭重叠,PASS,TestG20LifecycleOverlap,Snapshot eligibility policy explicit; no G18 lock/write / 验证快照策略明确，不锁或写 G18
+T66,Cross-block isolation / 跨区块隔离,PASS,"TestG20SameBlockIDDifferentInstance; TestG20InstanceProjectionIsolation; TestG20RestartSnapshotAndReadOnly; canonical UTC/no monotonic, original strict equality unchanged, UTC and Tokyo 3/3, fresh full Normal/Race 882/882 PASS / 规范UTC且移除单调时钟，严格断言未改，两时区三项通过及新完整回归通过; fix CI 36328906092 verified PASS / 修复提交远程CI已核验通过",Source cannot move blocks; totals scoped correctly / 来源不能换区块，总和正确隔离
+T67,Audit record / 审计记录,PASS,TestG20OrderTimezoneAndAudit,All bindings/version/input/result/server times; no sensitive fields / 身份、版本、输入、结果和服务器时间齐全，无敏感字段
+T68,Immutable guards / 不可变保护,PASS,TestG20ImmutableHistoryAndUnique; TestG20SessionBindingGuard; TestG20SnapshotRequiredFields,UPDATE/DELETE/TRUNCATE rejected; session binding/profile immutable / 更新、删除、清空禁止，会话绑定和配置不可变
+T69,Exact reconciliation / 精确对账,PASS,TestG20ActivityValidation,PASS with exact expected/actual/delta=0 / 期望等于实际且差额为零时通过
+T70,Missing activity/source / 缺失活动或来源,PASS,TestG20RebuildAndReconcile; TestG20UnverifiableAggregate; TestG20HistoricalReferenceSyntax,Reports observable gap; unconsumed source not falsely missing / 报告可观察缺失，未消费来源不误报
+T71,Duplicate corrupt snapshot / 重复损坏快照,PASS,TestG20RebuildAndReconcile; TestG20UnverifiableAggregate; TestG20HistoricalReferenceSyntax,"Duplicate activity/source reported, not deduplicated silently / 重复活动或来源报告，不静默去重"
+T72,Unknown historical rule / 未知历史规则,PASS,TestG20RebuildAndReconcile; TestG20UnverifiableAggregate; TestG20HistoricalReferenceSyntax,"UNVERIFIABLE; expected=null, no current-rule fallback / 报告无法核验、期望为 null，不用当前规则回退"
+T73,Invalid reference / 无效引用,PASS,TestG20RebuildAndReconcile; TestG20UnverifiableAggregate; TestG20HistoricalReferenceSyntax,Catalog/source/session mismatch reported / 配置、来源、会话不匹配报告
+T74,Per-activity power mismatch / 活动算力不一致,PASS,TestG20RebuildAndReconcile; TestG20UnverifiableAggregate; TestG20HistoricalReferenceSyntax,Historical recomputation differs; delta reported / 历史重算不同则报告差额
+T75,Missing participant / 缺失汇总,PASS,TestG20RebuildAndReconcile; TestG20UnverifiableAggregate; TestG20HistoricalReferenceSyntax,Expected fact sum versus missing actual reported / 事实期望与缺失实际汇总差异报告
+T76,Extra participant / 多余汇总,PASS,TestG20RebuildAndReconcile; TestG20UnverifiableAggregate; TestG20HistoricalReferenceSyntax,Actual row with no facts reported / 无事实支持的实际汇总报告
+T77,Wrong aggregate count/power / 错误汇总,PASS,TestG20RebuildAndReconcile; TestG20UnverifiableAggregate; TestG20HistoricalReferenceSyntax,Exact expected/actual/delta; no repair / 精确期望、实际、差额，不修复
+T78,Wrong aggregate times / 错误汇总时间,PASS,TestG20RebuildAndReconcile; TestG20UnverifiableAggregate; TestG20HistoricalReferenceSyntax,Min/max AcceptedAt differences reported / 最小最大接受时间差异报告
+T79,Large delta / 大差额,PASS,TestG20RebuildAndReconcile; TestG20UnverifiableAggregate; TestG20HistoricalReferenceSyntax,Arbitrary-precision delta cannot overflow / 任意精度差额不溢出
+T80,No reconciliation repair / 对账不修复,PASS,TestG20RestartSnapshotAndReadOnly; TestG20RebuildAndReconcile,Repeatable read-only report; before/after state identical / 只读重复对账，前后状态完全相等
+T81,Pure rebuild / 纯内存重建,PASS,TestG20RestartSnapshotAndReadOnly; TestG20RebuildAndReconcile,Rebuild equals expected participants; no DB mutation / 内存重建等于期望汇总，不改数据库
+T82,Zero total / 零总算力,PASS,TestG20ExpiredCommittedReplayAndWindows,Empty and accepted-zero cases return exactly zero / 空集合和合法零活动总值均为零
+T83,Multiple miners / 多矿工,PASS,TestG20MultipleMiners/2,Two distinct miners; exact totals/no duplicate participants / 两名矿工，总值正确、无重复汇总
+T84,10 miners / 十矿工,PASS,TestG20MultipleMiners/10,"N rows, correct sum, all P≥0, no assets/pool changes / 十行、总和正确、非负且不改资产或矿池"
+T85,50 miners / 五十矿工,PASS,TestG20MultipleMiners/50,Same invariants and deterministic repeated fixture / 相同不变量，重复夹具计算确定
+T86,100 miners / 百矿工,PASS,TestG20MultipleMiners/100; 100 concurrent exact replays add zero / 100个并发精确重放新增零,"Same invariants, concurrent and replayed attempts / 相同不变量，并发和重放仍正确"
+T87,500 miners / 五百矿工,PASS,TestG20MultipleMiners/500,"Same invariants, exact checked total / 相同不变量，五百矿工总和精确受检"
+T88,Advanced economic isolation / 高级工具经济隔离,PASS,TestG20EconomyIsolation; TestG20MigrationPreservesEconomy,Personal P rises; capacity/reward/distributed/emission/debt unchanged / 个人算力增加，容量、奖励、分发、发行和债务不变
+T89,Nonempty economy/G19 snapshot / 非空经济隔离,PASS,TestG20EconomyIsolation; TestG20MigrationPreservesEconomy,FB/Contribution/Reputation/Ore/G19 and all G17/G18 rows unchanged / FB、贡献、声望、矿石、G19 及全部 G17/G18 状态不变
+T90,Production fail-closed / 生产默认拒绝,PASS,TestG20ProductionPersistenceClosed; TestG20ProductionClosed,TEST profiles cannot enable production; no runtime route or reward method / 测试配置不能启用生产，无运行路由或奖励方法

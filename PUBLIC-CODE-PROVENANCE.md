@@ -41,7 +41,7 @@ This mirror was assembled from an explicit allowlist into a new Git repository. 
 | `docs/social/screenshots/` | Fractal Legend technical screenshots | Approved, sanitized validation screenshots; no account, credential, or local path visible | Image assets only |
 | `docs/public/assets/marketing/` | Owner-approved Fractal Legend marketing asset | Approved launch poster with recorded SHA-256 | Image asset only |
 
-The eleven `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL and metadata backfill for existing G17 revisions, not database dumps or player data.
+The thirteen `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL and metadata backfill for existing G17 revisions, not database dumps or player data.
 
 ### Go dependency audit
 
@@ -105,7 +105,7 @@ The initial mirror excludes the complete private runtime assembly, `foundation/`
 | `docs/social/screenshots/` | Fractal Legend Technical Screenshot | 已批准并脱敏；不显示 Account、Credential 或 Local Path | 仅 Image Asset |
 | `docs/public/assets/marketing/` | 所有者批准的 Fractal Legend Marketing Asset | 已批准 Launch Poster，并记录 SHA-256 | 仅 Image Asset |
 
-`internal/persistence/postgres/migrations/` 下的十个 `.sql` 文件是项目自有 Schema Migration，只包含 DDL 与 G17 既有修订的元数据回填逻辑，不是 Database Dump 或 Player Data。
+`internal/persistence/postgres/migrations/` 下的十三个 `.sql` 文件是项目自有 Schema Migration，只包含 DDL 与 G17 既有修订的元数据回填逻辑，不是 Database Dump 或 Player Data。
 
 ### Go Dependency Audit
 
@@ -131,3 +131,9 @@ Dependency 通过 `go.mod` 与 `go.sum` 引用；没有 Vendor 第三方 Source�
 The [G19 allowlist](docs/public-sync/G19-PUBLIC-SYNC-CANDIDATE.md) exports project-owned Black Iron material, migration, synthetic tests and additive schema 0011. Stable IDs and 1:1 quantities are preserved; no production data or alias seed is copied. Ten code paths are byte-identical to accepted canonical. Curated bilingual records exclude the private audit matrix and raw conversation. Dependencies/licenses remain as audited above; no new asset or vendored source.
 
 [G19 允许清单](docs/public-sync/G19-PUBLIC-SYNC-CANDIDATE.md)导出项目自有黑铁材料、迁移、合成测试及增量 schema 0011。稳定 ID 和 1:1 数量保留，不复制生产数据或生产映射。十个代码路径与已验收 canonical 逐字节相同。整理双语记录排除私有审计矩阵和原始对话；依赖／许可保持上方审核状态，没有新素材或 vendor 源码。
+
+## G18.1 + G20 provenance / 来源
+
+34 explicitly allowlisted project-owned Go/SQL files are byte-identical to accepted canonical, including stable identity prerequisite migration 0012 and G20 migration 0013. All data is synthetic test input; no production records, private history, third-party source, vendored dependency or new binary asset is copied. Module versions and audited licenses are unchanged. See [allowlist](docs/public-sync/G20-PUBLIC-SYNC-CANDIDATE.md).
+
+34 个逐项允许的项目自有 Go／SQL 文件与已验收 canonical 逐字节相同，包括稳定身份前置迁移 0012 和 G20 迁移 0013。全部输入为合成测试数据，不复制生产记录、私有历史、第三方源码、vendor 依赖或新增二进制素材。模块版本与已审计许可不变；见上方允许清单。

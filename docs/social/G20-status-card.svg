@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1400" viewBox="0 0 1400 1400" role="img" aria-label="G20 actual synthetic test data, unpublished accepted foundation">
+<rect width="1400" height="1400" fill="#111722"/>
+<g font-family="Helvetica,Arial,sans-serif" fill="#f1f5fa">
+<text x="80" y="110" font-size="42" font-weight="700">G20 / MINING FOUNDATION</text>
+<text x="80" y="165" font-size="24" fill="#ffc46e">G17 pool → G18 recovery → G18.1 identity → G20 power</text>
+<text x="80" y="220" font-size="22">Stable BlockInstanceID · immutable validation history</text>
+<text x="80" y="260" font-size="22">G18 ordinary SELECT · FK NONE · row lock NO · mutation NO</text>
+<text x="80" y="330" font-size="24">Audited synthetic power / TEST ONLY</text>
+<text x="80" y="386" font-size="21">Basic</text><rect x="320" y="361" width="200" height="32" fill="#7ec7ff"/><text x="540" y="386" font-size="22">100</text>
+<text x="80" y="446" font-size="21">Advanced</text><rect x="320" y="421" width="500" height="32" fill="#72e0b2"/><text x="840" y="446" font-size="22">250</text>
+<text x="80" y="506" font-size="21">Advanced + TEST map</text><rect x="320" y="481" width="750" height="32" fill="#bda7ff"/><text x="1090" y="506" font-size="22">375</text>
+<text x="80" y="575" font-size="22">500 miners: exact total 87,500 · no economy changes</text>
+<text x="80" y="628" font-size="22">90 scenarios: 90 PASS / 0 FAIL / 0 PARTIAL / 0 NOT RUN</text>
+<text x="80" y="670" font-size="20" fill="#b6c2d3">Native T50: Windows / Linux / macOS PASS · same 24 cases</text>
+<text x="80" y="740" font-size="20" fill="#b6c2d3">No player ore · no reward settlement · no G21</text>
+<text x="80" y="785" font-size="18" fill="#b6c2d3">G20 CLOSED / unpublished · canonical verification PASS</text>
+<text x="80" y="828" font-size="16" fill="#b6c2d3">Source: G20-status-card-data.csv and G20-MINING-POWER-TEST-REPORT.md</text>
+<text x="80" y="950" font-size="24">Remote Normal: 882 PASS / 0 FAIL / 0 SKIP</text>
+<text x="80" y="1005" font-size="24">Remote Race: 882 PASS / 0 FAIL / 0 SKIP</text>
+<text x="80" y="1060" font-size="24">Local Normal / Race: 882 PASS each · Remote CI 10/10 PASS</text>
+<text x="80" y="1160" font-size="20" fill="#ffc46e">Mining Foundation PASS · publication remains manual</text>
+</g></svg>

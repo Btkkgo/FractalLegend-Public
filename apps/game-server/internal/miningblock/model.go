@@ -31,7 +31,10 @@ var (
 )
 
 type Block struct {
-	ID                        string
+	ID string
+	// BlockInstanceID is the permanent identity of this concrete persisted block.
+	// ID remains the business/display identifier and may be reused after deletion.
+	BlockInstanceID           string
 	Height                    int64
 	CreateCommandID           string
 	Status                    string
