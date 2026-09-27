@@ -41,7 +41,7 @@ This mirror was assembled from an explicit allowlist into a new Git repository. 
 | `docs/social/screenshots/` | Fractal Legend technical screenshots | Approved, sanitized validation screenshots; no account, credential, or local path visible | Image assets only |
 | `docs/public/assets/marketing/` | Owner-approved Fractal Legend marketing asset | Approved launch poster with recorded SHA-256 | Image asset only |
 
-The ten `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL and metadata backfill for existing G17 revisions, not database dumps or player data.
+The eleven `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL and metadata backfill for existing G17 revisions, not database dumps or player data.
 
 ### Go dependency audit
 
@@ -125,3 +125,9 @@ Dependency 通过 `go.mod` 与 `go.sum` 引用；没有 Vendor 第三方 Source�
 ### 明确排除
 
 初始镜像排除完整 Private Runtime Assembly、`foundation/` Integration Code、绑定 Private Migration Input 的 Command Entry Point、仍需进一步 Provenance Review 的 Gateway 与 Browser Pipeline、Importer 与 Canonical Tool、Migrated Data Slice、Protected Fixture、Legacy Source 与 Binary、Third-party Game Asset、Private Configuration 和 Local Environment Record。
+
+## G19 provenance / G19 来源
+
+The [G19 allowlist](docs/public-sync/G19-PUBLIC-SYNC-CANDIDATE.md) exports project-owned Black Iron material, migration, synthetic tests and additive schema 0011. Stable IDs and 1:1 quantities are preserved; no production data or alias seed is copied. Ten code paths are byte-identical to accepted canonical. Curated bilingual records exclude the private audit matrix and raw conversation. Dependencies/licenses remain as audited above; no new asset or vendored source.
+
+[G19 允许清单](docs/public-sync/G19-PUBLIC-SYNC-CANDIDATE.md)导出项目自有黑铁材料、迁移、合成测试及增量 schema 0011。稳定 ID 和 1:1 数量保留，不复制生产数据或生产映射。十个代码路径与已验收 canonical 逐字节相同。整理双语记录排除私有审计矩阵和原始对话；依赖／许可保持上方审核状态，没有新素材或 vendor 源码。

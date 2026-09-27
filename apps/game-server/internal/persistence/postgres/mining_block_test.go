@@ -363,7 +363,21 @@ func TestG18RuleFailClosedAndExistingNineToTenMigration(t *testing.T) {
 	if err := store.MigrateFS(ctx, old); err != nil {
 		t.Fatal(err)
 	}
-	if err := store.Migrate(ctx); err != nil {
+	g18Only := fstest.MapFS{}
+	entries, err := fs.ReadDir(migrations, "migrations")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		if entry.Name() <= "0010_mining_block_reservation.sql" {
+			data, err := fs.ReadFile(migrations, "migrations/"+entry.Name())
+			if err != nil {
+				t.Fatal(err)
+			}
+			g18Only["migrations/"+entry.Name()] = &fstest.MapFile{Data: data}
+		}
+	}
+	if err := store.MigrateFS(ctx, g18Only); err != nil {
 		t.Fatal(err)
 	}
 	var versionCount int
@@ -391,7 +405,7 @@ func TestG18MigrationBackfillsExistingG17HistoryWithoutRewritingIt(t *testing.T)
 		t.Fatal(err)
 	}
 	for _, file := range files {
-		if strings.HasPrefix(file.Name(), "0010_") {
+		if file.Name() >= "0010_" {
 			continue
 		}
 		data, err := fs.ReadFile(migrations, "migrations/"+file.Name())

@@ -500,7 +500,7 @@ func TestG16MigrationUpgradesG15Schema(t *testing.T) {
 	if _, err := store.pool.Exec(ctx, `INSERT INTO fb_ledger_transactions(transaction_id,transaction_type,status,reference_type,reference_id,reason,created_at) VALUES('g17-upgrade-transaction','PLAYER_TRANSFER','POSTED','TEST_FIXTURE','g17-upgrade-reference','historical upgrade fixture','2026-09-20T00:00:00Z')`); err != nil {
 		t.Fatal(err)
 	}
-	if err := store.Migrate(ctx); err != nil {
+	if err := store.MigrateFS(ctx, historicalMigrationsThrough(t, "0010_mining_block_reservation.sql")); err != nil {
 		t.Fatal(err)
 	}
 	if err := store.pool.QueryRow(ctx, `SELECT max(version) FROM schema_migrations`).Scan(&after); err != nil || after != 10 {
