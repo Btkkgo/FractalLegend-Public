@@ -14,7 +14,7 @@ Human acceptance PASS. Accepted private PR and post-merge canonical CI each pass
 
 **NOT IMPLEMENTED:** Production Block Reward; Production Block Duration; Mining Power; Mining Tool; Mining Map; Mining Tool Craft NPC; Hidden Mining Material Map; Player Mining Activity; Production Ore Distribution / Ore Reward Distribution; Production Ore Issuance; Production Emission Ratio; production alias approval and ore gameplay lifecycle.
 
-Public verification results are recorded in the export manifest after fresh isolated Test/Race/Vet and four scans complete.
+Public verification results appear below and in the export manifest.
 
 ## 中文 — 完整审核版
 
@@ -30,5 +30,11 @@ G19 通过明确审查的旧身份兼容，将正式 Black Iron Ore／黑铁矿�
 
 **未实现：**正式区块奖励、正式区块时长、挖矿算力、挖矿工具、挖矿地图、工具制作 NPC、隐藏挖矿材料地图、玩家挖矿活动、生产矿石分发／奖励分配、生产矿石发行、生产发行比例、生产映射批准及矿石玩法生命周期。
 
-全新独立 Test／Race／Vet 和四项扫描完成后，公开验证结果记录在导出清单。
+已验证的公开结果见下方及导出清单。
 
+
+## Public verification / 公开验证
+
+Fresh sequential PostgreSQL test databases: Go Test **383/383 PASS**, Go Race **383/383 PASS**, failed **0**, skipped **0**; Go Vet **PASS**. All **173** tracked/nonignored files passed Secret, Personal Information, Legacy Source, Restricted Third-party Asset and local-link checks. Ten code paths are byte-identical to accepted canonical; nine approved baseline PNG files retain exact SHA-256 hashes. No new binaries, archives, oversized files, dependency or license changes. Pattern scans are complemented by explicit allowlist, source/diff and provenance review. Publication uses the account noreply identity and independent public Git history.
+
+顺序使用各自全新 PostgreSQL 测试库：Go Test **383/383 PASS**、Go Race **383/383 PASS**、失败 **0**、跳过 **0**，Go Vet **PASS**。全部 **173** 个受追踪／非忽略文件通过秘密、个人信息、旧源码、受限素材及本地链接检查。十个代码路径与已验收 canonical 逐字节相同，九个既有批准 PNG 保持精确 SHA-256 哈希。没有新二进制、归档、超大文件、依赖或许可变化；模式扫描配合明确允许清单、源码／Diff 和来源审查。发布使用账号 noreply 身份，保留独立公开 Git 历史。

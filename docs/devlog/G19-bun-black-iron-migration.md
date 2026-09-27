@@ -28,3 +28,15 @@ G19 通过明确审查的旧身份兼容，将正式 Black Iron Ore／黑铁矿�
 
 **未实现：**正式区块奖励、正式区块时长、挖矿算力、挖矿工具、挖矿地图、工具制作 NPC、隐藏挖矿材料地图、玩家挖矿活动、生产矿石分发／奖励分配、生产矿石发行、生产发行比例、生产映射批准及矿石玩法生命周期。
 
+
+## Public verification / 公开验证
+
+Fresh sequential PostgreSQL test databases: Go Test **383/383 PASS**, Go Race **383/383 PASS**, failed **0**, skipped **0**; Go Vet **PASS**. All **173** tracked/nonignored files passed Secret, Personal Information, Legacy Source, Restricted Third-party Asset and local-link checks. Ten code paths are byte-identical to accepted canonical; nine approved baseline PNG files retain exact SHA-256 hashes. No new binaries, archives, oversized files, dependency or license changes. Pattern scans are complemented by explicit allowlist, source/diff and provenance review. Publication uses the account noreply identity and independent public Git history.
+
+顺序使用各自全新 PostgreSQL 测试库：Go Test **383/383 PASS**、Go Race **383/383 PASS**、失败 **0**、跳过 **0**，Go Vet **PASS**。全部 **173** 个受追踪／非忽略文件通过秘密、个人信息、旧源码、受限素材及本地链接检查。十个代码路径与已验收 canonical 逐字节相同，九个既有批准 PNG 保持精确 SHA-256 哈希。没有新二进制、归档、超大文件、依赖或许可变化；模式扫描配合明确允许清单、源码／Diff 和来源审查。发布使用账号 noreply 身份，保留独立公开 Git 历史。
+
+## Final Close references / 最终收尾引用
+
+Accepted private implementation merge (plain archive reference, no private Git object): `ee0f1d1ddf42cb61d202cc734fc0e34db68d253b`. Canonical post-merge CI run `36302777395`: 6/6 PASS, Test/Race 619 each, failed/skipped 0, Vet and three native builds PASS. Public implementation export: `6f22c793c4d176f9e0886b8ce88adf6dbc9e3c59`. This later documentation-only commit records that verified export without changing tested code. Final publication HEAD is independently verified remotely and recorded in the private closure report. Human acceptance PASS; X not published; G20 not started.
+
+已验收私有实现合并（仅纯文本归档引用，不复制私有 Git 对象）：`ee0f1d1ddf42cb61d202cc734fc0e34db68d253b`。canonical 合并后 CI `36302777395`：6/6 PASS，Test／Race 各 619，失败／跳过 0，Vet 和三项原生构建通过。公开实现导出：`6f22c793c4d176f9e0886b8ce88adf6dbc9e3c59`。后续仅文档提交记录这一已验证导出，不改变测试代码；最终公开 HEAD 另行核实远端并记录于私有收尾报告。人工验收 PASS，未发布 X，未开始 G20。
