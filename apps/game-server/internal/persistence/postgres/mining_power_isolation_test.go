@@ -18,7 +18,10 @@ import (
 func g20Upstream(t *testing.T, s *Store) map[string]string {
 	t.Helper()
 	ctx := context.Background()
-	rows, e := s.pool.Query(ctx, `SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename NOT LIKE 'mining_power_%' AND tablename<>'schema_migrations' ORDER BY tablename`)
+	rows, e := s.pool.Query(ctx, `SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename NOT LIKE 'mining_power_%'
+		AND tablename NOT IN ('mining_reservation_instance_bindings','mining_prerequisite_distributions',
+		'mining_reward_issuance_lots','mining_reward_inventory_projections')
+		AND tablename<>'schema_migrations' ORDER BY tablename`)
 	if e != nil {
 		t.Fatal(e)
 	}

@@ -33,6 +33,7 @@ This mirror was assembled from an explicit allowlist into a new Git repository. 
 | `apps/game-server/internal/emission/`, `internal/persistence/postgres/emission*.go`, G17 changes to `contribution_refund.go`, `recycle_test.go`, `store.go`, and `migrations/0009_black_iron_emission_pool.sql` | Fractal Legend project-owned G17 implementation | Versioned global capacity, immutable entries and receipts, atomic refund compensation, migration and synthetic tests; no player ore or production ratio | Uses audited Go modules listed below |
 | `apps/game-server/internal/miningblock/model.go`, `internal/persistence/postgres/mining_block*.go`, `emission_recovery*.go`, G18 updates to `emission.go`, `emission_read.go`, `emission/model.go`, `recycle_test.go`, `store.go`, and `migrations/0010_mining_block_reservation.sql` | Fractal Legend project-owned G18 implementation | Atomic global-pool block reservation and debt offset, immutable receipts, crash/reconciliation tests, additive migration; no player ore or production rule | Uses audited Go modules listed below |
 | `apps/game-server/internal/persistence/postgres/{contribution.go,contribution_refund.go,ledger.go,system_spend.go,timestamp_replay_test.go}` | Fractal Legend project-owned G13–G15 reliability hardening | Canonical UTC microsecond persistence timestamps, exact PostgreSQL replay tests; no economic or schema change | Uses audited Go modules listed below |
+| `apps/game-server/internal/miningpower/{canonical_evidence*,seal.go}`, G21-P0 PostgreSQL adapters/tests and `migrations/0014_settlement_prerequisite_binding.sql` | Fractal Legend project-owned G21-P0 implementation | Sealed TEST inputs, immutable binding, recovery, source/projection prerequisites and synthetic tests; no production settlement or player ore | Uses audited Go modules listed below |
 | `docs/public/` | Fractal Legend public documentation | Sanitized bilingual project overview, status, roadmap, architecture, history, and approved media | No runtime dependency |
 | `docs/adr/0009-g10-trade-foundation.md` through `docs/adr/0017-g18-mining-block-reward-reservation.md` | Fractal Legend project-owned ADRs | Bilingual accepted decision records with private environment generalized | No runtime dependency |
 | `docs/devlog/G9-persistence-foundation.md` through `docs/devlog/G18-mining-block-reward-reservation.md` | Fractal Legend project-owned Devlogs | Bilingual technical results, including G16 and G18 failure and repair records; private links and paths removed or generalized | No runtime dependency |
@@ -41,7 +42,7 @@ This mirror was assembled from an explicit allowlist into a new Git repository. 
 | `docs/social/screenshots/` | Fractal Legend technical screenshots | Approved, sanitized validation screenshots; no account, credential, or local path visible | Image assets only |
 | `docs/public/assets/marketing/` | Owner-approved Fractal Legend marketing asset | Approved launch poster with recorded SHA-256 | Image asset only |
 
-The thirteen `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL and metadata backfill for existing G17 revisions, not database dumps or player data.
+The fourteen `.sql` files under `internal/persistence/postgres/migrations/` are project-owned schema migrations. They contain DDL and metadata backfill for existing G17 revisions, not database dumps or player data.
 
 ### Go dependency audit
 
@@ -97,6 +98,7 @@ The initial mirror excludes the complete private runtime assembly, `foundation/`
 | `apps/game-server/internal/emission/`、`internal/persistence/postgres/emission*.go`、G17 对 `contribution_refund.go`、`recycle_test.go`、`store.go` 的修改及 `migrations/0009_black_iron_emission_pool.sql` | Fractal Legend 项目自有 G17 实现 | 版本化全服额度、不可变流水和回执、原子退款补偿、迁移及合成测试；无玩家矿石或正式比例 | 使用下方已审计 Go Module |
 | `apps/game-server/internal/miningblock/model.go`、`internal/persistence/postgres/mining_block*.go`、`emission_recovery*.go`、G18 对 `emission.go`、`emission_read.go`、`emission/model.go`、`recycle_test.go`、`store.go` 的修改及 `migrations/0010_mining_block_reservation.sql` | Fractal Legend 项目自有 G18 实现 | 全服池原子区块预留与债务抵扣、不可变回执、崩溃及对账测试、增量迁移；无玩家矿石或生产规则 | 使用下方已审计 Go Module |
 | `apps/game-server/internal/persistence/postgres/{contribution.go,contribution_refund.go,ledger.go,system_spend.go,timestamp_replay_test.go}` | Fractal Legend 项目自有 G13–G15 可靠性硬化 | UTC 微秒持久化时间规范化与 PostgreSQL 精确重放测试；经济及 Schema 不变 | 使用下方已审计 Go Module |
+| `apps/game-server/internal/miningpower/{canonical_evidence*,seal.go}`、G21-P0 PostgreSQL Adapter／Test 与 `migrations/0014_settlement_prerequisite_binding.sql` | Fractal Legend 项目自有 G21-P0 实现 | 封存 TEST 输入、不可变绑定、恢复、来源／投影前置契约及合成测试；不含生产结算或玩家矿石 | 使用下方已审计 Go Module |
 | `docs/public/` | Fractal Legend 公开文档 | 已脱敏的双语 Project Overview、Status、Roadmap、Architecture、History 与已批准 Media | 无 Runtime Dependency |
 | `docs/adr/0009-g10-trade-foundation.md` 至 `docs/adr/0017-g18-mining-block-reward-reservation.md` | Fractal Legend 项目自有 ADR | 双语已验收 Decision Record，Private Environment 已泛化 | 无 Runtime Dependency |
 | `docs/devlog/G9-persistence-foundation.md` 至 `docs/devlog/G18-mining-block-reward-reservation.md` | Fractal Legend 项目自有 Devlog | 双语技术结果，包括 G16 和 G18 故障及修复；已删除或泛化 Private Link 与 Path | 无 Runtime Dependency |
@@ -105,7 +107,7 @@ The initial mirror excludes the complete private runtime assembly, `foundation/`
 | `docs/social/screenshots/` | Fractal Legend Technical Screenshot | 已批准并脱敏；不显示 Account、Credential 或 Local Path | 仅 Image Asset |
 | `docs/public/assets/marketing/` | 所有者批准的 Fractal Legend Marketing Asset | 已批准 Launch Poster，并记录 SHA-256 | 仅 Image Asset |
 
-`internal/persistence/postgres/migrations/` 下的十三个 `.sql` 文件是项目自有 Schema Migration，只包含 DDL 与 G17 既有修订的元数据回填逻辑，不是 Database Dump 或 Player Data。
+`internal/persistence/postgres/migrations/` 下的十四个 `.sql` 文件是项目自有 Schema Migration，只包含 DDL 与 G17 既有修订的元数据回填逻辑，不是 Database Dump 或 Player Data。
 
 ### Go Dependency Audit
 
@@ -137,3 +139,9 @@ The [G19 allowlist](docs/public-sync/G19-PUBLIC-SYNC-CANDIDATE.md) exports proje
 34 explicitly allowlisted project-owned Go/SQL files are byte-identical to accepted canonical, including stable identity prerequisite migration 0012 and G20 migration 0013. All data is synthetic test input; no production records, private history, third-party source, vendored dependency or new binary asset is copied. Module versions and audited licenses are unchanged. See [allowlist](docs/public-sync/G20-PUBLIC-SYNC-CANDIDATE.md).
 
 34 个逐项允许的项目自有 Go／SQL 文件与已验收 canonical 逐字节相同，包括稳定身份前置迁移 0012 和 G20 迁移 0013。全部输入为合成测试数据，不复制生产记录、私有历史、第三方源码、vendor 依赖或新增二进制素材。模块版本与已审计许可不变；见上方允许清单。
+
+## G21-P0 provenance / G21-P0 来源
+
+The [G21-P0 allowlist](docs/public-sync/G21-P0-PUBLIC-SYNC-CANDIDATE.md) exports 27 project-owned Go/SQL paths byte-identical to accepted canonical, including migration 0014, plus curated bilingual records and public status pages. All test data is synthetic; the isolated writers have no production route. No new dependency, vendored source, binary asset or private Git object is included.
+
+[G21-P0 允许清单](docs/public-sync/G21-P0-PUBLIC-SYNC-CANDIDATE.md)逐项导出 27 个与已验收 canonical 逐字节相同的项目自有 Go／SQL 路径，包括迁移 0014，并附整理后的双语记录和公开状态页。测试数据均为合成数据，隔离写入器没有生产入口。没有新增依赖、vendor 源码、二进制素材或私有 Git Object。

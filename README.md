@@ -12,7 +12,7 @@
 
 Fractal Legend is a browser-native Legend-style MMORPG being built for the Fractal / Bitcoin ecosystem. Its direction combines classic combat, player-driven economies, digital ownership, Ordinals assets, and a modular social game world.
 
-Development is milestone-driven. The accepted server-authoritative G1–G20 foundation covers world and combat systems, inventory and equipment, PostgreSQL persistence, direct item + FB trade settlement, internal FB and Contribution ledgers, refund recovery, eligible system spend orchestration, internal recycle migration, global emission capacity, and Mining Block reward reservation. This is an engineering foundation, not a public game release.
+Development is milestone-driven. The accepted server-authoritative G1–G21-P0 foundation covers world and combat systems, inventory and equipment, PostgreSQL persistence, direct item + FB trade settlement, internal FB and Contribution ledgers, refund recovery, eligible system spend orchestration, internal recycle migration, global emission capacity, and Mining Block reward reservation. This is an engineering foundation, not a public game release.
 
 ### Repository role
 
@@ -42,6 +42,7 @@ The long-term design treats Fractal and Bitcoin as more than branding. Ownership
 | G19 Black Iron Ore Migration | **FOUNDATION COMPLETE** | Reviewed identity compatibility, 1:1 inventory, immutable provenance; no issuance |
 | G18.1 Stable Block Identity | **FOUNDATION COMPLETE** | Immutable BlockInstanceID |
 | G20 Mining Power | **FOUNDATION COMPLETE** | SERVER authority, synthetic TEST profiles; no rewards |
+| G21-P0 Settlement Prerequisites | **FOUNDATION COMPLETE** | Sealed input and immutable bindings; TEST-only accounting/issuance prerequisites, no real player ore or full settlement |
 | Complete browser MMORPG | **IN DEVELOPMENT** | Accepted technical slices do not form a public release |
 | Wallet / blockchain deposit and withdrawal | **PLANNED** | Not live |
 | Ordinals activation | **PLANNED** | No production activation exists |
@@ -49,7 +50,9 @@ The long-term design treats Fractal and Bitcoin as more than branding. Ownership
 
 ### Latest accepted milestone
 
-**G20 Mining Power Foundation: final human acceptance PASS; private canonical closure complete.**
+**G21-P0 Settlement Prerequisite Foundation: final human acceptance PASS.** It closes the Seal, reservation/beneficiary binding, recovery, reward provenance and 500 participant prerequisite boundaries. It adds TEST-only writers; no production route, full reward allocation or settlement, real player ore issuance, claim or G22. Full G21 remains at the next human gate. [Public allowlist and verification](docs/public-sync/G21-P0-PUBLIC-SYNC-CANDIDATE.md).
+
+**Earlier G20 Mining Power Foundation: final human acceptance PASS; private canonical closure complete.**
 
 The accepted chain is **G17 Global Mining Pool → G18 Mining Block + Recovery → G18.1 Stable Block Identity → G20 Server-authoritative Mining Power**. G17 capacity/reservation is not player ore. G19 identity migration preserves existing quantities without issuance.
 
@@ -57,11 +60,13 @@ G20 records immutable ValidatedMiningActivity as authority and derives Participa
 
 G20 has **90/90 scenarios PASS**. Private PR and post-merge CI each have **10/10 jobs PASS**, full Normal and Race each **882/882 PASS**, zero failures/skips/data race. Native Windows/Linux/macOS T50 has 24 identical logical results with digest `f5f2e54d342d02544c54565d488aa1e096fd9208c4ea4d23b291fa2f5ceb3d60`. The public subset is tested independently; its results appear in the public export manifest rather than borrowing private counts.
 
-This is a TEST foundation, not a public game release. Production Service remains fail-closed. **NOT IMPLEMENTED:** reward distribution, block reward settlement, ore claim, mining pool deduction, production reward/duration/tool/map rules and G21. G20 mutates no G18, FB, Contribution, Player Ore or Mining Pool state. Social material remains an unpublished draft.
+This is a TEST foundation, not a public game release. Production Service remains fail-closed. **NOT IMPLEMENTED:** reward distribution, block reward settlement, ore claim, mining pool deduction, production reward/duration/tool/map rules and full G21. G20 mutates no G18, FB, Contribution, Player Ore or Mining Pool state. Social material remains an unpublished draft.
 
 ### Public source snapshot
 
-G20 public subset verification: Normal **646/646**, Race **646/646**, zero failures/skips/data race; Vet, three platform builds and 215-file public safety/link audits PASS. [Full allowlist and receipts](docs/public-sync/G20-PUBLIC-SYNC-CANDIDATE.md).
+G21-P0 public subset verification: Normal and Race each **692/692 PASS**, zero failures/skips/data race; Vet, three-platform builds and a 240-file safety/link audit PASS. [Exact G21-P0 allowlist and receipts](docs/public-sync/G21-P0-PUBLIC-SYNC-CANDIDATE.md).
+
+Earlier G20 public subset verification: Normal **646/646**, Race **646/646**, zero failures/skips/data race; Vet, three platform builds and 215-file public safety/link audits PASS. [Full allowlist and receipts](docs/public-sync/G20-PUBLIC-SYNC-CANDIDATE.md).
 
 The mirror publishes audited project-owned Go domains for AI, Character Stats, Combat Rules, Navigation, registries, PostgreSQL Persistence, G10/G12 Trade, the G11 FB Ledger, G13–G14 Contribution and refund recovery, G15 system spend, G16 recycle, G17 emission capacity, and G18 block reservation. It includes unit tests and versioned schema migrations. It intentionally excludes Legacy seller source, private fixtures, Canonical exports, import tools, protected assets, local-environment integrations, and the complete private runtime assembly.
 
@@ -89,7 +94,7 @@ See [Public Code Provenance](PUBLIC-CODE-PROVENANCE.md) for the exact publicatio
 - [Media](docs/public/MEDIA.md)
 - [Technical Screenshots](docs/public/SCREENSHOTS.md)
 - [FAQ](docs/public/FAQ.md)
-- [G9–G20 Devlogs](docs/devlog/)
+- [G9–G21-P0 Devlogs](docs/devlog/)
 - [Curated Interaction Records](docs/interactions/)
 - [G10 Trade ADR](docs/adr/0009-g10-trade-foundation.md)
 - [G11 FB Ledger ADR](docs/adr/0010-g11-fb-ledger-foundation.md)
@@ -168,6 +173,7 @@ Public Mirror 不复制或重建 Private Repository History。更早里程碑 SH
 | G19 黑铁矿石迁移 | **FOUNDATION COMPLETE** | 明确身份兼容、1:1 库存及不可变来源；不发行矿石 |
 | G18.1 稳定区块身份 | **FOUNDATION COMPLETE** | 不可变 BlockInstanceID |
 | G20 挖矿算力 | **FOUNDATION COMPLETE** | 服务器权威、合成 TEST 输入，不结算奖励 |
+| G21-P0 结算前置契约 | **FOUNDATION COMPLETE** | 封存输入与不可变绑定；仅 TEST 的记账／发行前置，不发真实玩家矿石、不实现完整结算 |
 | 完整 Browser MMORPG | **IN DEVELOPMENT** | 已验收 Technical Slice 尚未组成公开 Release |
 | Wallet / Blockchain Deposit 与 Withdrawal | **PLANNED** | 尚未上线 |
 | Ordinals Activation | **PLANNED** | 不存在 Production Activation |
@@ -175,7 +181,9 @@ Public Mirror 不复制或重建 Private Repository History。更早里程碑 SH
 
 ### 最新已验收里程碑
 
-**G20 算力基础：最终人工验收 PASS，私有 canonical 收尾完成。**
+**G21-P0 结算前置契约：最终人工验收 PASS。** 本阶段闭合 Seal、预留／受益人绑定、恢复、奖励来源和 500 人前置边界，仅增加 TEST 写入器；没有生产入口、完整奖励分配或结算、真实玩家矿石发放、领取或 G22。完整 G21 仍待下一轮人工门槛。[公开清单与验证](docs/public-sync/G21-P0-PUBLIC-SYNC-CANDIDATE.md)。
+
+**此前 G20 算力基础：最终人工验收 PASS，私有 canonical 收尾完成。**
 
 已验收链条为 **G17 全服矿池 → G18 挖矿区块与恢复 → G18.1 稳定区块身份 → G20 服务器权威算力**。G17 容量／预留不等于玩家矿石；G19 身份迁移保持既有数量，不发行矿石。
 
@@ -183,11 +191,13 @@ G20 以不可变 ValidatedMiningActivity 为权威、Participant 为派生汇总
 
 G20 **90/90 场景通过**；私有 PR 及合并后 CI 各 **10/10 作业通过**，完整 Normal／Race 各 **882/882**，零失败、跳过、数据竞争。Windows／Linux／macOS 原生 T50 的 24 个逻辑结果完全一致，摘要如上。公开子集独立运行验证，结果在公开导出清单中记录，不借用私有数量。
 
-这是 TEST 基础，不是公开游戏发布；生产 Service 失败关闭。**未实现：**奖励分发、区块奖励结算、矿石申领、矿池扣减、正式奖励／时长／工具／地图规则及 G21。G20 不修改 G18、FB、Contribution、玩家矿石或 Mining Pool。社交素材保持未发布草稿。
+这是 TEST 基础，不是公开游戏发布；生产 Service 失败关闭。**未实现：**奖励分发、区块奖励结算、矿石申领、矿池扣减、正式奖励／时长／工具／地图规则及完整 G21。G20 不修改 G18、FB、Contribution、玩家矿石或 Mining Pool。社交素材保持未发布草稿。
 
 ### 公开源码快照
 
-G20 公开子集独立验证：Normal／Race 各 **646/646**，零失败／跳过／数据竞争；Vet、三平台构建及 215 文件安全／链接审计通过。[完整清单与回执](docs/public-sync/G20-PUBLIC-SYNC-CANDIDATE.md)。
+G21-P0 公开子集独立验证：Normal／Race 各 **692/692 PASS**，零失败／跳过／数据竞争；Vet、三平台构建和 240 文件安全／链接审计通过。[G21-P0 完整清单与回执](docs/public-sync/G21-P0-PUBLIC-SYNC-CANDIDATE.md)。
+
+此前 G20 公开子集独立验证：Normal／Race 各 **646/646**，零失败／跳过／数据竞争；Vet、三平台构建及 215 文件安全／链接审计通过。[完整清单与回执](docs/public-sync/G20-PUBLIC-SYNC-CANDIDATE.md)。
 
 本镜像公开经过审计、属于项目自有的 Go Domain，包括 AI、Character Stats、Combat Rules、Navigation、Registry、PostgreSQL Persistence、G10/G12 Trade、G11 FB Ledger、G13–G14 Contribution 与 Refund Recovery、G15 System Spend、G16 Recycle、G17 发行额度及 G18 Block 预留，并包含 Unit Test 与 Versioned Schema Migration。镜像明确排除 Legacy Seller Source、Private Fixture、Canonical Export、Import Tool、受保护 Asset、本地环境 Integration 和完整 Private Runtime Assembly。
 

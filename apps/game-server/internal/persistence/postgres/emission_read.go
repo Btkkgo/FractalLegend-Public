@@ -106,13 +106,18 @@ func snapshotEmissionTx(ctx context.Context, tx pgx.Tx) (emission.Snapshot, erro
 		return emission.Snapshot{}, err
 	}
 	rows.Close()
-	rows, err = tx.Query(ctx, `SELECT recovery_entry_id,source_type,source_id,emission_entry_id,block_entry_id,net_emission_delta,reserved_delta,remaining_before,remaining_after,debt_before,debt_after,pool_revision,created_at FROM black_iron_emission_recovery_entries ORDER BY pool_revision`)
+	rows, err = tx.Query(ctx, `SELECT recovery_entry_id,source_type,source_id,emission_entry_id,block_entry_id,test_distribution_id,
+		net_emission_delta,reserved_delta,distributed_delta,distributed_before,distributed_after,
+		remaining_before,remaining_after,debt_before,debt_after,pool_revision,created_at
+		FROM black_iron_emission_recovery_entries ORDER BY pool_revision`)
 	if err != nil {
 		return emission.Snapshot{}, err
 	}
 	for rows.Next() {
 		var r emission.RecoveryEntry
-		if err = rows.Scan(&r.ID, &r.SourceType, &r.SourceID, &r.EmissionEntryID, &r.BlockEntryID, &r.NetEmissionDelta, &r.ReservedDelta, &r.RemainingBefore, &r.RemainingAfter, &r.DebtBefore, &r.DebtAfter, &r.PoolRevision, &r.CreatedAt); err != nil {
+		if err = rows.Scan(&r.ID, &r.SourceType, &r.SourceID, &r.EmissionEntryID, &r.BlockEntryID, &r.TestDistributionID,
+			&r.NetEmissionDelta, &r.ReservedDelta, &r.DistributedDelta, &r.DistributedBefore, &r.DistributedAfter,
+			&r.RemainingBefore, &r.RemainingAfter, &r.DebtBefore, &r.DebtAfter, &r.PoolRevision, &r.CreatedAt); err != nil {
 			rows.Close()
 			return emission.Snapshot{}, err
 		}
@@ -171,7 +176,11 @@ func (s *Store) ReconcileBlackIronEmission(ctx context.Context) (emission.Reconc
 	if err = tx.QueryRow(ctx, `SELECT count(*) FROM mining_block_entries WHERE action IN ('OPEN','CANCEL')`).Scan(&blockPoolMutations); err != nil {
 		return emission.ReconciliationReport{}, err
 	}
-	if pool.Revision != int64(len(snapshot.Entries))+blockPoolMutations {
+	var p0Distributions int64
+	if err = tx.QueryRow(ctx, `SELECT count(*) FROM mining_prerequisite_distributions`).Scan(&p0Distributions); err != nil {
+		return emission.ReconciliationReport{}, err
+	}
+	if pool.Revision != int64(len(snapshot.Entries))+blockPoolMutations+p0Distributions {
 		bad("pool revision differs from journal")
 	}
 	if len(snapshot.Receipts) != len(snapshot.Entries) {

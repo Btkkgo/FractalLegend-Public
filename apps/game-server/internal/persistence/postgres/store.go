@@ -32,6 +32,7 @@ type Store struct {
 	miningBlockFailureInjector  func(string) error
 	blackIronFailureInjector    func(string) error
 	miningPowerFailureInjector  func(string) error
+	prerequisiteFailureInjector func(string) error
 }
 
 func Open(ctx context.Context, databaseURL string) (*Store, error) {

@@ -86,6 +86,16 @@ func (s *Store) ValidateMiningActivity(ctx context.Context, p miningpower.Princi
 	if rule != miningpower.DevelopmentRuleVersion {
 		return miningPowerReject(miningpower.StatusInvalid, "UNKNOWN_RULE"), nil
 	}
+	// Existing accepted facts were handled above. A committed seal takes
+	// precedence over the current G18 FINALIZED state for a new source.
+	var gateState string
+	if e := s.pool.QueryRow(ctx, `SELECT state FROM mining_power_acceptance_states WHERE block_instance_id=$1`, i.BlockInstanceID).Scan(&gateState); e == nil {
+		if gateState == "SEALED" {
+			return miningPowerReject(miningpower.StatusNotEligible, "BLOCK_SEALED"), nil
+		}
+	} else if !errors.Is(e, pgx.ErrNoRows) {
+		return miningpower.ValidationResult{}, e
+	}
 	// This cross-domain read precedes every G20 transaction; no upstream locking.
 	block, err := s.ReadBlock(ctx, i.BlockInstanceID)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -95,6 +105,35 @@ func (s *Store) ValidateMiningActivity(ctx context.Context, p miningpower.Princi
 		return miningpower.ValidationResult{}, err
 	}
 	if block.BlockInstanceID != i.BlockInstanceID || block.ID != i.BlockID || block.Status != "OPEN" {
+		// An acceptance that began while G18 was OPEN can still be committing.
+		// Join its existing PostgreSQL admission lock and recheck exact replay
+		// after it finishes before rejecting the now-finalized context.
+		if block.BlockInstanceID == i.BlockInstanceID && block.ID == i.BlockID && block.Status == "FINALIZED" {
+			prior, e := s.miningPowerPriorAfterAdmission(ctx, i)
+			if e == nil {
+				replay := miningPowerReplay(p, i, rule, prior)
+				if replay.Status == miningpower.StatusDuplicate {
+					snapshot, auditErr := s.SnapshotMiningPower(ctx, prior.BlockInstanceID, prior.RuleVersion)
+					if auditErr != nil {
+						return miningpower.ValidationResult{}, auditErr
+					}
+					report, auditErr := miningpower.ReconcileSnapshot(snapshot)
+					if auditErr != nil || report.Status != "PASS" {
+						return miningpower.ValidationResult{}, miningpower.ErrInvariant
+					}
+				}
+				return replay, nil
+			}
+			if !errors.Is(e, pgx.ErrNoRows) {
+				return miningpower.ValidationResult{}, e
+			}
+			var latestState string
+			if gateErr := s.pool.QueryRow(ctx, `SELECT state FROM mining_power_acceptance_states WHERE block_instance_id=$1`, i.BlockInstanceID).Scan(&latestState); gateErr == nil && latestState == "SEALED" {
+				return miningPowerReject(miningpower.StatusNotEligible, "BLOCK_SEALED"), nil
+			} else if gateErr != nil && !errors.Is(gateErr, pgx.ErrNoRows) {
+				return miningpower.ValidationResult{}, gateErr
+			}
+		}
 		return miningPowerReject(miningpower.StatusNotEligible, "BLOCK_CONTEXT_MISMATCH"), nil
 	}
 	if err = s.miningPowerFailure("after_validation"); err != nil {
@@ -126,12 +165,22 @@ func (s *Store) ValidateMiningActivity(ctx context.Context, p miningpower.Princi
 	return miningpower.ValidationResult{}, miningpower.ErrRetryExhausted
 }
 
+func (s *Store) miningPowerPriorAfterAdmission(ctx context.Context, i miningpower.ActionIntent) (miningpower.ValidatedMiningActivity, error) {
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
+	if err != nil {
+		return miningpower.ValidatedMiningActivity{}, err
+	}
+	defer tx.Rollback(context.Background())
+	if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,0))`, "G20_ACTIVITY_ACCEPTANCE_V1"); err != nil {
+		return miningpower.ValidatedMiningActivity{}, err
+	}
+	return miningPowerPrior(ctx, tx, i)
+}
+
 func (s *Store) acceptMiningPowerAttempt(ctx context.Context, p miningpower.Principal, i miningpower.ActionIntent, rule string, b miningpower.BlockContext) (miningpower.ValidationResult, error) {
-	// Serialize G20 acceptance BEFORE opening the SERIALIZABLE snapshot. Small
-	// tables can receive relation-level predicate locks, so participant-scoped
-	// admission still permits SSI starvation across distinct players. This test
-	// foundation uses one G20-only admission key; it never locks a G18 row.
-	// Queuing inside a transaction would preserve a stale snapshot.
+	// Preserve G20's existing global admission serialization and SERIALIZABLE
+	// validation snapshot. The PostgreSQL state row below is the authoritative
+	// Seal boundary, including other processes and direct Activity inserts.
 	conn, err := s.pool.Acquire(ctx)
 	if err != nil {
 		return miningpower.ValidationResult{}, err
@@ -155,6 +204,17 @@ func (s *Store) acceptMiningPowerAttempt(ctx context.Context, p miningpower.Prin
 	defer tx.Rollback(context.Background())
 	if err = s.miningPowerFailure("after_begin"); err != nil {
 		return miningpower.ValidationResult{}, err
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO mining_power_acceptance_states(block_instance_id,state,revision)
+		VALUES($1,'OPEN',1) ON CONFLICT(block_instance_id) DO NOTHING`, i.BlockInstanceID); err != nil {
+		return miningpower.ValidationResult{}, err
+	}
+	var acceptanceState string
+	if err = tx.QueryRow(ctx, `SELECT state FROM mining_power_acceptance_states WHERE block_instance_id=$1 FOR SHARE`, i.BlockInstanceID).Scan(&acceptanceState); err != nil {
+		return miningpower.ValidationResult{}, err
+	}
+	if acceptanceState != "OPEN" {
+		return miningPowerReject(miningpower.StatusNotEligible, "BLOCK_SEALED"), nil
 	}
 	owned, err := miningPowerOwner(ctx, tx, p)
 	if err != nil {
@@ -263,6 +323,9 @@ func (s *Store) acceptMiningPowerAttempt(ctx context.Context, p miningpower.Prin
 		return miningpower.ValidationResult{}, err
 	}
 	if err = s.miningPowerFailure("after_activity"); err != nil {
+		return miningpower.ValidationResult{}, err
+	}
+	if err = captureMiningBeneficiaryTx(ctx, tx, p, a, now); err != nil {
 		return miningpower.ValidationResult{}, err
 	}
 	tag, err := tx.Exec(ctx, `INSERT INTO mining_power_participants(player_id,block_instance_id,block_id,session_id,rule_version,tool_reference,map_reference,validated_power,activity_count,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,1,$9,$9)

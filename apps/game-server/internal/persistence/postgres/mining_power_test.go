@@ -143,7 +143,9 @@ func TestG20SchemaConstraints(t *testing.T) {
 		t.Fatal(err)
 	}
 	var count int
-	if err := s.pool.QueryRow(ctx, `SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name LIKE 'mining_power_%'`).Scan(&count); err != nil {
+	if err := s.pool.QueryRow(ctx, `SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN
+		('mining_power_rules','mining_power_tool_profiles','mining_power_map_profiles','mining_power_sessions',
+		'mining_power_source_events','mining_power_activities','mining_power_participants')`).Scan(&count); err != nil {
 		t.Fatal(err)
 	}
 	if count != 7 {

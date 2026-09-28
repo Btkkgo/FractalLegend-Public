@@ -144,6 +144,9 @@ func (s *Store) CreateMiningBlock(ctx context.Context, commandID, ruleVersion st
 		if err != nil {
 			return miningblock.Receipt{}, err
 		}
+		if err = appendReservationBindingTx(ctx, tx, blockInstanceID, entry, receipt); err != nil {
+			return miningblock.Receipt{}, err
+		}
 		err = appendRecoveryEntryTx(ctx, tx, emission.RecoveryEntry{
 			ID: newContributionID("emission-recovery"), SourceType: "G18_BLOCK_OPEN", SourceID: blockID, BlockEntryID: &entry.ID,
 			ReservedDelta: miningblock.DevelopmentReward, RemainingBefore: pool.RemainingCapacity, RemainingAfter: poolAfter,

@@ -42,6 +42,12 @@ func loadBlackIronReceipt(ctx context.Context, tx pgx.Tx, id string) (blackiron.
 	return r, nil
 }
 
+func hasMiningRewardProvenanceTx(ctx context.Context, tx pgx.Tx) (bool, error) {
+	var present bool
+	err := tx.QueryRow(ctx, `SELECT to_regclass('public.mining_reward_inventory_projections') IS NOT NULL`).Scan(&present)
+	return present, err
+}
+
 // Historical receipt + current inventory are checked, never automatically fixed.
 // G19 does not implement ore consumption or transfer lifecycle; those later
 // features must extend the audit before legitimately changing migrated assets.
@@ -107,7 +113,17 @@ func checkBlackIronReceipt(ctx context.Context, tx pgx.Tx, r blackiron.Receipt, 
 	}
 	// Also detect added mapped assets and legacy/canonical double representation.
 	var count int
-	if err := tx.QueryRow(ctx, `SELECT count(*) FROM character_inventory_items i JOIN black_iron_identity_aliases a ON i.definition_id=a.definition_id WHERE i.character_id=$1`, r.CharacterID).Scan(&count); err != nil {
+	query := `SELECT count(*) FROM character_inventory_items i JOIN black_iron_identity_aliases a ON a.definition_id=i.definition_id WHERE i.character_id=$1`
+	withReward, err := hasMiningRewardProvenanceTx(ctx, tx)
+	if err != nil {
+		return classifyError(err)
+	}
+	if withReward {
+		query = `SELECT count(*) FROM character_inventory_items i JOIN black_iron_identity_aliases a ON a.definition_id=i.definition_id
+		LEFT JOIN mining_reward_inventory_projections p ON p.instance_id=i.instance_id
+		WHERE i.character_id=$1 AND p.instance_id IS NULL`
+	}
+	if err := tx.QueryRow(ctx, query, r.CharacterID).Scan(&count); err != nil {
 		return classifyError(err)
 	}
 	if count != len(r.Changes) {
@@ -158,8 +174,26 @@ func (s *Store) ReconcileBlackIronInventory(ctx context.Context) (blackiron.Repo
 			r.Mismatches = append(r.Mismatches, fmt.Sprintf("%s: migration invariant mismatch", id))
 		}
 	}
-	// Reverse coverage: canonical inventory requires immutable migration provenance.
-	orphanRows, e := tx.Query(ctx, `SELECT i.instance_id FROM character_inventory_items i JOIN black_iron_identity_aliases a ON a.definition_id=i.definition_id LEFT JOIN black_iron_migration_assets m ON m.instance_id=i.instance_id LEFT JOIN black_iron_migration_receipts r ON r.version=m.version AND r.character_id=m.character_id WHERE i.name=$1 AND (m.instance_id IS NULL OR r.character_id IS NULL) ORDER BY i.instance_id`, blackiron.Name)
+	// Reverse coverage recognizes the distinct reward source without rewriting
+	// any G19 migration receipt or commitment.
+	withReward, err := hasMiningRewardProvenanceTx(ctx, tx)
+	if err != nil {
+		return r, classifyError(err)
+	}
+	orphanQuery := `SELECT i.instance_id FROM character_inventory_items i JOIN black_iron_identity_aliases a ON a.definition_id=i.definition_id
+		LEFT JOIN black_iron_migration_assets m ON m.instance_id=i.instance_id
+		LEFT JOIN black_iron_migration_receipts r ON r.version=m.version AND r.character_id=m.character_id
+		WHERE i.name=$1 AND (m.instance_id IS NULL OR r.character_id IS NULL) ORDER BY i.instance_id`
+	if withReward {
+		orphanQuery = `SELECT i.instance_id FROM character_inventory_items i JOIN black_iron_identity_aliases a ON a.definition_id=i.definition_id
+		LEFT JOIN black_iron_migration_assets m ON m.instance_id=i.instance_id
+		LEFT JOIN black_iron_migration_receipts r ON r.version=m.version AND r.character_id=m.character_id
+		LEFT JOIN mining_reward_inventory_projections p ON p.instance_id=i.instance_id
+		LEFT JOIN mining_reward_issuance_lots l ON l.issuance_id=p.issuance_id
+		WHERE i.name=$1 AND ((m.instance_id IS NULL OR r.character_id IS NULL) AND (p.instance_id IS NULL OR l.issuance_id IS NULL)
+			OR (m.instance_id IS NOT NULL AND p.instance_id IS NOT NULL)) ORDER BY i.instance_id`
+	}
+	orphanRows, e := tx.Query(ctx, orphanQuery, blackiron.Name)
 	if e != nil {
 		return r, classifyError(e)
 	}
@@ -170,7 +204,7 @@ func (s *Store) ReconcileBlackIronInventory(ctx context.Context) (blackiron.Repo
 			return r, classifyError(e)
 		}
 		r.Balanced = false
-		r.Mismatches = append(r.Mismatches, fmt.Sprintf("%s: canonical asset has no migration provenance", id))
+		r.Mismatches = append(r.Mismatches, fmt.Sprintf("%s: canonical asset has no valid provenance or has two origins", id))
 	}
 	e = orphanRows.Err()
 	orphanRows.Close()
