@@ -27,7 +27,7 @@ func emissionRecoveryConserved(pool emission.Pool) bool {
 }
 
 func appendRecoveryEntryTx(ctx context.Context, tx pgx.Tx, value emission.RecoveryEntry) error {
-	if value.SourceType != "G21_P0_TEST_DISTRIBUTION" {
+	if value.SourceType != "G21_P0_TEST_DISTRIBUTION" && value.SourceType != "G21_TEST_MINING_SETTLEMENT" {
 		// All other pool mutations leave D unchanged, including late G14 refunds.
 		if err := tx.QueryRow(ctx, `SELECT total_distributed FROM black_iron_emission_pools WHERE pool_id='GLOBAL'`).
 			Scan(&value.DistributedBefore); err != nil {
@@ -36,11 +36,11 @@ func appendRecoveryEntryTx(ctx context.Context, tx pgx.Tx, value emission.Recove
 		value.DistributedAfter = value.DistributedBefore
 	}
 	_, err := tx.Exec(ctx, `INSERT INTO black_iron_emission_recovery_entries
-		 (recovery_entry_id,source_type,source_id,emission_entry_id,block_entry_id,test_distribution_id,
+		 (recovery_entry_id,source_type,source_id,emission_entry_id,block_entry_id,test_distribution_id,settlement_consumption_id,
 		 net_emission_delta,reserved_delta,distributed_delta,distributed_before,distributed_after,
 		 remaining_before,remaining_after,debt_before,debt_after,pool_revision,created_at)
-		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
-		value.ID, value.SourceType, value.SourceID, value.EmissionEntryID, value.BlockEntryID, value.TestDistributionID,
+		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`,
+		value.ID, value.SourceType, value.SourceID, value.EmissionEntryID, value.BlockEntryID, value.TestDistributionID, value.SettlementConsumptionID,
 		value.NetEmissionDelta, value.ReservedDelta, value.DistributedDelta, value.DistributedBefore, value.DistributedAfter,
 		value.RemainingBefore, value.RemainingAfter, value.DebtBefore, value.DebtAfter, value.PoolRevision, value.CreatedAt)
 	return err
@@ -67,7 +67,8 @@ func reconcileRecoveryTx(ctx context.Context, tx pgx.Tx, pool emission.Pool, rec
 		}
 		var expectedRemaining, expectedDebt, expectedReserved, expectedDistributed, expectedNet int64
 		expectedRemaining, expectedDebt, expectedReserved, expectedDistributed, expectedNet = remaining, debt, reserved, distributed, net
-		if record.SourceType != "G21_P0_TEST_DISTRIBUTION" && (record.DistributedDelta != 0 || record.TestDistributionID != nil) {
+		if record.SourceType != "G21_P0_TEST_DISTRIBUTION" && record.SourceType != "G21_TEST_MINING_SETTLEMENT" &&
+			(record.DistributedDelta != 0 || record.TestDistributionID != nil || record.SettlementConsumptionID != nil) {
 			bad(fmt.Sprintf("recovery %s unexpected distribution", record.ID))
 		}
 		switch record.SourceType {
@@ -152,6 +153,50 @@ func reconcileRecoveryTx(ctx context.Context, tx pgx.Tx, pool emission.Pool, rec
 				record.ReservedDelta != -amount || record.DistributedDelta != amount || amount <= 0 ||
 				reserved < amount || debt != 0 {
 				bad(fmt.Sprintf("recovery %s invalid distribution", record.ID))
+				continue
+			}
+			expectedReserved -= amount
+			expectedDistributed += amount
+		case "G21_TEST_MINING_SETTLEMENT":
+			if record.SettlementConsumptionID == nil {
+				bad(fmt.Sprintf("recovery %s missing settlement consumption", record.ID))
+				continue
+			}
+			var consumptionID, sourceID, instanceID, settlementID string
+			var amount, revision, grantSum, lotSum int64
+			var createdAt time.Time
+			err := tx.QueryRow(ctx, `SELECT c.consumption_id,c.reservation_source_id,c.block_instance_id,c.settlement_id,
+				c.amount,c.pool_revision,c.created_at,
+				(SELECT COALESCE(sum(g.quantity),0) FROM mining_reward_grants g WHERE g.settlement_id=c.settlement_id),
+				(SELECT COALESCE(sum(l.quantity),0) FROM mining_reward_issuance_lots l WHERE l.settlement_id=c.settlement_id AND l.status='G21_SETTLED')
+				FROM mining_reward_reservation_consumptions c WHERE c.consumption_id=$1`, *record.SettlementConsumptionID).
+				Scan(&consumptionID, &sourceID, &instanceID, &settlementID, &amount, &revision, &createdAt, &grantSum, &lotSum)
+			var receiptCount int
+			if err == nil {
+				err = tx.QueryRow(ctx, `SELECT count(*) FROM mining_reward_settlement_receipts
+					WHERE settlement_id=$1 AND block_instance_id=$2 AND reservation_source_id=$3 AND total_ore=$4`,
+					settlementID, instanceID, sourceID, amount).Scan(&receiptCount)
+			}
+			if err != nil || consumptionID != *record.SettlementConsumptionID || sourceID != record.SourceID ||
+				instanceID == "" || receiptCount != 1 || grantSum != amount || lotSum != amount ||
+				revision != record.PoolRevision || !record.CreatedAt.Equal(createdAt) ||
+				record.EmissionEntryID != nil || record.BlockEntryID != nil || record.TestDistributionID != nil ||
+				record.NetEmissionDelta != 0 || record.ReservedDelta != -amount || record.DistributedDelta != amount ||
+				amount <= 0 || reserved < amount || debt != 0 {
+				bad(fmt.Sprintf("recovery %s invalid settlement", record.ID))
+				continue
+			}
+			// Counting a receipt does not verify its immutable canonical bytes or
+			// its complete source/artifact chain. Recovery must fail closed just
+			// like historical settlement replay when any part is corrupted.
+			var commandID string
+			if err := tx.QueryRow(ctx, `SELECT command_id FROM mining_reward_settlement_receipts
+				WHERE settlement_id=$1`, settlementID).Scan(&commandID); err != nil {
+				bad(fmt.Sprintf("recovery %s missing settlement receipt", record.ID))
+				continue
+			}
+			if _, err := loadMiningRewardReceiptTx(ctx, tx, commandID); err != nil {
+				bad(fmt.Sprintf("recovery %s invalid settlement receipt/artifacts", record.ID))
 				continue
 			}
 			expectedReserved -= amount

@@ -65,23 +65,24 @@ type Snapshot struct {
 // RecoveryEntry is the immutable consequence of one pool mutation. Positive
 // emission and cancelled reservations repay debt before exposing capacity.
 type RecoveryEntry struct {
-	ID                 string
-	SourceType         string
-	SourceID           string
-	EmissionEntryID    *string
-	BlockEntryID       *string
-	TestDistributionID *string
-	NetEmissionDelta   int64
-	ReservedDelta      int64
-	DistributedDelta   int64
-	DistributedBefore  int64
-	DistributedAfter   int64
-	RemainingBefore    int64
-	RemainingAfter     int64
-	DebtBefore         int64
-	DebtAfter          int64
-	PoolRevision       int64
-	CreatedAt          time.Time
+	ID                      string
+	SourceType              string
+	SourceID                string
+	EmissionEntryID         *string
+	BlockEntryID            *string
+	TestDistributionID      *string
+	SettlementConsumptionID *string
+	NetEmissionDelta        int64
+	ReservedDelta           int64
+	DistributedDelta        int64
+	DistributedBefore       int64
+	DistributedAfter        int64
+	RemainingBefore         int64
+	RemainingAfter          int64
+	DebtBefore              int64
+	DebtAfter               int64
+	PoolRevision            int64
+	CreatedAt               time.Time
 }
 
 type ReconciliationReport struct {

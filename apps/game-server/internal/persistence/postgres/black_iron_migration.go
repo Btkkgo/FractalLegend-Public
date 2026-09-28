@@ -55,6 +55,10 @@ func (s *Store) MigrateBlackIronInventory(ctx context.Context, characterID strin
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return blackiron.Receipt{}, err
 	}
+	rewardInstances, err := validatedBlackIronRewardInstances(ctx, tx, characterID)
+	if err != nil {
+		return blackiron.Receipt{}, err
+	}
 	// Only actual legacy state may be converted; an unmarked canonical record
 	// cannot be guessed to be an already completed migration.
 	rows, err := tx.Query(ctx, `SELECT instance_id,definition_id,legacy_id,name,item_type,quantity,slot_index,location
@@ -74,6 +78,9 @@ func (s *Store) MigrateBlackIronInventory(ctx context.Context, characterID strin
 			continue
 		}
 		if a.Name == blackiron.Name {
+			if rewardInstances[a.InstanceID] {
+				continue
+			}
 			rows.Close()
 			return blackiron.Receipt{}, blackiron.ErrMismatch
 		}
@@ -164,6 +171,78 @@ func (s *Store) MigrateBlackIronInventory(ctx context.Context, characterID strin
 		return blackiron.Receipt{}, err
 	}
 	return receipt, nil
+}
+
+// A first G19 conversion can race after a committed G21 reward. Only exact,
+// independently committed reward provenance may be excluded from conversion.
+// Merely finding a projection marker must never legitimize a corrupt stack.
+func validatedBlackIronRewardInstances(ctx context.Context, tx pgx.Tx, characterID string) (map[string]bool, error) {
+	instances := map[string]bool{}
+	present, err := hasMiningRewardProvenanceTx(ctx, tx)
+	if err != nil || !present {
+		return instances, err
+	}
+	rows, err := tx.Query(ctx, `SELECT p.instance_id,l.source_key FROM mining_reward_inventory_projections p
+		JOIN mining_reward_issuance_lots l USING(issuance_id) WHERE p.character_id=$1 ORDER BY p.instance_id`, characterID)
+	if err != nil {
+		return nil, err
+	}
+	type source struct{ instance, key string }
+	var sources []source
+	for rows.Next() {
+		var v source
+		if err = rows.Scan(&v.instance, &v.key); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		sources = append(sources, v)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	for _, source := range sources {
+		lot, err := loadMiningRewardIssuanceTx(ctx, tx, source.key)
+		if err != nil {
+			return nil, err
+		}
+		digest, err := miningRewardSourceDigest(lot)
+		if err != nil || digest != lot.SourceDigest || lot.SourceType != "MINING_REWARD" || lot.CharacterID != characterID {
+			return nil, blackiron.ErrMismatch
+		}
+		validOrigin := lot.Status == "P0_SYNTHETIC_ONLY" && lot.RuleVersion == rewardIssuanceRule && lot.SettlementID == "G21_P0_TEST_PLACEHOLDER"
+		if lot.Status == "G21_SETTLED" && lot.RuleVersion == settlementIssuanceVersion {
+			var command string
+			if err = tx.QueryRow(ctx, `SELECT command_id FROM mining_reward_settlement_receipts WHERE settlement_id=$1`, lot.SettlementID).Scan(&command); err != nil {
+				return nil, blackiron.ErrMismatch
+			}
+			if _, err = loadMiningRewardReceiptTx(ctx, tx, command); err != nil {
+				return nil, blackiron.ErrMismatch
+			}
+			validOrigin = true
+		}
+		if !validOrigin {
+			return nil, blackiron.ErrMismatch
+		}
+		var exact bool
+		err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM mining_reward_inventory_projections p
+			JOIN character_inventory_items i ON i.instance_id=p.instance_id
+			JOIN characters c ON c.id=i.character_id
+			JOIN black_iron_identity_aliases a ON a.definition_id=i.definition_id
+			WHERE p.issuance_id=$1 AND p.instance_id=$2 AND p.character_id=$3 AND i.character_id=$3
+			AND p.block_instance_id=$4 AND p.quantity=$5 AND i.quantity=$5
+			AND p.definition_id=$6 AND i.definition_id=$6 AND i.legacy_id=a.legacy_id
+			AND i.name='黑铁矿石' AND i.item_type='MATERIAL' AND i.location='INVENTORY' AND i.equipment_slot IS NULL
+			AND c.revision>=p.revision_after AND p.revision_after=p.revision_before+1
+			AND NOT EXISTS(SELECT 1 FROM black_iron_migration_assets m WHERE m.instance_id=i.instance_id))`,
+			lot.ID, source.instance, characterID, lot.BlockInstanceID, lot.Quantity, lot.MaterialDefinitionID).Scan(&exact)
+		if err != nil || !exact {
+			return nil, blackiron.ErrMismatch
+		}
+		instances[source.instance] = true
+	}
+	return instances, nil
 }
 
 func (s *Store) blackIronFail(at string) error {

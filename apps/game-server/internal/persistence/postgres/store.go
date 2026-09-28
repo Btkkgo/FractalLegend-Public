@@ -33,6 +33,9 @@ type Store struct {
 	blackIronFailureInjector    func(string) error
 	miningPowerFailureInjector  func(string) error
 	prerequisiteFailureInjector func(string) error
+	settlementFailureInjector   func(string) error
+	// A nonzero value shortens only isolated TEST settlement timeout tests.
+	settlementStatementTimeout time.Duration
 }
 
 func Open(ctx context.Context, databaseURL string) (*Store, error) {

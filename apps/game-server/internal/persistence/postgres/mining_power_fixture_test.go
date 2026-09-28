@@ -123,7 +123,7 @@ func TestG20FixtureResetRetainsGuards(t *testing.T) {
 		t.Fatal("prior fixture facts leaked")
 	}
 	var n int
-	if e := next.pool.QueryRow(context.Background(), `SELECT count(*) FROM schema_migrations`).Scan(&n); e != nil || n != 14 {
+	if e := next.pool.QueryRow(context.Background(), `SELECT count(*) FROM schema_migrations`).Scan(&n); e != nil || n != 15 {
 		t.Fatalf("schema migration lost: %d %v", n, e)
 	}
 	if _, e := next.pool.Exec(context.Background(), `UPDATE mining_power_source_events SET data=data`); e == nil {

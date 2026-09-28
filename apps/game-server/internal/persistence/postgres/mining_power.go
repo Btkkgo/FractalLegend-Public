@@ -205,6 +205,16 @@ func (s *Store) acceptMiningPowerAttempt(ctx context.Context, p miningpower.Prin
 	if err = s.miningPowerFailure("after_begin"); err != nil {
 		return miningpower.ValidationResult{}, err
 	}
+	// Lazy provisioning is valid only before the first accepted fact. Missing
+	// admission state behind immutable history is corruption, not a new gate.
+	var orphanHistory bool
+	if err = tx.QueryRow(ctx, `SELECT NOT EXISTS(SELECT 1 FROM mining_power_acceptance_states WHERE block_instance_id=$1)
+		AND EXISTS(SELECT 1 FROM mining_power_activities WHERE block_instance_id=$1)`, i.BlockInstanceID).Scan(&orphanHistory); err != nil {
+		return miningpower.ValidationResult{}, err
+	}
+	if orphanHistory {
+		return miningpower.ValidationResult{}, miningpower.ErrInvariant
+	}
 	if _, err = tx.Exec(ctx, `INSERT INTO mining_power_acceptance_states(block_instance_id,state,revision)
 		VALUES($1,'OPEN',1) ON CONFLICT(block_instance_id) DO NOTHING`, i.BlockInstanceID); err != nil {
 		return miningpower.ValidationResult{}, err

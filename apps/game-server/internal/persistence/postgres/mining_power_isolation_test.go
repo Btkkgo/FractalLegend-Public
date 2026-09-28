@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"fractallegend/game-server/internal/contribution"
 	"fractallegend/game-server/internal/miningblock"
@@ -9,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"os"
 	"reflect"
+	"sort"
 	"sync"
 	"testing"
 	"testing/fstest"
@@ -49,14 +51,68 @@ func g20Upstream(t *testing.T, s *Store) map[string]string {
 	return result
 }
 
+// Additive migrations may add tables or nullable columns. Historical rows
+// must keep every pre-migration field and value unchanged.
+func g20HistoricalRowsUnchanged(before, after map[string]string) bool {
+	for table, rawBefore := range before {
+		rawAfter, ok := after[table]
+		if !ok {
+			return false
+		}
+		var oldRows, newRows []map[string]json.RawMessage
+		if json.Unmarshal([]byte(rawBefore), &oldRows) != nil || json.Unmarshal([]byte(rawAfter), &newRows) != nil || len(oldRows) != len(newRows) {
+			return false
+		}
+		canonical := func(rows []map[string]json.RawMessage, historical map[string]json.RawMessage) []string {
+			result := make([]string, len(rows))
+			for i, row := range rows {
+				projected := map[string]json.RawMessage{}
+				for key := range historical {
+					value, exists := row[key]
+					if !exists {
+						return nil
+					}
+					projected[key] = value
+				}
+				encoded, err := json.Marshal(projected)
+				if err != nil {
+					return nil
+				}
+				result[i] = string(encoded)
+			}
+			sort.Strings(result)
+			return result
+		}
+		if len(oldRows) == 0 {
+			continue
+		}
+		if !reflect.DeepEqual(canonical(oldRows, oldRows[0]), canonical(newRows, oldRows[0])) {
+			return false
+		}
+	}
+	return true
+}
+
 func TestG20SameBlockIDDifferentInstance(t *testing.T) {
 	s, p, i := g20Fixture(t)
 	ctx := context.Background()
 	original := g20Accept(t, s, p, i)
 	// Only the isolated fixture authority recreates G18. G20 has no FK to it.
-	if _, e := s.pool.Exec(ctx, `CREATE TEMP TABLE g20_old_block AS SELECT * FROM mining_blocks; TRUNCATE mining_blocks CASCADE;
- INSERT INTO mining_blocks(block_id,block_height,create_command_id,status,rule_version,started_at,scheduled_end_at,finalized_at,cancelled_at,reward_reserved,reward_released,reward_returned,pool_revision_at_reservation,created_at,updated_at)
- SELECT block_id,block_height,create_command_id,status,rule_version,started_at,scheduled_end_at,finalized_at,cancelled_at,reward_reserved,reward_released,reward_returned,pool_revision_at_reservation,created_at,updated_at FROM g20_old_block`); e != nil {
+	// This historical identity fixture deliberately bypasses immutable guards
+	// inside one isolated test transaction. Ordinary TRUNCATE is now forbidden.
+	tx, e := s.pool.Begin(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer tx.Rollback(ctx)
+	if _, e = tx.Exec(ctx, `CREATE TEMP TABLE g20_old_block AS SELECT * FROM mining_blocks;
+		SET LOCAL session_replication_role=replica; TRUNCATE mining_blocks CASCADE;
+		INSERT INTO mining_blocks(block_id,block_height,create_command_id,status,rule_version,started_at,scheduled_end_at,finalized_at,cancelled_at,reward_reserved,reward_released,reward_returned,pool_revision_at_reservation,created_at,updated_at)
+		SELECT block_id,block_height,create_command_id,status,rule_version,started_at,scheduled_end_at,finalized_at,cancelled_at,reward_reserved,reward_released,reward_returned,pool_revision_at_reservation,created_at,updated_at FROM g20_old_block;
+		SET LOCAL session_replication_role=origin`); e != nil {
+		t.Fatal(e)
+	}
+	if e = tx.Commit(ctx); e != nil {
 		t.Fatal(e)
 	}
 	b, e := s.LoadMiningBlock(ctx, i.BlockID)
@@ -385,7 +441,7 @@ func TestG20MigrationPreservesEconomy(t *testing.T) {
 	if e = s.Migrate(ctx); e != nil {
 		t.Fatal(e)
 	}
-	if !reflect.DeepEqual(before, g20Upstream(t, s)) {
+	if !g20HistoricalRowsUnchanged(before, g20Upstream(t, s)) {
 		t.Fatal("additive migration changed prior data")
 	}
 	for _, name := range []string{"mining_power_rules", "mining_power_tool_profiles", "mining_power_map_profiles", "mining_power_sessions", "mining_power_source_events", "mining_power_activities", "mining_power_participants"} {

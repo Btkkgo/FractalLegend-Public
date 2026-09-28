@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"fractallegend/game-server/internal/miningpower"
+	"fractallegend/game-server/internal/miningreward"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -28,6 +29,11 @@ type MiningRewardAudit struct {
 }
 
 func miningRewardSourceDigest(v MiningRewardIssuance) (string, error) {
+	// G21 economic timestamps use persistence precision before hashing.
+	// Preserve historical P0 evidence semantics.
+	if v.Status == "G21_SETTLED" {
+		v.CreatedAt = miningreward.CanonicalTime(v.CreatedAt)
+	}
 	return miningpower.IssuanceEvidenceDigest(miningpower.IssuanceEvidence{
 		RuleVersion: v.RuleVersion, SourceType: v.SourceType, SourceKey: v.SourceKey,
 		BlockInstanceID: v.BlockInstanceID, CharacterID: v.CharacterID, MaterialDefinitionID: v.MaterialDefinitionID,
@@ -41,7 +47,11 @@ func loadMiningRewardIssuanceTx(ctx context.Context, tx pgx.Tx, key string) (Min
 		FROM mining_reward_issuance_lots WHERE source_key=$1`, key).
 		Scan(&v.ID, &v.SourceType, &v.SourceKey, &v.SettlementID, &v.BlockInstanceID, &v.CharacterID,
 			&v.Quantity, &v.MaterialDefinitionID, &v.RuleVersion, &v.CreatedAt, &v.SourceDigest, &v.Status)
-	v.CreatedAt = miningpower.CanonicalTime(v.CreatedAt)
+	if v.Status == "G21_SETTLED" {
+		v.CreatedAt = miningreward.CanonicalTime(v.CreatedAt)
+	} else {
+		v.CreatedAt = miningpower.CanonicalTime(v.CreatedAt)
+	}
 	return v, err
 }
 
@@ -214,25 +224,42 @@ func (s *Store) ReconcileMiningRewardIssuancePrerequisite(ctx context.Context) (
 		if e != nil {
 			return r, e
 		}
-		if digest != v.SourceDigest || v.SourceType != "MINING_REWARD" || v.RuleVersion != rewardIssuanceRule || v.Status != "P0_SYNTHETIC_ONLY" {
+		validOrigin := (v.Status == "P0_SYNTHETIC_ONLY" && v.RuleVersion == rewardIssuanceRule && v.SettlementID == "G21_P0_TEST_PLACEHOLDER") ||
+			(v.Status == "G21_SETTLED" && v.RuleVersion == settlementIssuanceVersion && v.SettlementID != "G21_P0_TEST_PLACEHOLDER")
+		if digest != v.SourceDigest || v.SourceType != "MINING_REWARD" || !validOrigin {
 			r.Balanced = false
 			r.Mismatches = append(r.Mismatches, key+": source digest or type")
 		}
-		var instance, owner, block, definition, itemDefinition, name, itemType, location string
+		if v.Status == "G21_SETTLED" {
+			var grantCount int
+			e = tx.QueryRow(ctx, `SELECT count(*) FROM mining_reward_grants g
+				JOIN mining_reward_settlement_receipts r ON r.settlement_id=g.settlement_id
+				JOIN mining_reward_reservation_consumptions c ON c.settlement_id=r.settlement_id
+				WHERE g.settlement_id=$1 AND g.character_id=$2 AND g.issuance_id=$3 AND
+				g.quantity=$4 AND g.block_instance_id=$5 AND r.block_instance_id=$5 AND
+				c.block_instance_id=$5`, v.SettlementID, v.CharacterID, v.ID, v.Quantity, v.BlockInstanceID).Scan(&grantCount)
+			if e != nil || grantCount != 1 {
+				r.Balanced = false
+				r.Mismatches = append(r.Mismatches, key+": missing settlement grant or receipt")
+			}
+		}
+		var instance, owner, block, definition, itemDefinition, itemOwner, name, itemType, location string
+		var itemRevision int64
 		var quantity, itemQuantity, legacyID, aliasLegacy int32
 		var before, after, current int64
 		e = tx.QueryRow(ctx, `SELECT p.instance_id,p.character_id,p.block_instance_id,p.definition_id,p.quantity,
 			p.revision_before,p.revision_after,i.definition_id,i.quantity,i.legacy_id,i.name,i.item_type,i.location,
-			c.revision,a.legacy_id FROM mining_reward_inventory_projections p
+			c.revision,a.legacy_id,i.character_id,COALESCE((to_jsonb(i)->>'item_revision')::bigint,1) FROM mining_reward_inventory_projections p
 			LEFT JOIN character_inventory_items i ON i.instance_id=p.instance_id
 			LEFT JOIN characters c ON c.id=p.character_id
 			LEFT JOIN black_iron_identity_aliases a ON a.definition_id=p.definition_id
 			WHERE p.issuance_id=$1`, v.ID).Scan(&instance, &owner, &block, &definition, &quantity,
-			&before, &after, &itemDefinition, &itemQuantity, &legacyID, &name, &itemType, &location, &current, &aliasLegacy)
+			&before, &after, &itemDefinition, &itemQuantity, &legacyID, &name, &itemType, &location, &current, &aliasLegacy, &itemOwner, &itemRevision)
 		if e != nil || instance == "" || owner != v.CharacterID || block != v.BlockInstanceID ||
 			definition != v.MaterialDefinitionID || quantity != v.Quantity || itemDefinition != definition ||
 			itemQuantity != quantity || legacyID != aliasLegacy || name != "黑铁矿石" || itemType != "MATERIAL" ||
-			location != "INVENTORY" || after != before+1 || current < after {
+			location != "INVENTORY" || after != before+1 || current < after || itemOwner != owner ||
+			(v.Status == "G21_SETTLED" && itemRevision != 1) {
 			r.Balanced = false
 			r.Mismatches = append(r.Mismatches, key+": source/projection/inventory mismatch")
 		}
@@ -247,6 +274,29 @@ func (s *Store) ReconcileMiningRewardIssuancePrerequisite(ctx context.Context) (
 	if extras != 0 {
 		r.Balanced = false
 		r.Mismatches = append(r.Mismatches, "extra projection")
+	}
+	// Preserve the P0 read-only audit on canonical schema 0014, before G21
+	// grants exist. Its schema cannot contain G21_SETTLED lots.
+	var hasGrants bool
+	if err = tx.QueryRow(ctx, `SELECT to_regclass('public.mining_reward_grants') IS NOT NULL`).Scan(&hasGrants); err != nil {
+		return r, err
+	}
+	if !hasGrants {
+		return r, tx.Commit(ctx)
+	}
+	var orphanGrants int
+	err = tx.QueryRow(ctx, `SELECT count(*) FROM mining_reward_grants g
+		LEFT JOIN mining_reward_issuance_lots l ON l.issuance_id=g.issuance_id
+		LEFT JOIN mining_reward_inventory_projections p ON p.issuance_id=l.issuance_id
+		WHERE g.quantity>0 AND (l.issuance_id IS NULL OR p.issuance_id IS NULL OR
+		p.instance_id<>g.inventory_instance_id OR l.settlement_id<>g.settlement_id OR
+		l.character_id<>g.character_id OR l.quantity<>g.quantity)`).Scan(&orphanGrants)
+	if err != nil {
+		return r, err
+	}
+	if orphanGrants != 0 {
+		r.Balanced = false
+		r.Mismatches = append(r.Mismatches, "positive grant lacks exact lot/projection")
 	}
 	return r, tx.Commit(ctx)
 }

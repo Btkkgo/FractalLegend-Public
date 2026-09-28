@@ -182,6 +182,12 @@ func TestG181RecreatedBusinessFieldsGetNewIdentity(t *testing.T) {
 				t.Fatal(err)
 			}
 			if _, err = s.pool.Exec(ctx, reset); err != nil {
+				if reset == "TRUNCATE mining_blocks CASCADE" {
+					if g181Identity(t, s, "g181-identical-block") != original {
+						t.Fatal("rejected TRUNCATE changed block identity")
+					}
+					return // G21 recovery history now rejects cascading TRUNCATE.
+				}
 				t.Fatal(err)
 			}
 			g181Insert(t, s, "g181-identical-block", 1, "g181-identical-command")

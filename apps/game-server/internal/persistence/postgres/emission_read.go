@@ -106,7 +106,7 @@ func snapshotEmissionTx(ctx context.Context, tx pgx.Tx) (emission.Snapshot, erro
 		return emission.Snapshot{}, err
 	}
 	rows.Close()
-	rows, err = tx.Query(ctx, `SELECT recovery_entry_id,source_type,source_id,emission_entry_id,block_entry_id,test_distribution_id,
+	rows, err = tx.Query(ctx, `SELECT recovery_entry_id,source_type,source_id,emission_entry_id,block_entry_id,test_distribution_id,settlement_consumption_id,
 		net_emission_delta,reserved_delta,distributed_delta,distributed_before,distributed_after,
 		remaining_before,remaining_after,debt_before,debt_after,pool_revision,created_at
 		FROM black_iron_emission_recovery_entries ORDER BY pool_revision`)
@@ -115,7 +115,7 @@ func snapshotEmissionTx(ctx context.Context, tx pgx.Tx) (emission.Snapshot, erro
 	}
 	for rows.Next() {
 		var r emission.RecoveryEntry
-		if err = rows.Scan(&r.ID, &r.SourceType, &r.SourceID, &r.EmissionEntryID, &r.BlockEntryID, &r.TestDistributionID,
+		if err = rows.Scan(&r.ID, &r.SourceType, &r.SourceID, &r.EmissionEntryID, &r.BlockEntryID, &r.TestDistributionID, &r.SettlementConsumptionID,
 			&r.NetEmissionDelta, &r.ReservedDelta, &r.DistributedDelta, &r.DistributedBefore, &r.DistributedAfter,
 			&r.RemainingBefore, &r.RemainingAfter, &r.DebtBefore, &r.DebtAfter, &r.PoolRevision, &r.CreatedAt); err != nil {
 			rows.Close()
@@ -180,7 +180,11 @@ func (s *Store) ReconcileBlackIronEmission(ctx context.Context) (emission.Reconc
 	if err = tx.QueryRow(ctx, `SELECT count(*) FROM mining_prerequisite_distributions`).Scan(&p0Distributions); err != nil {
 		return emission.ReconciliationReport{}, err
 	}
-	if pool.Revision != int64(len(snapshot.Entries))+blockPoolMutations+p0Distributions {
+	var g21Consumptions int64
+	if err = tx.QueryRow(ctx, `SELECT count(*) FROM mining_reward_reservation_consumptions`).Scan(&g21Consumptions); err != nil {
+		return emission.ReconciliationReport{}, err
+	}
+	if pool.Revision != int64(len(snapshot.Entries))+blockPoolMutations+p0Distributions+g21Consumptions {
 		bad("pool revision differs from journal")
 	}
 	if len(snapshot.Receipts) != len(snapshot.Entries) {

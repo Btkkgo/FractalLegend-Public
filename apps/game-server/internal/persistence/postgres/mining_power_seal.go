@@ -42,6 +42,16 @@ func (s *Store) SealMiningPowerTEST(ctx context.Context, instanceID string) (min
 		return empty, err
 	}
 	defer tx.Rollback(context.Background())
+	// Existing immutable facts require their original admission state. Do not
+	// silently recreate a missing gate behind accepted history.
+	var orphanHistory bool
+	if err = tx.QueryRow(ctx, `SELECT NOT EXISTS(SELECT 1 FROM mining_power_acceptance_states WHERE block_instance_id=$1)
+		AND EXISTS(SELECT 1 FROM mining_power_activities WHERE block_instance_id=$1)`, instanceID).Scan(&orphanHistory); err != nil {
+		return empty, err
+	}
+	if orphanHistory {
+		return empty, miningpower.ErrInvariant
+	}
 	// Provisioning and locking use different commands. Concurrent first
 	// acceptance/Seal insertions contend on this unique instance identity.
 	if _, err = tx.Exec(ctx, `INSERT INTO mining_power_acceptance_states(block_instance_id,state,revision)
@@ -95,6 +105,9 @@ func (s *Store) SealMiningPowerTEST(ctx context.Context, instanceID string) (min
 	}
 	// A new READ COMMITTED statement after the exclusive lock sees every
 	// admitted acceptance that committed while Seal was waiting.
+	if err := validateMiningPowerSealRulesTx(ctx, tx, instanceID, miningpower.DevelopmentRuleVersion); err != nil {
+		return empty, err
+	}
 	snapshot, err := snapshotMiningPowerTx(ctx, tx, instanceID, miningpower.DevelopmentRuleVersion)
 	if err != nil {
 		return empty, err
@@ -110,6 +123,9 @@ func (s *Store) SealMiningPowerTEST(ctx context.Context, instanceID string) (min
 	raw, err := miningpower.CanonicalSealBytes(seal)
 	if err != nil {
 		return empty, err
+	}
+	if len(raw) > settlementMaxSealBytes || seal.ActivityCount > settlementMaxActivities {
+		return empty, miningpower.ErrInvalidInput
 	}
 	seal.CanonicalDigest = miningpower.DigestSealBytes(raw)
 	_, err = tx.Exec(ctx, `INSERT INTO mining_power_input_seals(seal_id,block_instance_id,seal_rule_version,schema_version,
@@ -156,10 +172,11 @@ func buildMiningPowerSealTx(ctx context.Context, tx pgx.Tx, sealID string, at ti
 		}
 		s.AcceptedActivityIdentities = append(s.AcceptedActivityIdentities,
 			miningpower.SealedActivityIdentity{ActivityID: a.ActivityID, SourceEventID: a.SourceEventID})
-		var account, player, character, digest sql.NullString
-		err := tx.QueryRow(ctx, `SELECT account_id,player_id,character_id,digest FROM mining_power_beneficiary_bindings
+		var account, player, character, digest, sourceEvent, authority, version sql.NullString
+		var boundAt sql.NullTime
+		err := tx.QueryRow(ctx, `SELECT account_id,player_id,character_id,digest,source_event_id,authority_source,binding_version,bound_at FROM mining_power_beneficiary_bindings
 			WHERE activity_id=$1 AND block_instance_id=$2`, a.ActivityID, block.BlockInstanceID).
-			Scan(&account, &player, &character, &digest)
+			Scan(&account, &player, &character, &digest, &sourceEvent, &authority, &version, &boundAt)
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return s, err
 		}
@@ -169,7 +186,18 @@ func buildMiningPowerSealTx(ctx context.Context, tx pgx.Tx, sealID string, at ti
 			character.String = "UNBOUND:" + a.PlayerID
 			player.String = a.PlayerID
 		} else {
-			if !account.Valid || !player.Valid || !character.Valid || !digest.Valid || player.String != a.PlayerID {
+			if !account.Valid || !player.Valid || !character.Valid || !digest.Valid || !sourceEvent.Valid ||
+				!authority.Valid || !version.Valid || !boundAt.Valid || player.String != a.PlayerID ||
+				sourceEvent.String != a.SourceEventID || authority.String != "CHARACTERS_OWNER_ROW_V1" ||
+				version.String != miningBeneficiaryVersion {
+				return s, miningpower.ErrInvariant
+			}
+			actualDigest, e := miningpower.BeneficiaryEvidenceDigest(miningpower.BeneficiaryEvidence{
+				Version: version.String, ActivityID: a.ActivityID, SourceEventID: sourceEvent.String,
+				AccountID: account.String, PlayerID: player.String, CharacterID: character.String,
+				BlockInstanceID: block.BlockInstanceID, AuthoritySource: authority.String, BoundAt: boundAt.Time,
+			})
+			if e != nil || actualDigest != digest.String {
 				return s, miningpower.ErrInvariant
 			}
 			bindingDigests = append(bindingDigests, digest.String)
@@ -231,6 +259,9 @@ func loadMiningPowerSealTx(ctx context.Context, tx pgx.Tx, instanceID string) (m
 	if err != nil {
 		return miningpower.SettlementInputSeal{}, err
 	}
+	if len(raw) > settlementMaxSealBytes {
+		return miningpower.SettlementInputSeal{}, miningpower.ErrInvariant
+	}
 	var s miningpower.SettlementInputSeal
 	if err = json.Unmarshal(raw, &s); err != nil {
 		return s, miningpower.ErrInvariant
@@ -279,10 +310,25 @@ func (s *Store) RebuildMiningPowerSeal(ctx context.Context, instanceID string) (
 	if err != nil {
 		return empty, err
 	}
+	rebuilt, err := validateMiningPowerSealSnapshotTx(ctx, tx, stored)
+	if err != nil {
+		return empty, err
+	}
+	return rebuilt, tx.Commit(ctx)
+}
+
+// validateMiningPowerSealSnapshotTx compares the stored Seal with its source
+// identities inside the caller's transaction, before any economic mutation.
+func validateMiningPowerSealSnapshotTx(ctx context.Context, tx pgx.Tx, stored miningpower.SettlementInputSeal) (miningpower.SettlementInputSeal, error) {
+	var empty miningpower.SettlementInputSeal
+	instanceID := stored.BlockInstanceID
 	var sourceID, evidenceDigest string
-	err = tx.QueryRow(ctx, `SELECT reservation_source_id,evidence_digest FROM mining_reservation_instance_bindings WHERE block_instance_id=$1`, instanceID).Scan(&sourceID, &evidenceDigest)
+	err := tx.QueryRow(ctx, `SELECT reservation_source_id,evidence_digest FROM mining_reservation_instance_bindings WHERE block_instance_id=$1`, instanceID).Scan(&sourceID, &evidenceDigest)
 	if err != nil || sourceID != stored.G18ReservationSourceID || evidenceDigest != stored.G18ReservationEvidenceDigest {
 		return empty, miningpower.ErrInvariant
+	}
+	if err := validateMiningPowerSealRulesTx(ctx, tx, instanceID, stored.G20RuleVersion); err != nil {
+		return empty, err
 	}
 	snapshot, err := snapshotMiningPowerTx(ctx, tx, instanceID, stored.G20RuleVersion)
 	if err != nil {
@@ -303,5 +349,19 @@ func (s *Store) RebuildMiningPowerSeal(ctx context.Context, instanceID string) (
 		return empty, miningpower.ErrInvariant
 	}
 	rebuilt.CanonicalDigest = stored.CanonicalDigest
-	return rebuilt, tx.Commit(ctx)
+	return rebuilt, nil
+}
+
+// The filtered G20 snapshot is not authority to omit accepted facts from another
+// rule. Every immutable accepted fact in this instance must use the sealed rule.
+func validateMiningPowerSealRulesTx(ctx context.Context, tx pgx.Tx, instanceID, rule string) error {
+	var mixed bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM mining_power_activities
+		WHERE block_instance_id=$1 AND rule_version<>$2)`, instanceID, rule).Scan(&mixed); err != nil {
+		return err
+	}
+	if mixed {
+		return miningpower.ErrInvariant
+	}
+	return nil
 }

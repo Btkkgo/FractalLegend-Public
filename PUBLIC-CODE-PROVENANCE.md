@@ -1,3 +1,11 @@
+# G21 provenance addition / G21 来源补充
+
+The 46 Go/SQL paths in the [G21 allowlist](docs/public-sync/G21-PUBLIC-SYNC-CANDIDATE.md) are project-owned implementation, synthetic tests and migration 0015, byte-identical to the accepted canonical settlement merge. No third-party source, runtime assembly, private workflow/configuration, Git objects, database data or credentials were copied. Migrations now number fifteen. Dependencies and licenses are unchanged.
+
+[G21 清单](docs/public-sync/G21-PUBLIC-SYNC-CANDIDATE.md) 的 46 个 Go／SQL 路径均为项目自有实现、合成测试及迁移 0015，与已验收 canonical 实现合并版本逐字节一致。未复制第三方源码、完整运行时、私有工作流／配置、Git 对象、数据库数据或凭据。迁移现为 15 个，依赖与许可未变。
+
+---
+
 # Public Code Provenance / 公开代码来源记录
 
 ## English — Primary
